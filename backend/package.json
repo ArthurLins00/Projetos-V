@@ -15,7 +15,8 @@
     "test:watch": "jest --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "npx ts-node prisma/seed.ts"
+    "seed": "npx ts-node prisma/seed.ts",
+    "etl": "npx ts-node src/scripts/runMetricsEtl.ts"
   },
   "keywords": [],
   "author": "",
