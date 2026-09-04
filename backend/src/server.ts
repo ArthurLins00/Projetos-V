@@ -1,21 +1,21 @@
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import authRoutes from './routes/authRoutes';
-import gestorRoutes from './routes/gestorRoutes';
-import userRoutes from './routes/userRoutes';
-import demandRoutes from './routes/demandRoutes';
-import categoryRoutes from './routes/categoryRoutes';
-import adminRoutes from './routes/adminRoutes';
-import metricsRoutes from './routes/metricsRoutes';
-import { errorHandler } from './middlewares/errorMiddleware';
-import { registerCronJobs } from './config/cron';
-import { createCorsMiddleware } from './config/cors';
-import { healthCheckHandler } from './config/health';
-import { connectPrisma, disconnectPrisma } from './config/prisma';
-import { isRedisAvailable } from './config/redis';
-import { NODE_ENV, PORT } from './config/env';
-import { openApiSpec, swaggerHtml } from './config/swagger';
-import 'dotenv/config';
+import "dotenv/config";
+import express from "express";
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRoutes";
+import gestorRoutes from "./routes/gestorRoutes";
+import userRoutes from "./routes/userRoutes";
+import demandRoutes from "./routes/demandRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
+import adminRoutes from "./routes/adminRoutes";
+import metricsRoutes from "./routes/metricsRoutes";
+import { errorHandler } from "./middlewares/errorMiddleware";
+import { registerCronJobs } from "./config/cron";
+import { createCorsMiddleware } from "./config/cors";
+import { healthCheckHandler } from "./config/health";
+import { connectPrisma, disconnectPrisma } from "./config/prisma";
+import { isRedisAvailable } from "./config/redis";
+import { NODE_ENV, PORT } from "./config/env";
+import { openApiSpec, swaggerHtml } from "./config/swagger";
 
 const app = express();
 
@@ -23,28 +23,28 @@ app.use(createCorsMiddleware());
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   void healthCheckHandler(req, res);
 });
 
 // Documentação Swagger / OpenAPI (sem autenticação)
 //   GET /docs       → interface Swagger UI
 //   GET /docs.json  → especificação OpenAPI crua
-app.get('/docs.json', (_req, res) => {
+app.get("/docs.json", (_req, res) => {
   res.json(openApiSpec);
 });
 
-app.get('/docs', (_req, res) => {
-  res.type('html').send(swaggerHtml);
+app.get("/docs", (_req, res) => {
+  res.type("html").send(swaggerHtml);
 });
 
-app.use('/auth', authRoutes);
-app.use('/gestor', gestorRoutes);
-app.use('/users', userRoutes);
-app.use('/demands', demandRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/admin', adminRoutes);
-app.use('/metrics', metricsRoutes);
+app.use("/auth", authRoutes);
+app.use("/gestor", gestorRoutes);
+app.use("/users", userRoutes);
+app.use("/demands", demandRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/admin", adminRoutes);
+app.use("/metrics", metricsRoutes);
 
 app.use(errorHandler);
 
@@ -56,20 +56,24 @@ async function startServer(): Promise<void> {
   const server = app.listen(PORT, () => {
     console.log(`[Server] Running on port ${PORT}`);
     console.log(`[Server] NODE_ENV=${NODE_ENV}`);
-    console.log(`[Server] Redis: ${redisAvailable ? 'available' : 'unavailable'}`);
+    console.log(
+      `[Server] Redis: ${redisAvailable ? "available" : "unavailable"}`,
+    );
     console.log(`[Server] Health check: http://localhost:${PORT}/health`);
     console.log(`[Server] API docs (Swagger): http://localhost:${PORT}/docs`);
     registerCronJobs();
   });
 
-  server.on('error', (err: NodeJS.ErrnoException) => {
-    if (err.code === 'EADDRINUSE') {
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
       console.error(`\nERRO: a porta ${PORT} já está em uso.`);
-      console.error('Encerre o processo anterior e tente novamente.');
-      console.error(`PowerShell: Get-NetTCPConnection -LocalPort ${PORT} | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\n`);
+      console.error("Encerre o processo anterior e tente novamente.");
+      console.error(
+        `PowerShell: Get-NetTCPConnection -LocalPort ${PORT} | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\n`,
+      );
       process.exit(1);
     }
-    console.error('Erro ao iniciar servidor:', err);
+    console.error("Erro ao iniciar servidor:", err);
     process.exit(1);
   });
 
@@ -81,16 +85,16 @@ async function startServer(): Promise<void> {
     });
   };
 
-  process.on('SIGTERM', () => {
-    void shutdown('SIGTERM');
+  process.on("SIGTERM", () => {
+    void shutdown("SIGTERM");
   });
 
-  process.on('SIGINT', () => {
-    void shutdown('SIGINT');
+  process.on("SIGINT", () => {
+    void shutdown("SIGINT");
   });
 }
 
 startServer().catch((error) => {
-  console.error('[Server] Startup failed:', error);
+  console.error("[Server] Startup failed:", error);
   process.exit(1);
 });
