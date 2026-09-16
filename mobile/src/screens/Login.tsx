@@ -27,10 +27,10 @@ export function Login({ navigation }: any) {
     <View style={styles.container}>
       <Text style={styles.title}>Fiscalize</Text>
 
-      <TextInput style={styles.input} placeholder="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Senha" value={password} onChangeText={setPassword} secureTextEntry />
+      <TextInput testID="login-email" style={styles.input} placeholder="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" />
+      <TextInput testID="login-password" style={styles.input} placeholder="Senha" value={password} onChangeText={setPassword} secureTextEntry />
 
-      <TouchableOpacity style={styles.button} onPress={() => handleLogin()} disabled={isSubmitting}>
+      <TouchableOpacity testID="login-submit" style={styles.button} onPress={() => handleLogin()} disabled={isSubmitting}>
         {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Entrar</Text>}
       </TouchableOpacity>
 

@@ -27,16 +27,61 @@ export function CreateDemand({ navigation }: any) {
 
   const getLocation = async () => {
     setLoading(true);
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setLoading(false);
-      return Alert.alert('Atenção', 'Precisamos do GPS para registrar o local.');
-    }
     try {
-      const currentLoc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-      setLocationCoords(currentLoc.coords);
+      let { status } = await Location.getForegroundPermissionsAsync();
+
+      if (status !== 'granted') {
+        const permission = await Promise.race([
+          Location.requestForegroundPermissionsAsync(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+        ]);
+        if (permission) {
+          status = permission.status;
+        }
+      }
+
+      if (status !== 'granted') {
+        if (__DEV__) {
+          setLocationCoords({
+            latitude: -8.0476,
+            longitude: -34.8770,
+          } as Location.LocationObjectCoords);
+          return;
+        }
+        throw new Error('Permissão de localização negada');
+      }
+
+      const lastKnownLoc = await Promise.race([
+        Location.getLastKnownPositionAsync(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+      ]);
+
+      if (lastKnownLoc) {
+        setLocationCoords(lastKnownLoc.coords);
+        return;
+      }
+
+      const currentLoc = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+      ]);
+
+      if (currentLoc) {
+        setLocationCoords(currentLoc.coords);
+        return;
+      }
+
+      if (__DEV__) {
+        setLocationCoords({
+          latitude: -8.0476,
+          longitude: -34.8770,
+        } as Location.LocationObjectCoords);
+        return;
+      }
+
+      throw new Error('Localização indisponível');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível obter a localização.');
+      Alert.alert('Erro', 'Não foi possível obter a localização. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -77,30 +122,36 @@ export function CreateDemand({ navigation }: any) {
     <ScrollView contentContainerStyle={styles.container}>
       
       <Text style={styles.label}>Título do Problema</Text>
-      <TextInput style={styles.input} placeholder="Ex: Poste apagado" value={title} onChangeText={setTitle} />
+      <TextInput testID="demand-title" style={styles.input} placeholder="Ex: Poste apagado" value={title} onChangeText={setTitle} />
 
       <Text style={styles.label}>ID da Categoria</Text>
-      <TextInput style={styles.input} placeholder="Ex: 1" value={categoryId} onChangeText={setCategoryId} keyboardType="numeric" />
+      <TextInput testID="demand-category" style={styles.input} placeholder="Ex: 1" value={categoryId} onChangeText={setCategoryId} keyboardType="numeric" />
 
       <Text style={styles.label}>Endereço (Rua, Número)</Text>
-      <TextInput style={styles.input} placeholder="Ex: Rua das Flores, 123" value={locationText} onChangeText={setLocationText} />
+      <TextInput testID="demand-location" style={styles.input} placeholder="Ex: Rua das Flores, 123" value={locationText} onChangeText={setLocationText} />
 
       <Text style={styles.label}>Descrição</Text>
-      <TextInput style={[styles.input, { height: 80 }]} placeholder="Detalhe o problema..." value={description} onChangeText={setDescription} multiline />
+      <TextInput testID="demand-description" style={[styles.input, { height: 80 }]} placeholder="Detalhe o problema..." value={description} onChangeText={setDescription} multiline />
 
       <View style={styles.row}>
         <TouchableOpacity style={styles.actionButton} onPress={takePhoto}>
           <Text style={styles.actionButtonText}>📷 Foto</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={[styles.actionButton, locationCoords && styles.buttonSuccess]} onPress={getLocation} disabled={loading}>
+        <TouchableOpacity
+          testID={locationCoords ? 'demand-location-gps-ready' : 'demand-location-gps'}
+          accessibilityLabel={locationCoords ? 'GPS OK' : 'Pegar GPS'}
+          style={[styles.actionButton, locationCoords && styles.buttonSuccess]}
+          onPress={getLocation}
+          disabled={loading}
+        >
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionButtonText}>{locationCoords ? '📍 GPS OK' : '📍 Pegar GPS'}</Text>}
         </TouchableOpacity>
       </View>
 
       {imageUri && <Image source={{ uri: imageUri }} style={styles.preview} />}
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+      <TouchableOpacity testID="demand-submit" style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Registrar Demanda</Text>}
       </TouchableOpacity>
     </ScrollView>

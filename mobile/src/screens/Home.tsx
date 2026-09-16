@@ -45,7 +45,7 @@ export function Home({ navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
          <Text style={styles.headerTitle}>Minhas Demandas</Text>
-         <TouchableOpacity onPress={signOut}>
+         <TouchableOpacity testID="home-logout" onPress={signOut}>
             <Text style={styles.logoutText}>Sair</Text>
          </TouchableOpacity>
       </View>
@@ -59,15 +59,15 @@ export function Home({ navigation }: any) {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.category}>{item.categoria}</Text>
+              <Text style={styles.category}>{item.category?.nome ?? 'Categoria não informada'}</Text>
               <Text style={styles.status}>{item.status || 'Pendente'}</Text>
             </View>
-            <Text style={styles.description}>{item.descricao}</Text>
+            <Text style={styles.description}>{item.description}</Text>
           </View>
         )}
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateDemand')}>
+      <TouchableOpacity testID="home-create-demand" style={styles.fab} onPress={() => navigation.navigate('CreateDemand')}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>
