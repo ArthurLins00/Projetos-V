@@ -1,4 +1,4 @@
-appId: com.fiscalize.web # O validador exige isso, mesmo na web
+appId: host.exp.exponent # O validador exige isso, mesmo na web
 
 ---
 - openLink: "http://localhost:8082" # Cole aqui o link exato que o Expo abriu
