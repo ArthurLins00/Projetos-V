@@ -1,0 +1,66 @@
+appId: host.exp.exponent
+---
+# Fluxo E2E: cidadão autentica, registra uma demanda e a encontra na lista.
+# Abra o projeto no Expo Go antes de executar este fluxo no Maestro Studio.
+- assertVisible: "Fiscalize"
+
+- tapOn:
+    id: "login-email"
+- inputText: "cidadao@fiscalize.gov.br"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Cidadao@123456"
+
+- tapOn:
+    id: "login-submit"
+- assertVisible: "Minhas Demandas"
+
+- tapOn:
+    id: "home-create-demand"
+- assertVisible: "Título do Problema"
+
+- tapOn:
+    id: "demand-title"
+- inputText: "Iluminação pública com defeito"
+
+- tapOn:
+    id: "demand-category"
+- eraseText: 10
+- inputText: "1"
+
+- tapOn:
+    id: "demand-location"
+- inputText: "Rua E2E, 100"
+
+- tapOn:
+    id: "demand-description"
+- inputText: "Teste E2E: poste apagado durante a noite"
+
+- tapOn:
+    id: "demand-location-gps"
+- waitForAnimationToEnd
+- runFlow: { when: { visible: { id: "demand-location-gps" } }, commands: [{ tapOn: { id: "demand-location-gps" } }] }
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- runFlow:
+    when:
+      visible: "Durante o uso do app"
+    commands:
+      - tapOn: "Durante o uso do app"
+- runFlow: { when: { visible: "ALLOW" }, commands: [{ tapOn: "ALLOW" }] }
+- runFlow: { when: { visible: "Allow" }, commands: [{ tapOn: "Allow" }] }
+- runFlow: { when: { visible: "PERMITIR" }, commands: [{ tapOn: "PERMITIR" }] }
+- runFlow: { when: { visible: "Permitir" }, commands: [{ tapOn: "Permitir" }] }
+- extendedWaitUntil: { visible: { id: "demand-location-gps-ready" }, timeout: 30000 }
+
+- tapOn:
+    id: "demand-submit"
+- assertVisible: "Demanda registrada com sucesso!"
+- tapOn: "OK"
+
+- assertVisible: "Minhas Demandas"
+- assertVisible: "Teste E2E: poste apagado durante a noite"

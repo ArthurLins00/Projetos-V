@@ -1,130 +1,218 @@
-﻿# COMO RODAR O BACKEND
+# Como rodar o projeto
 
-## 1) Requisitos minimo
-- Node.js 18 ou superior (ja inclui npm).
-- PostgreSQL instalado localmente ou Docker disponivel.
-- Terminal ou prompt de comando.
+Este guia usa Docker para o PostgreSQL, Prisma para criar as tabelas, o backend Express na porta 3000 e o mobile Expo.
 
-## 2) Abrir o backend no terminal
-No terminal, acesse a pasta do backend:
-```bash
-cd c:\Users\camila.alcantara\Documents\GithubRepos\projeto-web\backend
+## 1. Requisitos
+
+Instale:
+
+- Node.js 22.14.0 (recomendado pelo backend)
+- Docker Desktop
+- Android Studio, caso use o emulador Android
+- Expo Go, caso use um celular fisico
+
+Verifique as instalacoes:
+
+```powershell
+node --version
+npm.cmd --version
+docker --version
 ```
 
-## 3) Instalar as dependencias
-```bash
-npm install
+No PowerShell, use `npm.cmd` e `npx.cmd` caso a politica de execucao bloqueie `npm.ps1`.
+
+## 2. Iniciar o PostgreSQL pelo Docker
+
+Abra o Docker Desktop e aguarde ele ficar pronto. Depois execute:
+
+```powershell
+docker start fiscalize-postgres
 ```
 
-## 4) Configurar o banco de dados PostgreSQL
-O backend usa Prisma e o arquivo backend/prisma.config.ts aponta para a URL padrao:
-```text
-postgresql://postgres:BacoExu@localhost:5432/Fiscalize?schema=public
+Se o container ainda nao existir, crie-o:
+
+```powershell
+docker run --name fiscalize-postgres `
+  -e POSTGRES_USER=postgres `
+  -e POSTGRES_PASSWORD=BacoExu `
+  -e POSTGRES_DB=Fiscalize `
+  -p 5432:5432 `
+  -d postgres:16
 ```
 
-### Opcao A: PostgreSQL local
-1. Crie um banco de dados chamado Fiscalize.
-2. Garanta que usuario e senha sejam:
-   - Usuario: postgres
-   - Senha: BacoExu
-3. Garanta que o PostgreSQL aceite conexoes em localhost:5432.
+Esse comando baixa automaticamente a imagem `postgres:16` na primeira execucao e cria o container `fiscalize-postgres`. Imagem e container sao recursos diferentes: a imagem e o modelo do PostgreSQL; o container e a instancia que fica em execucao.
 
-### Opcao B: Usar Docker
-Se voce tiver Docker, execute:
-```bash
-docker run --name fiscalize-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=BacoExu -e POSTGRES_DB=Fiscalize -p 5432:5432 -d postgres:16
+Para verificar as imagens instaladas:
+
+```powershell
+docker images
 ```
 
-## 5) Criar o arquivo de variaveis de ambiente
-Na pasta backend/, crie um arquivo .env com:
+Nao e necessario criar um Dockerfile para usar a imagem oficial do PostgreSQL.
+
+Confirme que ele esta em execucao:
+
+```powershell
+docker ps
+```
+
+Deve aparecer `fiscalize-postgres` com a porta `5432` publicada.
+
+Se `docker ps` nao mostrar nenhum container, verifique tambem os containers parados:
+
+```powershell
+docker ps -a
+```
+
+Se `fiscalize-postgres` aparecer com status `Exited`, inicie-o:
+
+```powershell
+docker start fiscalize-postgres
+```
+
+Se ele nao aparecer nem em `docker ps -a`, crie o container usando o comando `docker run` acima.
+
+## 3. Configurar o backend
+
+Entre na pasta do backend:
+
+```powershell
+cd "C:\Users\<seu-usuario>\OneDrive\Documentos\PRO\Projetos-V\backend"
+```
+
+Instale as dependencias:
+
+```powershell
+npm.cmd install
+```
+
+Crie o arquivo `backend/.env` com:
+
 ```env
-DATABASE_URL="postgresql://postgres:BacoExu@localhost:5432/Fiscalize?schema=public"
+DATABASE_URL="postgresql://postgres:BacoExu@127.0.0.1:5432/Fiscalize?schema=public"
+JWT_SECRET="fiscalize-chave-secreta-local"
+JWT_EXPIRATION="24h"
+PORT=3000
+NODE_ENV="development"
+ALLOWED_ORIGINS="http://localhost:8081,http://localhost:19006"
 ```
 
-> Ajuste a URL se usar outro usuario, senha, host, porta ou nome de banco.
+## 4. Preparar o banco
 
-## 6) Gerar o cliente Prisma e aplicar o esquema
-No diretorio backend/, execute:
-```bash
-npx prisma generate
+Ainda na pasta `backend`, execute um comando por vez:
+
+```powershell
+npx.cmd prisma generate
 ```
 
-Em seguida:
-```bash
-npx prisma db push
+```powershell
+npx.cmd prisma migrate deploy
 ```
 
-Isso criara as tabelas no banco de dados com base em prisma/schema.prisma.
+Carregue os dados iniciais e as contas de teste:
 
-## 7) Rodar o backend
-Ainda em backend/:
-```bash
-npm run dev
+```powershell
+npm.cmd run seed
 ```
 
-O servidor deve iniciar em http://localhost:3000.
+Nao use `prisma db push` neste fluxo. O projeto possui migracoes versionadas em `backend/prisma/migrations`.
 
-## 8) Rotas de autenticacao
-As rotas disponiveis sao:
-- POST /auth/register
-- POST /auth/login
-- POST /auth/logout
-- GET /auth/me
+## 5. Iniciar o backend
 
-## 9) Testar a API com Postman
-### 9.1) Registrar usuario
-- Metodo: POST
-- URL: http://localhost:3000/auth/register
-- Body (JSON):
-```json
-{
-  "nome": "Teste",
-  "email": "teste@teste.com",
-  "senha": "123456",
-  "perfil": "cidadao"
-}
+```powershell
+npm.cmd run dev
 ```
 
-### 9.2) Fazer login
-- Metodo: POST
-- URL: http://localhost:3000/auth/login
-- Body (JSON):
-```json
-{
-  "email": "teste@teste.com",
-  "senha": "123456"
-}
+Deixe esse terminal aberto. O servidor ficara disponivel em:
+
+- API: http://localhost:3000
+- Health check: http://localhost:3000/health
+- Swagger: http://localhost:3000/docs
+
+Em outro terminal, teste:
+
+```powershell
+Invoke-RestMethod http://localhost:3000/health
 ```
 
-O login retorna um cookie token HTTP-only. No Postman, habilite o envio de cookies automaticamente.
+O resultado esperado deve informar `status: ok` e `database: connected`.
 
-### 9.3) Verificar usuario logado
-- Metodo: GET
-- URL: http://localhost:3000/auth/me
-- Esta rota exige autenticacao via cookie token.
+O Redis e opcional. Se `REDIS_URL` nao estiver configurada, o backend exibira `Redis: unavailable`, mas continuara funcionando.
 
-### 9.4) Logout
-- Metodo: POST
-- URL: http://localhost:3000/auth/logout
+## 6. Credenciais criadas pelo seed
 
-## 10) Testar a API com curl
-Registrar:
-```bash
-curl -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"nome":"Teste","email":"teste@teste.com","senha":"123456","perfil":"cidadao"}'
+```text
+Admin   - admin@fiscalize.gov.br / Admin@123456
+Gestor  - gestor@fiscalize.gov.br / Gestor@123456
+Cidadao - cidadao@fiscalize.gov.br / Cidadao@123456
 ```
 
-Login:
-```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"teste@teste.com","senha":"123456"}'
+## 7. Iniciar o mobile com Android Studio
+
+Abra o Android Studio, inicie um dispositivo em **Device Manager** e aguarde o Android carregar.
+
+Em outro terminal:
+
+```powershell
+cd "C:\Users\<seu-usuario>\OneDrive\Documentos\PRO\Projetos-V\mobile"
+npm.cmd install
+npm.cmd start
 ```
 
-> Observacao: como o backend usa cookie HTTP-only, curl nao eh ideal para testar rotas protegidas.
+Com o emulador aberto, pressione `a` no terminal do Expo. Alternativamente:
 
-## 11) Observacoes finais
-- Nao existe suite de testes automatica no backend/package.json alem de um placeholder.
-- Para rodar em outra maquina, instale Node.js e PostgreSQL (ou Docker), clone o repositorio e siga estes passos.
-- Sempre confirme que o banco esteja online antes de rodar npm run dev.
+```powershell
+npm.cmd run android
+```
+
+Para o emulador Android, a API deve ser acessada por `10.0.2.2`, que aponta para o computador:
+
+```text
+http://10.0.2.2:3000
+```
+
+Atualmente, a URL de desenvolvimento esta definida diretamente em `mobile/src/services/api.ts` na constante `HOMOLOG_URL`. Para o emulador, altere-a para:
+
+```ts
+const HOMOLOG_URL = 'http://10.0.2.2:3000';
+```
+
+Para celular fisico, use o IPv4 do computador na mesma rede Wi-Fi, por exemplo:
+
+```ts
+const HOMOLOG_URL = 'http://192.168.0.5:3000';
+```
+
+## 8. Ordem resumida para executar novamente
+
+Terminal 1:
+
+```powershell
+docker start fiscalize-postgres
+```
+
+Terminal 2:
+
+```powershell
+cd "C:\Users\<seu-usuario>\OneDrive\Documentos\PRO\Projetos-V\backend"
+npm.cmd run dev
+```
+
+Terminal 3:
+
+```powershell
+cd "C:\Users\<seu-usuario>\OneDrive\Documentos\PRO\Projetos-V\mobile"
+npm.cmd start
+```
+
+Com o emulador aberto, pressione `a` no terminal do Expo.
+
+## 9. Parar os servicos
+
+Para parar o backend ou o Expo, pressione `Ctrl+C` no terminal correspondente.
+
+Para parar o PostgreSQL:
+
+```powershell
+docker stop fiscalize-postgres
+```

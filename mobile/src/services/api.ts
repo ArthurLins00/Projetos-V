@@ -1,8 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// A mágica acontece aqui:
-const HOMOLOG_URL = 'http://192.168.0.5:3000';
+const HOMOLOG_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000';
 
 const PROD_URL = 'https://sua-api-na-nuvem.com.br'; 
 

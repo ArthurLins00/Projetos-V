@@ -3,7 +3,7 @@ import { api } from './api';
 export const demandService = {
   async listarDemandas() {
     const response = await api.get('/demands'); // Rota em inglês, conforme Swagger
-    return response.data;
+    return response.data.data ?? [];
   },
 
   // Enviando exatamente os campos que a documentação exige
