@@ -1,0 +1,52 @@
+appId: host.exp.exponent 
+
+---
+
+- openLink: "http://localhost:8082" 
+- clearState 
+
+# 1. FLUXO DE LOGIN (Aproveitando a base do seu colega)
+- tapOn: "E-mail"
+- inputText: "admin@teste.com" 
+- tapOn: "Senha"
+- inputText: "senhaSegura123"
+- tapOn: "Entrar"
+
+
+- extendedWaitUntil:
+    visible: "Minhas Demandas" 
+    timeout: 10000
+
+
+- tapOn: "+" 
+- assertVisible: "Registrar Demanda"
+
+
+- tapOn: "Ex: Poste apagado"
+- inputText: "Buraco na via"
+
+- tapOn: "Ex: 1"
+- inputText: "1" 
+
+- tapOn: "Ex: Rua das Flores, 123"
+- inputText: "Avenida Central, 500"
+
+- tapOn: "Detalhe o problema..."
+- inputText: "Asfalto cedeu causando risco grave de acidentes."
+
+
+- hideKeyboard 
+
+# 4. INTERAÇÃO COM O GPS E SUBMISSÃO
+- tapOn: "📍 Pegar GPS"
+- extendedWaitUntil:
+    visible: "📍 GPS OK"
+    timeout: 5000
+
+- tapOn: "Registrar Demanda"
+
+# 5. VALIDAÇÃO FINAL DO E2E
+
+- assertVisible: "Sucesso" 
+- tapOn: "OK" 
+- assertVisible: "Minhas Demandas"
