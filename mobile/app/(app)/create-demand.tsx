@@ -1,0 +1,1 @@
+export { CreateDemand as default } from '../../src/screens/CreatDemand';

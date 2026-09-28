@@ -19,10 +19,12 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // [REQUISITO] Persistência de estado utilizando os hooks nativos: useState
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // [REQUISITO] Persistência de estado utilizando os hooks nativos: useEffect
   useEffect(() => {
     async function loadStorageData() {
       try {

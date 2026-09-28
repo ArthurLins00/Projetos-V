@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { authService } from '../services/authService';
 
-export function Register({ navigation }: any) {
+export function Register() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,7 @@ export function Register({ navigation }: any) {
       setLoading(true);
       await authService.register(name, email.trim(), password);
       Alert.alert('Sucesso', 'Conta criada! Você já pode fazer login.');
-      navigation.goBack(); 
+      router.back(); 
     } catch (error: any) {
       const message = error.response?.data?.error || 'Erro ao criar conta.';
       Alert.alert('Erro', message);
@@ -36,7 +38,7 @@ export function Register({ navigation }: any) {
          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrar</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.goBack()}>
+      <TouchableOpacity onPress={() => router.back()}>
         <Text style={styles.link}>Já tem uma conta? Voltar</Text>
       </TouchableOpacity>
     </View>

@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { demandService } from '../services/demandService';
 import { useAuth } from '../contexts/AuthContext';
 
-export function Home({ navigation }: any) {
+export function Home() {
+  const router = useRouter();
   const [demandas, setDemandas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,7 +68,7 @@ export function Home({ navigation }: any) {
         )}
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateDemand')}>
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/(app)/create-demand')}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>
