@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
 import { demandService } from '../services/demandService';
 
-export function CreateDemand({ navigation }: any) {
+export function CreateDemand() {
+  const router = useRouter();
   const [title, setTitle] = useState(''); 
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('1'); 
@@ -63,7 +65,7 @@ export function CreateDemand({ navigation }: any) {
       await demandService.criarDemanda(payload);
 
       Alert.alert('Sucesso', 'Demanda registrada com sucesso!');
-      navigation.goBack();
+      router.back();
       
     } catch (error: any) {
       console.error('Erro ao salvar demanda:', error.response?.data || error.message);
