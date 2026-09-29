@@ -1,28 +1,11 @@
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router/stack';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
-import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 function InitialLayout() {
   const { user, isLoading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (isLoading) return;
-
-    // Verifica se a URL atual pertence ao grupo de autenticação (login/register)
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!user && !inAuthGroup) {
-      // Se não tem usuário e não está na tela de login, joga para o login
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      // Se tem usuário e está tentando acessar o login, joga para a Home
-      router.replace('/(app)');
-    }
-  }, [user, isLoading, segments]);
-
+  // Enquanto a sessão salva é restaurada (AuthContext), nenhuma tela é montada
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -31,8 +14,19 @@ function InitialLayout() {
     );
   }
 
-  // O Slot renderiza as telas (Home, Login, etc) baseadas na URL
-  return <Slot />;
+  // Rotas protegidas: sem usuário, as telas do app nem são montadas (evita chamadas
+  // à API sem token); com usuário, login/registro ficam indisponíveis. O Expo Router
+  // redireciona sozinho para o grupo liberado quando `user` muda (login/logout).
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!!user}>
+        <Stack.Screen name="(app)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+    </Stack>
+  );
 }
 
 export default function RootLayout() {

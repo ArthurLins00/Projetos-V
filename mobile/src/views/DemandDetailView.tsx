@@ -39,7 +39,7 @@ export function DemandDetailView({ demandId }: Props) {
           <Text style={styles.protocol}>{demand.protocolo}</Text>
           <Text style={[styles.status, { color: STATUS_COLORS[demand.status] ?? '#666' }]}>{demand.status}</Text>
         </View>
-        <Text style={styles.title}>{demand.title}</Text>
+        <Text testID="detail-title" style={styles.title}>{demand.title}</Text>
 
         <Text style={styles.label}>Categoria</Text>
         <Text style={styles.value}>{demand.category?.nome}</Text>
@@ -72,10 +72,10 @@ export function DemandDetailView({ demandId }: Props) {
 
       {vm.canEdit ? (
         <View style={styles.row}>
-          <TouchableOpacity style={[styles.button, styles.editButton]} onPress={vm.edit}>
+          <TouchableOpacity testID="detail-edit" accessibilityRole="button" style={[styles.button, styles.editButton]} onPress={vm.edit}>
             <Text style={styles.buttonText}>✏️ Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={vm.confirmRemove} disabled={vm.deleting}>
+          <TouchableOpacity testID="detail-delete" accessibilityRole="button" style={[styles.button, styles.deleteButton]} onPress={vm.confirmRemove} disabled={vm.deleting}>
             {vm.deleting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>🗑️ Excluir</Text>}
           </TouchableOpacity>
         </View>

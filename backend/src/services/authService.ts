@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
@@ -74,7 +75,9 @@ export const authService = {
         perfil: usuario.perfil,
       },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION } as SignOptions
+      // jwtid único: sem ele, dois logins no mesmo segundo geram o mesmo token
+      // e o logout de uma sessão revogaria a outra
+      { expiresIn: JWT_EXPIRATION, jwtid: randomUUID() } as SignOptions
     );
 
     return { usuario, token };
@@ -111,9 +114,10 @@ export const authService = {
         if (ttl > 0) {
           tokenBlocklist.add(token);
 
+          // unref: o timer não impede o processo de encerrar (ex.: fim dos testes)
           setTimeout(() => {
             tokenBlocklist.delete(token);
-          }, ttl * 1000);
+          }, ttl * 1000).unref();
         }
       }
     } catch (error) {

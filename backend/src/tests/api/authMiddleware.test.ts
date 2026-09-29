@@ -1,11 +1,11 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../app';
-import { JWT_SECRET } from '../config/env';
+import { app } from '../../app';
+import { JWT_SECRET } from '../../config/env';
 
 // Injeta o mock explicitamente no módulo prisma
-jest.mock('../config/prisma', () => require('../config/__mocks__/prisma'));
-import { prisma } from '../config/__mocks__/prisma';
+jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
+import { prisma } from '../../config/__mocks__/prisma';
 
 describe('Middleware de Autenticação (Rotas Protegidas)', () => {
   // Vamos usar a rota /auth/me como "cobaia" para testar a proteção

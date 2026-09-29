@@ -45,7 +45,7 @@ export function CameraCapture({ visible, onCapture, onClose }: Props) {
             <Text style={styles.sideText}>Cancelar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.shutter} onPress={takePicture} disabled={!ready || capturing}>
+          <TouchableOpacity testID="camera-shutter" accessibilityRole="button" accessibilityLabel="Tirar foto" style={styles.shutter} onPress={takePicture} disabled={!ready || capturing}>
             {capturing ? <ActivityIndicator color="#007BFF" /> : <View style={styles.shutterInner} />}
           </TouchableOpacity>
 

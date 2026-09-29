@@ -12,7 +12,7 @@ export function DemandCard({ demand, onPress }: Props) {
   const photoUri = getPhotoUri(demand.photoUrl);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity testID="demand-card" accessibilityRole="button" style={styles.card} onPress={onPress}>
       {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
       <View style={styles.header}>
         <Text style={styles.category}>{demand.category?.nome}</Text>

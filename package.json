@@ -1,0 +1,17 @@
+{
+  "name": "projetos-v",
+  "private": true,
+  "description": "Fiscalize — orquestração da suíte de testes (backend + E2E)",
+  "scripts": {
+    "test": "npm run test:all",
+    "test:unit": "npm run test:unit --prefix backend",
+    "test:api": "npm run test:api --prefix backend",
+    "test:e2e": "playwright test",
+    "test:e2e:mobile": "maestro test mobile/e2e",
+    "test:e2e:report": "playwright show-report e2e-report",
+    "test:all": "npm run test:unit && npm run test:api && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

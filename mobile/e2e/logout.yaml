@@ -1,27 +1,20 @@
-appId: host.exp.exponent # O validador exige isso, mesmo na web
-
+# Logout encerra a sessão e, ao reabrir o app, o usuário continua deslogado
+appId: com.projetosv.fiscalize
 ---
-- openLink: "http://localhost:8082" # Cole aqui o link exato que o Expo abriu
-- clearState # Limpa o cache do app para garantir que ele comece deslogado
+- runFlow: subflows/login.yaml
 
-# 1. PREENCHER DADOS DE LOGIN
-# O Maestro vai procurar os campos na tela pelo texto que estiver escrito neles (como o placeholder)
-- tapOn: "E-mail" # Substitua pelo texto que indica o campo de email
-- inputText: "teste@teste.com" # Usuário que você registrou no Postman/banco
-- tapOn: "Senha" # Substitua pelo texto que indica o campo de senha
-- inputText: "123456"
-
-# 2. CLICAR NO BOTÃO E ENTRAR
-- tapOn: "Entrar" # Substitua pelo texto exato do botão de login
+- tapOn:
+    id: "logout-button"
 - extendedWaitUntil:
-    visible: "Perfil" # Substitua por uma palavra que comprove que o login deu certo (ex: "Sair", "Bem-vindo", "Demandas")
-    timeout: 10000 # Espera até 10 segundos o backend responder e a tela mudar
+    visible:
+      id: "login-submit"
+    timeout: 10000
 
-# 3. REALIZAR O LOGOUT
-# Simula os passos para deslogar
-- tapOn: "Menu" # APAGUE esta linha se o botão de Sair já estiver direto na tela principal
-- tapOn: "Sair" # Substitua pelo texto exato do botão de fazer logout
-
-# 4. VALIDAR SE FOI DESLOGADO (O E2E em si)
-# A prova de que o token foi revogado e a sessão encerrada é o app expulsar o usuário pra tela de login
-- assertVisible: "Entrar" # Texto de um botão ou título que só existe na tela de login
+# A sessão não é restaurada ao reabrir o app (SecureStore foi limpo)
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "login-submit"
+    timeout: 20000
+- assertNotVisible: "Minhas Demandas"

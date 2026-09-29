@@ -1,9 +1,9 @@
 import request from 'supertest';
-import { app } from '../app';
+import { app } from '../../app';
 
 // Mocks do Prisma
-jest.mock('../config/prisma', () => require('../config/__mocks__/prisma'));
-import { prisma } from '../config/__mocks__/prisma';
+jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
+import { prisma } from '../../config/__mocks__/prisma';
 
 describe('POST /auth/register', () => {
   const ROUTE = '/auth/register';

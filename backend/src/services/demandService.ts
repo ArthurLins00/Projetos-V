@@ -198,7 +198,7 @@ export const demandService = {
 
     // 3. Status check
     if ((BLOCKED_STATUSES as readonly string[]).includes(chamado.status)) {
-      throw new AppError(403, `Não é possível editar uma demanda com status '${chamado.status}'.`);
+      throw new AppError(403, `Não é possível editar uma demanda com status '${displayStatus(chamado.status)}'.`);
     }
 
     // 4. If category_id provided, validate and re-resolve org/prioridade/slahoras

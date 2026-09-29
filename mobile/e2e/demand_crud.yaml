@@ -1,0 +1,139 @@
+# CRUD completo de uma ocorrência pela interface do app:
+# criar (GPS + câmera) → pesquisar na lista → detalhar → editar → excluir
+appId: com.projetosv.fiscalize
+---
+- evalScript: ${output.titulo = 'Maestro poste ' + Date.now()}
+
+- runFlow: subflows/login.yaml
+
+# ---------- CRIAR ----------
+- tapOn:
+    id: "new-demand-button"
+    retryTapIfNoChange: true
+# O formulário só aparece depois que as categorias carregam
+- extendedWaitUntil:
+    visible:
+      id: "form-title"
+    timeout: 15000
+- assertVisible: "Nova Demanda"
+
+- tapOn:
+    id: "form-title"
+- inputText: ${output.titulo}
+- tapOn: "Iluminação Pública"
+- tapOn:
+    id: "form-address"
+- inputText: "Rua das Flores, 123"
+- tapOn:
+    id: "form-description"
+- inputText: "Poste apagado ha uma semana"
+- hideKeyboard
+
+# GPS (Expo Location): define a posição do emulador antes de capturar
+- setLocation:
+    latitude: -8.0476
+    longitude: -34.877
+- tapOn:
+    id: "form-gps"
+- extendedWaitUntil:
+    visible: "📍 GPS OK"
+    timeout: 15000
+
+# Câmera (Expo Camera): abre, fotografa e volta com a prévia
+- tapOn:
+    id: "form-photo"
+- extendedWaitUntil:
+    visible:
+      id: "camera-shutter"
+    timeout: 10000
+- tapOn:
+    id: "camera-shutter"
+- extendedWaitUntil:
+    visible: "Descartar foto nova"
+    timeout: 15000
+
+- scrollUntilVisible:
+    element:
+      id: "form-submit"
+- tapOn:
+    id: "form-submit"
+- extendedWaitUntil:
+    visible: "Demanda registrada com sucesso!"
+    timeout: 20000
+- tapOn: "OK"
+
+# ---------- PESQUISAR (FlatList + busca) ----------
+- extendedWaitUntil:
+    visible: "Minhas Demandas"
+    timeout: 10000
+- tapOn:
+    id: "demand-search"
+- inputText: ${output.titulo}
+- hideKeyboard
+# O título também aparece no próprio campo de busca: por isso a busca é pelo card
+# (testID) que contém o título, e não só pelo texto
+- extendedWaitUntil:
+    visible:
+      id: "demand-card"
+      containsChild:
+        text: ${output.titulo}
+    timeout: 10000
+
+# ---------- DETALHAR ----------
+- tapOn:
+    id: "demand-card"
+    containsChild:
+      text: ${output.titulo}
+- extendedWaitUntil:
+    visible: "Detalhes da Demanda"
+    timeout: 10000
+- assertVisible: "Iluminação Pública"
+- assertVisible: "Aberto"
+
+# ---------- EDITAR ----------
+- tapOn:
+    id: "detail-edit"
+# Na edição o formulário carrega os dados atuais antes de aparecer
+- extendedWaitUntil:
+    visible:
+      id: "form-title"
+    timeout: 15000
+- assertVisible: "Editar Demanda"
+- tapOn:
+    id: "form-title"
+- eraseText: 80
+- inputText: "${output.titulo} editado"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "form-submit"
+- tapOn:
+    id: "form-submit"
+- extendedWaitUntil:
+    visible: "Demanda atualizada com sucesso!"
+    timeout: 20000
+- tapOn: "OK"
+- extendedWaitUntil:
+    visible: "${output.titulo} editado"
+    timeout: 10000
+
+# ---------- EXCLUIR ----------
+- scrollUntilVisible:
+    element:
+      id: "detail-delete"
+- tapOn:
+    id: "detail-delete"
+- assertVisible: "Tem certeza que deseja remover esta demanda?"
+# No Android os botões do alerta aparecem em maiúsculas ("REMOVER")
+- tapOn: "(?i)remover"
+- extendedWaitUntil:
+    visible: "Demanda removida."
+    timeout: 10000
+- tapOn: "OK"
+
+# Some da listagem padrão (a busca pelo título continua aplicada)
+- extendedWaitUntil:
+    visible: "Nenhuma demanda encontrada."
+    timeout: 10000
+- assertNotVisible:
+    id: "demand-card"

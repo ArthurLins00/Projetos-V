@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { demandService } from '../services/demandService';
+import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Demand } from '../models/Demand';
 
@@ -42,8 +43,8 @@ export function useDemandListViewModel() {
       setError(null);
     } catch (err) {
       if (currentRequest !== requestId.current) return;
-      console.error('Erro ao buscar demandas:', err);
-      setError('Não foi possível carregar as demandas.');
+      // O erro aparece na própria lista (ListEmptyComponent)
+      setError(getApiErrorMessage(err, 'Não foi possível carregar as demandas.'));
     } finally {
       if (currentRequest === requestId.current) {
         setLoading(false);

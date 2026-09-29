@@ -1,14 +1,14 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../app';
-import { JWT_SECRET } from '../config/env';
+import { app } from '../../app';
+import { JWT_SECRET } from '../../config/env';
 
 // Mocks do Prisma e do Cache
-jest.mock('../config/prisma', () => require('../config/__mocks__/prisma'));
-import { prisma } from '../config/__mocks__/prisma';
+jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
+import { prisma } from '../../config/__mocks__/prisma';
 
 // Importante: mockar o invalidateMetricsCache para não tentar conectar ao Redis
-jest.mock('../utils/cache', () => ({
+jest.mock('../../utils/cache', () => ({
   invalidateMetricsCache: jest.fn(),
 }));
 
@@ -104,6 +104,28 @@ describe('PUT /gestor/chamados/:id/status', () => {
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('error');
     expect(response.body.error).toMatch(/Status inválido/i);
+  });
+
+  // -------------------------------------------------------------
+  // Cenário 2b: status com espaço/acento é convertido para a chave do enum do banco
+  // -------------------------------------------------------------
+  it.each([
+    ['Em Análise', 'Em_An_lise'],
+    ['Em Andamento', 'Em_Andamento'],
+  ])('deve gravar "%s" no banco como %s', async (statusApi, statusBanco) => {
+    // Executa a transação de verdade para inspecionar o que chega ao Prisma
+    prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
+    prisma.chamado.update.mockResolvedValue({ id: mockChamado.id, status: statusBanco } as any);
+
+    const response = await request(app)
+      .put(ROUTE)
+      .set('Authorization', `Bearer ${tokenGestor}`)
+      .send({ status: statusApi });
+
+    expect(response.status).toBe(200);
+    expect(prisma.chamado.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: statusBanco }) }),
+    );
   });
 
   // -------------------------------------------------------------
