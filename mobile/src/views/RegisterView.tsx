@@ -8,15 +8,15 @@ export function RegisterView() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Criar Conta</Text>
-      <TextInput style={styles.input} placeholder="Nome completo" value={vm.name} onChangeText={vm.setName} />
-      <TextInput style={styles.input} placeholder="E-mail" value={vm.email} onChangeText={vm.setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="Senha" value={vm.password} onChangeText={vm.setPassword} secureTextEntry />
+      <TextInput testID="register-name" style={styles.input} placeholder="Nome completo" value={vm.name} onChangeText={vm.setName} />
+      <TextInput testID="register-email" style={styles.input} placeholder="E-mail" value={vm.email} onChangeText={vm.setEmail} autoCapitalize="none" keyboardType="email-address" />
+      <TextInput testID="register-password" style={styles.input} placeholder="Senha" value={vm.password} onChangeText={vm.setPassword} secureTextEntry />
 
-      <TouchableOpacity style={styles.button} onPress={vm.register} disabled={vm.loading}>
+      <TouchableOpacity testID="register-submit" accessibilityRole="button" style={styles.button} onPress={vm.register} disabled={vm.loading}>
         {vm.loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrar</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={vm.goBack}>
+      <TouchableOpacity testID="register-go-login" accessibilityRole="link" onPress={vm.goBack}>
         <Text style={styles.link}>Já tem uma conta? Voltar</Text>
       </TouchableOpacity>
     </View>

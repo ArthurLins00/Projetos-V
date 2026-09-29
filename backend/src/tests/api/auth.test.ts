@@ -1,12 +1,12 @@
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
-import { app } from '../app';
+import { app } from '../../app';
 
 // Injeta o mock explicitamente no módulo prisma
 
-jest.mock('../config/prisma', () => require('../config/__mocks__/prisma'));
+jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 
-import { prisma } from '../config/__mocks__/prisma';
+import { prisma } from '../../config/__mocks__/prisma';
 
 describe('POST /auth/login', () => {
 

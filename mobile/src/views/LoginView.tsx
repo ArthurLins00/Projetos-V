@@ -9,20 +9,20 @@ export function LoginView() {
     <View style={styles.container}>
       <Text style={styles.title}>Fiscalize</Text>
 
-      <TextInput style={styles.input} placeholder="E-mail" value={vm.email} onChangeText={vm.setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="Senha" value={vm.password} onChangeText={vm.setPassword} secureTextEntry />
+      <TextInput testID="login-email" style={styles.input} placeholder="E-mail" value={vm.email} onChangeText={vm.setEmail} autoCapitalize="none" keyboardType="email-address" />
+      <TextInput testID="login-password" style={styles.input} placeholder="Senha" value={vm.password} onChangeText={vm.setPassword} secureTextEntry />
 
-      <TouchableOpacity style={styles.button} onPress={() => vm.login()} disabled={vm.isSubmitting}>
+      <TouchableOpacity testID="login-submit" accessibilityRole="button" style={styles.button} onPress={() => vm.login()} disabled={vm.isSubmitting}>
         {vm.isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Entrar</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={vm.goToRegister}>
+      <TouchableOpacity testID="login-go-register" accessibilityRole="link" onPress={vm.goToRegister}>
         <Text style={styles.link}>Não tem uma conta? Registre-se</Text>
       </TouchableOpacity>
 
       {__DEV__ && (
         // Usuário cidadão criado pelo seed do backend (prisma/seed.ts)
-        <TouchableOpacity style={styles.devButton} onPress={() => vm.login('cidadao@fiscalize.gov.br', 'Cidadao@123456')}>
+        <TouchableOpacity testID="login-dev" accessibilityRole="button" style={styles.devButton} onPress={() => vm.login('cidadao@fiscalize.gov.br', 'Cidadao@123456')}>
           <Text style={styles.devButtonText}>🚀 Entrar como Cidadão (Teste)</Text>
         </TouchableOpacity>
       )}

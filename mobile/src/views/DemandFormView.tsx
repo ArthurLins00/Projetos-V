@@ -22,7 +22,7 @@ export function DemandFormView({ demandId }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Título do Problema</Text>
-      <TextInput style={styles.input} placeholder="Ex: Poste apagado" value={vm.title} onChangeText={vm.setTitle} />
+      <TextInput testID="form-title" style={styles.input} placeholder="Ex: Poste apagado" value={vm.title} onChangeText={vm.setTitle} />
 
       <Text style={styles.label}>Categoria</Text>
       <View style={styles.chips}>
@@ -31,6 +31,9 @@ export function DemandFormView({ demandId }: Props) {
           return (
             <TouchableOpacity
               key={category.id}
+              testID={`form-category-${category.id}`}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
               style={[styles.chip, selected && styles.chipSelected]}
               onPress={() => vm.setCategoryId(category.id)}
             >
@@ -41,17 +44,17 @@ export function DemandFormView({ demandId }: Props) {
       </View>
 
       <Text style={styles.label}>Endereço (Rua, Número)</Text>
-      <TextInput style={styles.input} placeholder="Ex: Rua das Flores, 123" value={vm.locationText} onChangeText={vm.setLocationText} />
+      <TextInput testID="form-address" style={styles.input} placeholder="Ex: Rua das Flores, 123" value={vm.locationText} onChangeText={vm.setLocationText} />
 
       <Text style={styles.label}>Descrição</Text>
-      <TextInput style={[styles.input, styles.textArea]} placeholder="Detalhe o problema..." value={vm.description} onChangeText={vm.setDescription} multiline />
+      <TextInput testID="form-description" style={[styles.input, styles.textArea]} placeholder="Detalhe o problema..." value={vm.description} onChangeText={vm.setDescription} multiline />
 
       <View style={styles.row}>
-        <TouchableOpacity style={[styles.actionButton, vm.photoUri && styles.buttonSuccess]} onPress={vm.openCamera}>
+        <TouchableOpacity testID="form-photo" accessibilityRole="button" style={[styles.actionButton, vm.photoUri && styles.buttonSuccess]} onPress={vm.openCamera}>
           <Text style={styles.actionButtonText}>{vm.photoUri ? '📷 Refazer Foto' : '📷 Foto'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, vm.coords && styles.buttonSuccess]} onPress={vm.captureLocation} disabled={vm.locating}>
+        <TouchableOpacity testID="form-gps" accessibilityRole="button" style={[styles.actionButton, vm.coords && styles.buttonSuccess]} onPress={vm.captureLocation} disabled={vm.locating}>
           {vm.locating ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionButtonText}>{vm.coords ? '📍 GPS OK' : '📍 Pegar GPS'}</Text>}
         </TouchableOpacity>
       </View>
@@ -73,7 +76,7 @@ export function DemandFormView({ demandId }: Props) {
         </View>
       )}
 
-      <TouchableOpacity style={styles.submitButton} onPress={vm.submit} disabled={vm.submitting}>
+      <TouchableOpacity testID="form-submit" accessibilityRole="button" style={styles.submitButton} onPress={vm.submit} disabled={vm.submitting}>
         {vm.submitting ? (
           <ActivityIndicator color="#fff" />
         ) : (

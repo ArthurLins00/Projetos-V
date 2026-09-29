@@ -17,6 +17,11 @@ function displayStatus(s: status_chamado): string {
   return STATUS_DISPLAY[s] ?? s;
 }
 
+// A API recebe o texto de exibição ("Em Análise"); o banco usa a chave do enum ("Em_An_lise")
+const STATUS_FROM_DISPLAY = Object.fromEntries(
+  Object.entries(STATUS_DISPLAY).map(([key, label]) => [label, key]),
+) as Record<string, status_chamado>;
+
 export const gestorController = {
   // GET /gestor/dashboard - Estatísticas do gestor
   async dashboard(req: Request, res: Response, next: NextFunction) {
@@ -220,9 +225,9 @@ export const gestorController = {
       if (!gestorId) throw new AppError(401, 'Usuário não autenticado.');
       if (!status)   throw new AppError(400, 'Status é obrigatório.');
 
-      const statusValidos = ['Aberto', 'Em Análise', 'Em Andamento', 'Aguardando', 'Resolvido', 'Fechado'];
-      if (!statusValidos.includes(status)) {
-        throw new AppError(400, `Status inválido. Valores aceitos: ${statusValidos.join(', ')}`);
+      const novoStatus = STATUS_FROM_DISPLAY[status];
+      if (!novoStatus) {
+        throw new AppError(400, `Status inválido. Valores aceitos: ${Object.keys(STATUS_FROM_DISPLAY).join(', ')}`);
       }
 
       const gestor = await prisma.gestor.findUnique({ where: { id: gestorId }, select: { orgaoid: true } });
@@ -242,7 +247,7 @@ export const gestorController = {
         const result = await tx.chamado.update({
           where: { id },
           data: {
-            status: status as status_chamado,
+            status: novoStatus,
             atualizadoem: new Date(),
             ...(justificativa  ? { slajustification: String(justificativa) }  : {}),
             ...(resolutionNote ? { resolutionnote:   String(resolutionNote) } : {}),
@@ -264,7 +269,7 @@ export const gestorController = {
             descricao,
             autor: usuarioGestor?.nome ?? gestorId,
             dadosantigos: { status: oldStatus },
-            dadosnovos: { status },
+            dadosnovos: { status: novoStatus },
           },
         });
 

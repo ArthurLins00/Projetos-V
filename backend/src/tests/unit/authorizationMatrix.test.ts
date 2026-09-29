@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express, { Request, Response, NextFunction } from 'express';
-import { requireRole } from '../middlewares/requireRole';
+import { requireRole } from '../../middlewares/requireRole';
 
 // Inicializa um app Express isolado apenas para testar o middleware de autorização.
 // Isso evita que precisemos mockar o banco de dados inteiro para os controllers reais.

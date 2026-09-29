@@ -12,6 +12,8 @@
     "start": "node dist/server.js",
     "migrate:deploy": "prisma migrate deploy",
     "test": "jest",
+    "test:unit": "jest src/tests/unit",
+    "test:api": "jest src/tests/api",
     "test:watch": "jest --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

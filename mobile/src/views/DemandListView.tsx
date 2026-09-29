@@ -16,13 +16,14 @@ export function DemandListView() {
           <Text style={styles.headerTitle}>Minhas Demandas</Text>
           {vm.user && <Text style={styles.headerSubtitle}>Olá, {vm.user.nome}</Text>}
         </View>
-        <TouchableOpacity onPress={vm.signOut}>
+        <TouchableOpacity testID="logout-button" accessibilityRole="button" onPress={vm.signOut}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.filters}>
         <TextInput
+          testID="demand-search"
           style={styles.search}
           placeholder="Pesquisar por título, descrição, endereço ou protocolo"
           value={vm.search}
@@ -36,6 +37,9 @@ export function DemandListView() {
             return (
               <TouchableOpacity
                 key={filter.label}
+                testID={`status-filter-${filter.value ?? 'todos'}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
                 style={[styles.chip, selected && styles.chipSelected]}
                 onPress={() => vm.selectStatus(filter.value)}
               >
@@ -50,7 +54,10 @@ export function DemandListView() {
         <ActivityIndicator style={styles.loader} size="large" color="#007BFF" />
       ) : (
         <FlatList
+          testID="demand-list"
           data={vm.demands}
+          // Com o teclado aberto (após pesquisar), o primeiro toque já abre o card
+          keyboardShouldPersistTaps="handled"
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           refreshControl={<RefreshControl refreshing={vm.refreshing} onRefresh={vm.refresh} />}
@@ -66,7 +73,13 @@ export function DemandListView() {
         />
       )}
 
-      <TouchableOpacity style={[styles.fab, { bottom: 20 + insets.bottom }]} onPress={vm.createDemand}>
+      <TouchableOpacity
+        testID="new-demand-button"
+        accessibilityRole="button"
+        accessibilityLabel="Adicionar demanda"
+        style={[styles.fab, { bottom: 20 + insets.bottom }]}
+        onPress={vm.createDemand}
+      >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>

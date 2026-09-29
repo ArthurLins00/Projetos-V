@@ -2,12 +2,12 @@ import request from 'supertest';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import { app } from '../app';
-import { prisma } from '../config/__mocks__/prisma';
+import { app } from '../../app';
+import { prisma } from '../../config/__mocks__/prisma';
 
-jest.mock('../config/prisma', () => require('../config/__mocks__/prisma'));
+jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 
-describe('AUT-01 | Realizar login com credenciais válidas | RF04 (E2E)', () => {
+describe('AUT-01 | Realizar login com credenciais válidas | RF04 (API)', () => {
   const senha = 'senhaSegura123';
   const usuario = {
     id: 'usuario-login-valido',
