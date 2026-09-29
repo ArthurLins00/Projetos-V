@@ -1,1 +1,1 @@
-export { Home as default } from '../../src/screens/Home';
+export { DemandListView as default } from '../../src/views/DemandListView';

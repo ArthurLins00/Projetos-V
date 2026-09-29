@@ -347,6 +347,7 @@ export const openApiSpec = {
           { name: 'status', in: 'query', schema: { type: 'string' }, description: 'Filtra por status (valor do enum)' },
           { name: 'categoria', in: 'query', schema: { type: 'integer' }, description: 'ID da categoria' },
           { name: 'regiao', in: 'query', schema: { type: 'string' }, description: 'Busca por trecho do endereço' },
+          { name: 'busca', in: 'query', schema: { type: 'string' }, description: 'Pesquisa textual em título, descrição, endereço e protocolo' },
           { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 100 } },
         ],
@@ -452,7 +453,7 @@ export const openApiSpec = {
       },
       delete: {
         tags: ['Demands'],
-        summary: 'Excluir demanda — soft delete, marca como Fechado (perfil Gestor)',
+        summary: 'Excluir demanda — soft delete, marca como Fechado (Cidadão dono da demanda ou Gestor)',
         security: BEARER,
         responses: {
           204: { description: 'Demanda removida (sem conteúdo)' },

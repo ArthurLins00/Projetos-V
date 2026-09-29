@@ -1,1 +1,5 @@
-export { CreateDemand as default } from '../../src/screens/CreatDemand';
+import { DemandFormView } from '../../src/views/DemandFormView';
+
+export default function CreateDemandScreen() {
+  return <DemandFormView />;
+}

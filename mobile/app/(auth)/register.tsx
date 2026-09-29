@@ -1,1 +1,1 @@
-export { Register as default } from '../../src/screens/Register';
+export { RegisterView as default } from '../../src/views/RegisterView';

@@ -1,14 +1,36 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
-// A mágica acontece aqui:
-const HOMOLOG_URL = 'http://192.168.0.5:3000';
+const API_PORT = 3000;
 
-const PROD_URL = 'https://sua-api-na-nuvem.com.br'; 
+// Descobre a URL do backend:
+// 1. EXPO_PUBLIC_API_URL no mobile/.env, se definida (ex.: servidor na nuvem);
+// 2. em desenvolvimento, o mesmo IP do computador que serve o Metro (funciona no
+//    Expo Go do iPhone/Android e no emulador, desde que estejam na mesma rede);
+// 3. fallback: 10.0.2.2 é o "localhost" do computador visto de dentro do emulador Android.
+function resolveApiUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+  if (fromEnv) return fromEnv;
+
+  const metroHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  const isLoopback = metroHost === 'localhost' || metroHost === '127.0.0.1';
+
+  if (metroHost && !(isLoopback && Platform.OS === 'android')) {
+    return `http://${metroHost}:${API_PORT}`;
+  }
+  return Platform.OS === 'android' ? `http://10.0.2.2:${API_PORT}` : `http://localhost:${API_PORT}`;
+}
+
+export const API_URL = resolveApiUrl();
+
+if (__DEV__) {
+  console.log(`[api] Backend: ${API_URL}`);
+}
 
 export const api = axios.create({
-  // Se estiver no Expo (desenvolvimento), usa o IP local. Se estiver no app final, usa a URL de produção.
-  baseURL: __DEV__ ? HOMOLOG_URL : PROD_URL,
+  baseURL: API_URL,
   timeout: 10000,
 });
 
@@ -22,3 +44,18 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Converte o caminho salvo no backend (/uploads/...) em URL completa para o <Image>
+export function getPhotoUri(photoUrl?: string | null): string | null {
+  if (!photoUrl) return null;
+  return /^https?:\/\//.test(photoUrl) ? photoUrl : `${API_URL}${photoUrl}`;
+}
+
+// Extrai a mensagem de erro enviada pelo backend ({ error: '...' }).
+// Sem resposta = o app não alcançou o servidor (URL errada, backend parado ou firewall).
+export function getApiErrorMessage(error: any, fallback: string): string {
+  if (error?.isAxiosError && !error.response) {
+    return `Não foi possível conectar ao servidor (${API_URL}). Verifique se o backend está rodando e se o celular está na mesma rede Wi-Fi do computador.`;
+  }
+  return error?.response?.data?.error || fallback;
+}
