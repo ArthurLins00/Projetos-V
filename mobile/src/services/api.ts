@@ -1,14 +1,12 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// A mágica acontece aqui:
-const HOMOLOG_URL = 'http://192.168.0.5:3000';
-
-const PROD_URL = 'https://sua-api-na-nuvem.com.br'; 
+// URL do backend definida em mobile/.env (EXPO_PUBLIC_API_URL).
+// Fallback: 10.0.2.2 é o "localhost" do computador visto de dentro do emulador Android.
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000';
 
 export const api = axios.create({
-  // Se estiver no Expo (desenvolvimento), usa o IP local. Se estiver no app final, usa a URL de produção.
-  baseURL: __DEV__ ? HOMOLOG_URL : PROD_URL,
+  baseURL: API_URL,
   timeout: 10000,
 });
 
@@ -22,3 +20,8 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Extrai a mensagem de erro enviada pelo backend ({ error: '...' })
+export function getApiErrorMessage(error: any, fallback: string): string {
+  return error?.response?.data?.error || fallback;
+}

@@ -1,15 +1,16 @@
-appId: host.exp.exponent 
+# Roda no app instalado pelo Android Studio / `npx expo run:android` (dev build)
+appId: com.projetosv.fiscalize
 
 ---
 
-- openLink: "http://localhost:8082" 
-- clearState 
+- launchApp:
+    clearState: true
 
 # 1. FLUXO DE LOGIN (Aproveitando a base do seu colega)
 - tapOn: "E-mail"
-- inputText: "admin@teste.com" 
+- inputText: "cidadao@fiscalize.gov.br"
 - tapOn: "Senha"
-- inputText: "senhaSegura123"
+- inputText: "Cidadao@123456"
 - tapOn: "Entrar"
 
 
@@ -19,14 +20,13 @@ appId: host.exp.exponent
 
 
 - tapOn: "+" 
-- assertVisible: "Registrar Demanda"
+- assertVisible: "Nova Demanda"
 
 
 - tapOn: "Ex: Poste apagado"
 - inputText: "Buraco na via"
 
-- tapOn: "Ex: 1"
-- inputText: "1" 
+- tapOn: "Infraestrutura"
 
 - tapOn: "Ex: Rua das Flores, 123"
 - inputText: "Avenida Central, 500"

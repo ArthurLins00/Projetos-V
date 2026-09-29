@@ -17,10 +17,12 @@ router.patch(
   demandController.updateStatus
 );
 
+// Cidadão pode remover a própria demanda (enquanto não estiver em andamento);
+// Gestor/Admin herdam a permissão via hierarquia de perfis.
 router.delete(
   '/:id',
   authenticate,
-  requireRole(['Gestor']),
+  requireRole(['Cidadao']),
   demandController.delete
 );
 

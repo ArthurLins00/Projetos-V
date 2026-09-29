@@ -33,6 +33,7 @@ interface ListDemandsInput {
   status?: string;
   categoria?: number;
   regiao?: string;
+  busca?: string;
   page: number;
   limit: number;
 }
@@ -71,14 +72,24 @@ async function resolveOrgan(categoryId: number): Promise<string | null> {
 
 export const demandService = {
   async list(input: ListDemandsInput) {
-    const { userId, perfil, status, categoria, regiao, page, limit } = input;
+    const { userId, perfil, status, categoria, regiao, busca, page, limit } = input;
 
     const where: Record<string, unknown> = {};
 
     if (perfil === 'Cidadao') where['cidadaoid'] = userId;
     if (status) where['status'] = status;
+    // Demandas removidas pelo cidadão (soft delete → Fechado) somem da listagem padrão dele
+    else if (perfil === 'Cidadao') where['status'] = { not: 'Fechado' };
     if (categoria) where['categoriaid'] = categoria;
     if (regiao) where['endereco'] = { contains: regiao, mode: 'insensitive' };
+    if (busca) {
+      where['OR'] = [
+        { subcategoria: { contains: busca, mode: 'insensitive' } },
+        { descricao: { contains: busca, mode: 'insensitive' } },
+        { endereco: { contains: busca, mode: 'insensitive' } },
+        { protocolo: { contains: busca, mode: 'insensitive' } },
+      ];
+    }
 
     const include = {
       categoria: { select: { id: true, nome: true } },
@@ -441,13 +452,22 @@ export const demandService = {
     };
   },
 
-  async deleteDemand(chamadoId: string, userId: string) {
+  async deleteDemand(chamadoId: string, userId: string, perfil: string) {
     const chamado = await prisma.chamado.findUnique({
       where: { id: chamadoId },
     });
 
     if (!chamado) {
       throw new AppError(404, 'Demanda não encontrada.');
+    }
+
+    if (perfil === 'Cidadao') {
+      if (chamado.cidadaoid !== userId) {
+        throw new AppError(403, 'Você não tem permissão para remover esta demanda.');
+      }
+      if ((BLOCKED_STATUSES as readonly string[]).includes(chamado.status)) {
+        throw new AppError(403, `Não é possível remover uma demanda com status '${displayStatus(chamado.status)}'.`);
+      }
     }
 
     await prisma.$transaction(async (tx) => {

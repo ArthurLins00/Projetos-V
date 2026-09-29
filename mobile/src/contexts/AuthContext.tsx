@@ -1,12 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
-
-interface User {
-  id: string;
-  nome: string;
-  email: string;
-}
+import { User } from '../models/User';
 
 interface AuthContextData {
   user: User | null;
@@ -44,9 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, senha: string) => {
-    const data = await authService.login(email, senha);
-    const userToken = data.token || 'authenticated_session';
-    const userData = data.usuario || { id: '1', nome: email.split('@')[0], email };
+    // Backend retorna { id, nome, email, perfil, token }
+    const { token: userToken, ...userData } = await authService.login(email, senha);
 
     await SecureStore.setItemAsync('user_token', userToken);
     await SecureStore.setItemAsync('user_data', JSON.stringify(userData));

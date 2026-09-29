@@ -1,1 +1,1 @@
-export { Login as default } from '../../src/screens/Login';
+export { LoginView as default } from '../../src/views/LoginView';
