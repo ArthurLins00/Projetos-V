@@ -157,6 +157,7 @@ sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.m
 ## Documentação complementar
 
 - [`backend/README.md`](backend/README.md): perfis, permissões e rotas da API
+- [`mobile/README.md`](mobile/README.md): telas, arquitetura MVVM, navegação e testes de tela do app
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
 - [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
