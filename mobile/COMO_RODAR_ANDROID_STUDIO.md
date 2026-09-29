@@ -88,17 +88,18 @@ cd mobile
 npm install
 ```
 
-Edite `mobile/.env` com a URL do backend:
+**URL do backend:** não precisa configurar. O app usa automaticamente o IP do computador que roda
+o Metro (porta 3000) — funciona no emulador, em celulares Android e no **Expo Go do iPhone**.
+No emulador conectado via `127.0.0.1`/`adb reverse`, ele usa `10.0.2.2` (o "localhost" do PC visto do emulador).
+
+Só defina `EXPO_PUBLIC_API_URL` no `mobile/.env` se o backend estiver em outra máquina:
 
 ```env
-# Emulador do Android Studio → 10.0.2.2 é o "localhost" do seu computador
-EXPO_PUBLIC_API_URL=http://10.0.2.2:3000
-
-# Celular físico (mesma rede Wi-Fi) → use o IP do computador (ipconfig)
-# EXPO_PUBLIC_API_URL=http://192.168.0.5:3000
+EXPO_PUBLIC_API_URL=http://192.168.0.5:3000
 ```
 
 > Ao mudar o `.env`, reinicie o Metro com `npx expo start -c`.
+> Em modo dev, a URL usada aparece no log do Metro: `[api] Backend: http://...`.
 
 ---
 
@@ -157,8 +158,12 @@ npx expo run:android
 **GPS no emulador:** clique em **⋯ (Extended controls) → Location**, escolha um ponto no mapa
 e clique **Set Location** antes de tocar em "Pegar GPS".
 
-**Câmera no emulador:** o emulador mostra uma cena virtual. Para usar a webcam:
-*Virtual Device Manager → ✏️ editar o dispositivo → Show Advanced Settings → Camera → Back: Webcam0*.
+**Câmera no emulador:** a pré-visualização mostra uma cena virtual, mas **a foto capturada sai preta**
+(com só um carimbo de data/hora). É uma limitação da câmera emulada do Android com o CameraX
+(usado pelo Expo Camera) — o mesmo código funciona em aparelho real. Para demonstrar a câmera,
+use um celular (Android com o APK de debug ou iPhone com Expo Go) ou tente trocar a câmera do emulador
+pela webcam do PC: *Virtual Device Manager → ✏️ editar o dispositivo → More/Advanced Settings →
+Camera → Back: Webcam0* (reinicie o emulador depois).
 
 Edição e exclusão só são permitidas enquanto a demanda estiver *Aberto*, *Em Análise* ou *Aguardando*
 (regra do backend).
@@ -170,7 +175,8 @@ Edição e exclusão só são permitidas enquanto a demanda estiver *Aberto*, *E
 | Sintoma | Solução |
 |---|---|
 | `Project file "MainApplication" does not exist` | Caminho com acento — veja o passo 0 |
-| `Network Error` / timeout no login | Backend parado, URL errada no `.env` ou firewall do Windows bloqueando a porta 3000 |
+| "Não foi possível conectar ao servidor" no login | Backend parado; celular em outra rede Wi-Fi; `EXPO_PUBLIC_API_URL` apontando para o lugar errado; ou firewall do Windows bloqueando a porta 3000 (libere o Node.js para redes Privadas **e** Públicas) |
+| Expo Go no iPhone não abre o projeto | O Expo Go precisa ser do SDK 57; celular e PC na mesma rede; se a rede isolar dispositivos, use `npx expo start --tunnel` (nesse caso o backend também precisa de URL pública em `EXPO_PUBLIC_API_URL`) |
 | `SDK location not found` | Configure `ANDROID_HOME` ou crie `mobile/android/local.properties` com `sdk.dir=C:\\Users\\<usuario>\\AppData\\Local\\Android\\Sdk` |
 | `Unsupported class file major version` | JDK errado — use o JBR 21 do Android Studio (passo 1.2 / Gradle JDK) |
 | Mudei o `app.json` e nada mudou | `npx expo prebuild --platform android --clean` e rode de novo |

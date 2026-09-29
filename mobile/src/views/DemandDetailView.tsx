@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { useDemandDetailViewModel } from '../viewmodels/useDemandDetailViewModel';
 import { STATUS_COLORS } from '../models/Demand';
+import { getPhotoUri } from '../services/api';
 
 interface Props {
   demandId: string;
@@ -27,9 +28,12 @@ export function DemandDetailView({ demandId }: Props) {
   }
 
   const { demand } = vm;
+  const photoUri = getPhotoUri(demand.photoUrl);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
+
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <Text style={styles.protocol}>{demand.protocolo}</Text>
@@ -86,6 +90,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, flexGrow: 1, backgroundColor: '#f5f5f5' },
   centered: { justifyContent: 'center', alignItems: 'center' },
   card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 15, elevation: 2 },
+  photo: { width: '100%', height: 240, borderRadius: 8, marginBottom: 15, backgroundColor: '#ddd' },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   protocol: { color: '#999', fontSize: 12 },
   status: { fontWeight: 'bold', fontSize: 12 },

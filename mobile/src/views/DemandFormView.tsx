@@ -65,9 +65,11 @@ export function DemandFormView({ demandId }: Props) {
       {vm.photoUri && (
         <View>
           <Image source={{ uri: vm.photoUri }} style={styles.preview} />
-          <TouchableOpacity onPress={vm.removePhoto}>
-            <Text style={styles.removePhoto}>Remover foto</Text>
-          </TouchableOpacity>
+          {vm.hasNewPhoto && (
+            <TouchableOpacity onPress={vm.removePhoto}>
+              <Text style={styles.removePhoto}>Descartar foto nova</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 

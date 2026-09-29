@@ -10,6 +10,9 @@ router.post('/', authenticate, requireRole(['Cidadao']), demandController.create
 router.get('/:id', authenticate, demandController.getById);
 router.put('/:id', authenticate, requireRole(['Cidadao']), demandController.update);
 
+// Foto da ocorrência em base64 (o limite de tamanho do JSON é ampliado em app.ts)
+router.put('/:id/photo', authenticate, requireRole(['Cidadao']), demandController.uploadPhoto);
+
 router.patch(
   '/:id/status',
   authenticate,

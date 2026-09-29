@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Demand, STATUS_COLORS } from '../models/Demand';
+import { getPhotoUri } from '../services/api';
 
 interface Props {
   demand: Demand;
@@ -8,8 +9,11 @@ interface Props {
 }
 
 export function DemandCard({ demand, onPress }: Props) {
+  const photoUri = getPhotoUri(demand.photoUrl);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
+      {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
       <View style={styles.header}>
         <Text style={styles.category}>{demand.category?.nome}</Text>
         <Text style={[styles.status, { color: STATUS_COLORS[demand.status] ?? '#666' }]}>{demand.status}</Text>
@@ -24,6 +28,7 @@ export function DemandCard({ demand, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 15, elevation: 2 },
+  photo: { width: '100%', height: 140, borderRadius: 6, marginBottom: 10, backgroundColor: '#ddd' },
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   category: { fontWeight: 'bold', fontSize: 13, color: '#007BFF' },
   status: { fontWeight: 'bold', fontSize: 12 },

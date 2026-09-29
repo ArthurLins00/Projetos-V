@@ -5,7 +5,7 @@ import * as Location from 'expo-location';
 import { useCameraPermissions } from 'expo-camera';
 import { demandService } from '../services/demandService';
 import { categoryService } from '../services/categoryService';
-import { getApiErrorMessage } from '../services/api';
+import { getApiErrorMessage, getPhotoUri } from '../services/api';
 import { Category } from '../models/Category';
 import { DemandPayload } from '../models/Demand';
 
@@ -21,7 +21,10 @@ export function useDemandFormViewModel(demandId?: string) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [locationText, setLocationText] = useState('');
   const [coords, setCoords] = useState<Coords | null>(null);
+  // photoUri = o que aparece no preview; photoBase64 só existe quando há foto nova para enviar
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [savedPhotoUri, setSavedPhotoUri] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -48,6 +51,9 @@ export function useDemandFormViewModel(demandId?: string) {
           setCategoryId(demand.category.id);
           setLocationText(demand.location);
           setCoords({ latitude: demand.latitude, longitude: demand.longitude });
+          const remotePhoto = getPhotoUri(demand.photoUrl);
+          setSavedPhotoUri(remotePhoto);
+          setPhotoUri(remotePhoto);
         }
       } catch (error) {
         if (active) Alert.alert('Erro', getApiErrorMessage(error, 'Não foi possível carregar os dados.'));
@@ -70,13 +76,19 @@ export function useDemandFormViewModel(demandId?: string) {
     setCameraVisible(true);
   };
 
-  const onPhotoTaken = (uri: string) => {
-    setPhotoUri(uri);
+  const onPhotoTaken = (photo: { uri: string; base64: string }) => {
+    setPhotoUri(photo.uri);
+    setPhotoBase64(photo.base64);
     setCameraVisible(false);
   };
 
   const closeCamera = () => setCameraVisible(false);
-  const removePhoto = () => setPhotoUri(null);
+
+  // Descarta a foto nova (na edição, volta a mostrar a foto já salva)
+  const removePhoto = () => {
+    setPhotoBase64(null);
+    setPhotoUri(savedPhotoUri);
+  };
 
   const captureLocation = async () => {
     setLocating(true);
@@ -119,12 +131,25 @@ export function useDemandFormViewModel(demandId?: string) {
 
     try {
       setSubmitting(true);
-      if (isEditing) {
-        await demandService.update(demandId, payload);
-        Alert.alert('Sucesso', 'Demanda atualizada com sucesso!');
+      const saved = isEditing
+        ? await demandService.update(demandId, payload)
+        : await demandService.create(payload);
+
+      let photoFailed = false;
+      if (photoBase64) {
+        try {
+          await demandService.uploadPhoto(saved.id, photoBase64);
+        } catch (error) {
+          console.error('Erro ao enviar foto:', (error as any)?.response?.data || error);
+          photoFailed = true;
+        }
+      }
+
+      const message = isEditing ? 'Demanda atualizada com sucesso!' : 'Demanda registrada com sucesso!';
+      if (photoFailed) {
+        Alert.alert('Atenção', `${message}\nMas não foi possível enviar a foto. Tente novamente pela edição.`);
       } else {
-        await demandService.create(payload);
-        Alert.alert('Sucesso', 'Demanda registrada com sucesso!');
+        Alert.alert('Sucesso', message);
       }
       router.back();
     } catch (error) {
@@ -147,6 +172,7 @@ export function useDemandFormViewModel(demandId?: string) {
     setLocationText,
     coords,
     photoUri,
+    hasNewPhoto: !!photoBase64,
     categories,
     loadingData,
     locating,

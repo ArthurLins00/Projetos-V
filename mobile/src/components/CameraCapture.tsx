@@ -4,7 +4,7 @@ import { CameraView, CameraType } from 'expo-camera';
 
 interface Props {
   visible: boolean;
-  onCapture: (uri: string) => void;
+  onCapture: (photo: { uri: string; base64: string }) => void;
   onClose: () => void;
 }
 
@@ -19,8 +19,9 @@ export function CameraCapture({ visible, onCapture, onClose }: Props) {
     if (!cameraRef.current || !ready || capturing) return;
     try {
       setCapturing(true);
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
-      if (photo?.uri) onCapture(photo.uri);
+      // base64 é o que vai para o backend; quality 0.5 mantém o upload leve
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.5, base64: true });
+      if (photo?.uri && photo.base64) onCapture({ uri: photo.uri, base64: photo.base64 });
     } catch {
       Alert.alert('Erro', 'Não foi possível tirar a foto.');
     } finally {

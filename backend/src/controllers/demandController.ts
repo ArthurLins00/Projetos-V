@@ -107,6 +107,28 @@ async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
   }
 },
 
+async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    if (!id || Array.isArray(id)) {
+      throw new AppError(400, 'ID inválido');
+    }
+
+    const { photo } = req.body ?? {};
+
+    if (!photo || typeof photo !== 'string') {
+      throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
+    }
+
+    const result = await demandService.uploadPhoto(id, req.user!.id, photo);
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+},
+
 async delete(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;

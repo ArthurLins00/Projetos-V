@@ -19,6 +19,7 @@ export interface Demand {
   latitude: number;
   longitude: number;
   category: Pick<Category, 'id' | 'nome'>;
+  photoUrl?: string | null; // caminho relativo no backend (ex.: /uploads/xxx.jpg)
   createdAt: string;
   updatedAt: string;
   logs?: DemandLog[];

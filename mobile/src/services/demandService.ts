@@ -23,6 +23,12 @@ export const demandService = {
     return response.data;
   },
 
+  // Foto em base64 (JPEG/PNG), enviada depois que a demanda existe
+  async uploadPhoto(id: string, base64: string): Promise<{ photoUrl: string }> {
+    const response = await api.put<{ photoUrl: string }>(`/demands/${id}/photo`, { photo: base64 }, { timeout: 60000 });
+    return response.data;
+  },
+
   async remove(id: string): Promise<void> {
     await api.delete(`/demands/${id}`);
   }
