@@ -1,4 +1,4 @@
-﻿# COMO RODAR O BACKEND
+# COMO RODAR O BACKEND
 
 ## 1) Requisitos minimo
 - Node.js 18 ou superior (ja inclui npm).
@@ -6,9 +6,9 @@
 - Terminal ou prompt de comando.
 
 ## 2) Abrir o backend no terminal
-No terminal, acesse a pasta do backend:
+No terminal, a partir da raiz do repositorio, acesse a pasta do backend:
 ```bash
-cd c:\Users\camila.alcantara\Documents\GithubRepos\projeto-web\backend
+cd backend
 ```
 
 ## 3) Instalar as dependencias
@@ -39,7 +39,10 @@ docker run --name fiscalize-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSW
 Na pasta backend/, crie um arquivo .env com:
 ```env
 DATABASE_URL="postgresql://postgres:BacoExu@localhost:5432/Fiscalize?schema=public"
+JWT_SECRET="troque-por-uma-chave-secreta"
 ```
+
+> O JWT_SECRET e obrigatorio: sem ele o servidor nao inicia.
 
 > Ajuste a URL se usar outro usuario, senha, host, porta ou nome de banco.
 
@@ -49,12 +52,17 @@ No diretorio backend/, execute:
 npx prisma generate
 ```
 
-Em seguida:
+Em seguida, aplique as migrations:
 ```bash
-npx prisma db push
+npx prisma migrate dev
 ```
 
-Isso criara as tabelas no banco de dados com base em prisma/schema.prisma.
+Isso criara as tabelas no banco de dados com base em prisma/migrations.
+
+Opcionalmente, popule o banco com dados de exemplo:
+```bash
+npm run seed
+```
 
 ## 7) Rodar o backend
 Ainda em backend/:
@@ -80,8 +88,7 @@ As rotas disponiveis sao:
 {
   "nome": "Teste",
   "email": "teste@teste.com",
-  "senha": "123456",
-  "perfil": "cidadao"
+  "senha": "123456"
 }
 ```
 
@@ -106,13 +113,14 @@ O login retorna um cookie token HTTP-only. No Postman, habilite o envio de cooki
 ### 9.4) Logout
 - Metodo: POST
 - URL: http://localhost:3000/auth/logout
+- Esta rota tambem exige autenticacao via cookie token.
 
 ## 10) Testar a API com curl
 Registrar:
 ```bash
 curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"nome":"Teste","email":"teste@teste.com","senha":"123456","perfil":"cidadao"}'
+  -d '{"nome":"Teste","email":"teste@teste.com","senha":"123456"}'
 ```
 
 Login:
@@ -124,7 +132,22 @@ curl -X POST http://localhost:3000/auth/login \
 
 > Observacao: como o backend usa cookie HTTP-only, curl nao eh ideal para testar rotas protegidas.
 
-## 11) Observacoes finais
-- Nao existe suite de testes automatica no backend/package.json alem de um placeholder.
+## 11) Rodar os testes automatizados
+Os testes do backend usam Jest e nao precisam de banco de dados (o Prisma e mockado). Em backend/:
+```bash
+npm test
+```
+
+Tambem e possivel rodar cada grupo separadamente:
+```bash
+npm run test:unit
+```
+```bash
+npm run test:api
+```
+
+Os testes E2E (Playwright e Maestro) ficam na raiz do repositorio; veja o TESTES.md.
+
+## 12) Observacoes finais
 - Para rodar em outra maquina, instale Node.js e PostgreSQL (ou Docker), clone o repositorio e siga estes passos.
 - Sempre confirme que o banco esteja online antes de rodar npm run dev.

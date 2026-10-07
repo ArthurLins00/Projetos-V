@@ -1,6 +1,48 @@
 node_modules/
 
+# Variáveis de ambiente (versionar só os modelos .env.example)
+.env
+.env.*
+!.env.example
+
+# Uploads / fotos enviadas pelos usuários
+uploads/
+
+# Builds e artefatos gerados
+dist/
+build/
+web-build/
+.expo/
+*.tsbuildinfo
+
 # Relatórios e artefatos do Playwright
 e2e-report/
+e2e-reports/
 test-results/
+playwright-report/
 playwright/.cache/
+
+# Cobertura de testes
+coverage/
+
+# IDEs e editores
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Configurações locais de ferramentas
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
