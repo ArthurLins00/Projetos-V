@@ -1,0 +1,40 @@
+# Cadastro de um novo cidadão pela tela de registro e primeiro login com a conta criada
+appId: com.projetosv.fiscalize
+---
+- evalScript: ${output.email = 'maestro.' + Date.now() + '@teste.fiscalize'}
+
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "login-go-register"
+    timeout: 20000
+- tapOn:
+    id: "login-go-register"
+
+- tapOn:
+    id: "register-name"
+- inputText: "Maestro Teste"  # sem acento: o inputText do Maestro no Android não digita acentos de forma confiável
+- tapOn:
+    id: "register-email"
+- inputText: ${output.email}
+- tapOn:
+    id: "register-password"
+- inputText: "SenhaMaestro@123"
+- hideKeyboard
+- tapOn:
+    id: "register-submit"
+
+- extendedWaitUntil:
+    visible: "Conta criada! Você já pode fazer login."
+    timeout: 10000
+- tapOn: "OK"
+
+# Volta para o login e entra com a conta nova
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: ${output.email}
+      PASSWORD: "SenhaMaestro@123"
+- assertVisible: "Olá, Maestro Teste"
+- assertVisible: "Nenhuma demanda registrada ainda."

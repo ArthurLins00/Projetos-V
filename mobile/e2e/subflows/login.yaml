@@ -1,0 +1,33 @@
+# Subfluxo reutilizável: abre o app limpo e faz login.
+# Variáveis: EMAIL e PASSWORD (padrão: cidadão criado pelo seed do backend)
+appId: com.projetosv.fiscalize
+env:
+  EMAIL: cidadao@fiscalize.gov.br
+  PASSWORD: Cidadao@123456
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      id: "login-email"
+    timeout: 20000
+- tapOn:
+    id: "login-email"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password"
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "login-submit"
+- extendedWaitUntil:
+    visible: "Minhas Demandas"
+    timeout: 15000
+# A lista só aparece depois que as demandas carregam (antes disso há um spinner);
+# esperar por ela também garante que a transição de tela do login terminou
+- extendedWaitUntil:
+    visible:
+      id: "demand-list"
+    timeout: 15000

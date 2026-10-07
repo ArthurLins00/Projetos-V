@@ -1,0 +1,6 @@
+node_modules/
+
+# Relatórios e artefatos do Playwright
+e2e-report/
+test-results/
+playwright/.cache/

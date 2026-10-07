@@ -1,0 +1,13 @@
+# Persistência de estado: após o login, fechar e reabrir o app mantém o usuário logado
+# (AuthContext restaura a sessão do SecureStore com useState + useEffect)
+appId: com.projetosv.fiscalize
+---
+- runFlow: subflows/login.yaml
+
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Minhas Demandas"
+    timeout: 20000
+- assertVisible:
+    id: "new-demand-button"

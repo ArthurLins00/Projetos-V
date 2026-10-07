@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Fiscalize",
+    "slug": "mobile",
+    "scheme": "projetosv",
+    "version": "1.0.0",
+    "platforms": ["android", "ios"],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.projetosv.fiscalize"
+    },
+    "android": {
+      "package": "com.projetosv.fiscalize",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O Fiscalize usa a câmera para fotografar as ocorrências.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Fiscalize usa sua localização para registrar onde a ocorrência aconteceu."
+        }
+      ]
+    ]
+  }
+}

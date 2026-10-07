@@ -30,7 +30,7 @@ export const demandController = {
   },
   async list(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { status, categoria, regiao, page, limit } = req.query;
+      const { status, categoria, regiao, busca, page, limit } = req.query;
 
       const result = await demandService.list({
         userId: req.user!.id,
@@ -38,6 +38,7 @@ export const demandController = {
         ...(status !== undefined && { status: String(status) }),
         ...(categoria !== undefined && { categoria: Number(categoria) }),
         ...(regiao !== undefined && { regiao: String(regiao) }),
+        ...(busca !== undefined && String(busca).trim() !== '' && { busca: String(busca).trim() }),
         page: page ? Math.max(1, Number(page)) : 1,
         limit: limit ? Math.min(100, Math.max(1, Number(limit))) : 20,
       });
@@ -106,6 +107,28 @@ async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
   }
 },
 
+async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    if (!id || Array.isArray(id)) {
+      throw new AppError(400, 'ID inválido');
+    }
+
+    const { photo } = req.body ?? {};
+
+    if (!photo || typeof photo !== 'string') {
+      throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
+    }
+
+    const result = await demandService.uploadPhoto(id, req.user!.id, photo);
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+},
+
 async delete(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
@@ -114,7 +137,7 @@ async delete(req: AuthRequest, res: Response, next: NextFunction) {
       throw new AppError(400, 'ID inválido');
     }
 
-    await demandService.deleteDemand(id, req.user!.id);
+    await demandService.deleteDemand(id, req.user!.id, req.user!.perfil);
 
     res.status(204).send();
   } catch (error) {

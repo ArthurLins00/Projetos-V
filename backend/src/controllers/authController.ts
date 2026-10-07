@@ -43,6 +43,14 @@ export const authController = {
       
       const { usuario, token } = await authService.login(email, senha);
 
+      // Seta o cookie com o token gerado (importante para manter a sessão na web)
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 86400000 // 1 dia
+      });
+
       res.status(200).json({
         id: usuario.id,
         nome: usuario.nome,
