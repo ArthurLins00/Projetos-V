@@ -3,3 +3,6 @@ dist/
 .env
 *.log
 uploads/
+.env.*
+!.env.example
+coverage/
