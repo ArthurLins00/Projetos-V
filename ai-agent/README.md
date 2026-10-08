@@ -3,7 +3,17 @@
 | | |
 |---|---|
 | **Grupo** | Grupo 8 |
-| **Membros** | _(preencher)_ |
+| **Membros** | 
+ARTHUR BORBA LINS
+ARTHUR RODRIGUES DE ANDRADE LIMA
+BRUNO DORNELAS COSTA CIRO DA PENHA
+BRUNO FELIPE DE CASTILHO GOMES REGO
+FELIPE CISNEIROS AGOSTINHO
+MICHELANGELO MORAIS DO REGO
+PAULO HENRIQUE ALVES DE BARROS PEREIRA
+RAMOM DE OLIVEIRA AGUIAR
+THYALLES ARAUJO CAMPOS
+VICTOR SIMAS AZEVEDO DE ALMEIDA |
 | **Turma** | 5º Período de ADS Regular |
 | **Projeto** | Fiscalize — Gestão de Demandas Urbanas |
 | **Trilha** | B — Chatbot / agente com ferramentas (Google Gemini API · Function Calling) |
@@ -33,7 +43,7 @@ competência e chamados) são **mockados em memória** e espelham o seed do back
 ### Passo a passo
 
 ```bash
-git clone https://github.com/victorsimasdev/Projetos-V.git
+git clone https://github.com/ArthurLins00/Projetos-V
 ```
 
 ```bash

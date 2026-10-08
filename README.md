@@ -165,3 +165,11 @@ sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.m
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
 - [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
+
+## Declaração de uso de I.A.
+
+---
+
+Declaro que utilizei as ferramentas de Inteligência Artificial Claude (Opus 5.5), da Anthropic, e Gemini (3.6 Flash), do Google, como apoio na elaboração desta atividade, para a geração de rascunhos, sugestões de código, revisão de textos e esclarecimento de dúvidas. Realizei análise crítica (curadoria) de todo o conteúdo gerado, verificando sua correção, adequação e aderência aos objetivos da atividade, e fiz os ajustes necessários. Não tratei dados pessoais no uso dessas ferramentas. Reconheço que as respostas geradas por IA podem conter imprecisões e assumo a responsabilidade integral pela versão final apresentada.
+
+---
