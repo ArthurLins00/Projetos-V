@@ -86,6 +86,7 @@ export function useDemandListViewModel() {
 
   const openDemand = (id: string) => router.push(`/(app)/demand/${id}`);
   const createDemand = () => router.push('/(app)/create-demand');
+  const openAssistant = () => router.push('/(app)/assistant');
 
   return {
     user,
@@ -102,6 +103,7 @@ export function useDemandListViewModel() {
     loadMore,
     openDemand,
     createDemand,
+    openAssistant,
     signOut,
   };
 }

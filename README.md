@@ -24,6 +24,9 @@ cidadão acompanha o andamento pelo app até a resolução.
   **filtro por status**, paginação e "puxar para atualizar".
 - **Detalhe** da ocorrência com foto, coordenadas e histórico de alterações.
 - **Editar e remover** a ocorrência enquanto ela ainda não está em andamento.
+- **Assistente de IA** (balão 💬 na tela inicial): responde em linguagem natural sobre o status de
+  um ou mais chamados, usando Gemini com function calling. O cidadão consulta só os próprios
+  chamados; gestor e admin, todos. Detalhes em [`ai-agent/README.md`](ai-agent/README.md#integração-com-o-app-fiscalize).
 - **Perfis:** Cidadão, Gestor e Admin, com permissões hierárquicas. O gestor vê a fila do seu órgão
   e atualiza o status das ocorrências.
 
@@ -57,6 +60,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── backend/          API REST (Express + Prisma), seed do banco e testes unitários/API
 ├── mobile/           App React Native (Expo) e fluxos E2E do Maestro (mobile/e2e)
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
+├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
 ├── TESTES.md         O que cada nível de teste cobre e como rodar
 └── package.json      Scripts que rodam toda a suíte de testes
 ```
@@ -161,3 +165,11 @@ sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.m
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
 - [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
+
+## Declaração de uso de I.A.
+
+---
+
+Declaro que utilizei as ferramentas de Inteligência Artificial Claude (Opus 5.5), da Anthropic, e Gemini (3.6 Flash), do Google, como apoio na elaboração desta atividade, para a geração de rascunhos, sugestões de código, revisão de textos e esclarecimento de dúvidas. Realizei análise crítica (curadoria) de todo o conteúdo gerado, verificando sua correção, adequação e aderência aos objetivos da atividade, e fiz os ajustes necessários. Não tratei dados pessoais no uso dessas ferramentas. Reconheço que as respostas geradas por IA podem conter imprecisões e assumo a responsabilidade integral pela versão final apresentada.
+
+---

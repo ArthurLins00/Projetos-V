@@ -28,3 +28,8 @@ export function getAllowedOrigins(): string[] {
 
   return fromEnv;
 }
+
+// Serviço do assistente de IA (pasta ai-agent/, `npm run serve`).
+// 127.0.0.1 em vez de localhost: o agente escuta só em IPv4 por padrão.
+export const AI_AGENT_URL = (process.env.AI_AGENT_URL?.trim() || 'http://127.0.0.1:3333').replace(/\/$/, '');
+export const AI_AGENT_SECRET = process.env.AI_AGENT_SECRET?.trim() || '';

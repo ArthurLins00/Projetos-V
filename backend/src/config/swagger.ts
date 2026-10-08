@@ -53,6 +53,7 @@ export const openApiSpec = {
     { name: 'Gestor', description: 'Painel do gestor: dashboard, equipe e fila de chamados' },
     { name: 'Metrics', description: 'Métricas e indicadores (gestor / admin)' },
     { name: 'Admin', description: 'Administração: órgãos, usuários, regras de competência e auditoria' },
+    { name: 'AI', description: 'Assistente de IA (Gemini) para consulta de status de chamados' },
   ],
 
   components: {
@@ -531,6 +532,66 @@ export const openApiSpec = {
           400: { $ref: '#/components/responses/BadRequest' },
           401: { $ref: '#/components/responses/Unauthorized' },
           404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+
+    /* ===================== AI ===================== */
+    '/ai/chat': {
+      post: {
+        tags: ['AI'],
+        summary: 'Conversar com o assistente sobre o status dos chamados',
+        description:
+          'Encaminha a mensagem ao serviço do agente (pasta ai-agent, `npm run serve`). O agente consulta ' +
+          '`GET /demands` com o token do próprio usuário: cidadão vê só os seus chamados; gestor e admin veem todos. ' +
+          'Envie o `sessionId` retornado para manter o contexto da conversa.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: {
+                  message: { type: 'string', maxLength: 1000, example: 'Qual o status do DEM-20261005-ABCD?' },
+                  sessionId: { type: 'string', pattern: '^[\\w-]{1,64}$' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Resposta do assistente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    sessionId: { type: 'string' },
+                    reply: { type: 'string' },
+                    chamados: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          protocolo: { type: 'string' },
+                          titulo: { type: 'string' },
+                          status: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          502: { description: 'Falha ao obter a resposta do modelo' },
+          503: { description: 'Serviço do agente indisponível' },
         },
       },
     },

@@ -7,6 +7,7 @@ export default function AppLayout() {
       <Stack.Screen name="create-demand" options={{ title: 'Nova Demanda' }} />
       <Stack.Screen name="demand/[id]/index" options={{ title: 'Detalhes da Demanda' }} />
       <Stack.Screen name="demand/[id]/edit" options={{ title: 'Editar Demanda' }} />
+      <Stack.Screen name="assistant" options={{ title: 'Assistente Fiscalize' }} />
     </Stack>
   );
 }
