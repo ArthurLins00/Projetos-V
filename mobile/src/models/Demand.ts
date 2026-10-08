@@ -65,10 +65,19 @@ export function isDemandEditable(demand: Demand) {
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-  Aberto: '#E6A23C',
-  'Em Análise': '#409EFF',
-  Aguardando: '#909399',
-  'Em Andamento': '#007BFF',
-  Resolvido: '#28A745',
-  Fechado: '#DC3545',
+  Aberto: '#D97706',
+  'Em Análise': '#7C3AED',
+  Aguardando: '#64748B',
+  'Em Andamento': '#2563EB',
+  Resolvido: '#16A34A',
+  Fechado: '#DC2626',
+};
+
+export const STATUS_COLORS_DARK: Record<string, string> = {
+  Aberto: '#FBBF24',
+  'Em Análise': '#A78BFA',
+  Aguardando: '#94A3B8',
+  'Em Andamento': '#60A5FA',
+  Resolvido: '#4ADE80',
+  Fechado: '#F87171',
 };

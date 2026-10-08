@@ -1,33 +1,52 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { Text, Pressable, View } from 'react-native';
 import { useRegisterViewModel } from '../viewmodels/useRegisterViewModel';
+import { AuthLayout } from '../components/AuthLayout';
+import { Button, TextField } from '../components/ui';
+import { makeStyles } from '../theme';
 
 export function RegisterView() {
+  const styles = useStyles();
   const vm = useRegisterViewModel();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Criar Conta</Text>
-      <TextInput testID="register-name" style={styles.input} placeholder="Nome completo" value={vm.name} onChangeText={vm.setName} />
-      <TextInput testID="register-email" style={styles.input} placeholder="E-mail" value={vm.email} onChangeText={vm.setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <TextInput testID="register-password" style={styles.input} placeholder="Senha" value={vm.password} onChangeText={vm.setPassword} secureTextEntry />
+    <AuthLayout title="Criar Conta" subtitle="Leva menos de um minuto para começar a fiscalizar" icon="person-add">
+      <TextField testID="register-name" label="Nome completo" icon="person-outline" placeholder="Seu nome" value={vm.name} onChangeText={vm.setName} />
+      <TextField
+        testID="register-email"
+        label="E-mail"
+        icon="mail-outline"
+        placeholder="voce@email.com"
+        value={vm.email}
+        onChangeText={vm.setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <TextField
+        testID="register-password"
+        label="Senha"
+        icon="lock-closed-outline"
+        placeholder="Crie uma senha"
+        value={vm.password}
+        onChangeText={vm.setPassword}
+        secureTextEntry
+      />
 
-      <TouchableOpacity testID="register-submit" accessibilityRole="button" style={styles.button} onPress={vm.register} disabled={vm.loading}>
-        {vm.loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrar</Text>}
-      </TouchableOpacity>
+      <Button testID="register-submit" title="Registrar" onPress={vm.register} loading={vm.loading} style={styles.submit} />
 
-      <TouchableOpacity testID="register-go-login" accessibilityRole="link" onPress={vm.goBack}>
-        <Text style={styles.link}>Já tem uma conta? Voltar</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Já tem uma conta?</Text>
+        <Pressable testID="register-go-login" accessibilityRole="link" hitSlop={8} onPress={vm.goBack}>
+          <Text style={styles.link}>Entrar</Text>
+        </Pressable>
+      </View>
+    </AuthLayout>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 30, color: '#333' },
-  input: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
-  button: { backgroundColor: '#28A745', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  link: { textAlign: 'center', color: '#007BFF', marginTop: 20 }
-});
+const useStyles = makeStyles((colors) => ({
+  submit: { marginTop: 6 },
+  footer: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 20 },
+  footerText: { color: colors.textMuted, fontSize: 14 },
+  link: { color: colors.primary, fontWeight: '700', fontSize: 14 },
+}));
