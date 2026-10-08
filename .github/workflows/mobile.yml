@@ -1,0 +1,37 @@
+name: Mobile
+
+# Typecheck do app. Os fluxos de tela (Maestro) precisam de emulador e rodam fora do CI.
+# Em main/dev (push e PR) quem roda o módulo é o ci.yml, junto com o resto do projeto.
+on:
+  push:
+    branches-ignore: [main, dev]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile.yml'
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ── App mobile: typecheck ──
+  mobile:
+    name: Mobile (typecheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
