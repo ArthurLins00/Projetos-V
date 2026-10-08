@@ -17,7 +17,6 @@ model admin {
   usuario          usuario   @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model categoria {
   id                Int                 @id @default(autoincrement())
   nome              String              @unique @db.VarChar(100)
@@ -33,8 +32,6 @@ model categoria {
   @@index([nome], map: "idx_categoria_nome")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model chamado {
   id                 String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   protocolo          String           @unique @db.VarChar(20)
@@ -82,7 +79,6 @@ model chamado {
   @@index([orgaoid, sladeadline], map: "idx_sla_vencido", where: raw("(status <> ALL (ARRAY['Resolvido'::status_chamado, 'Fechado'::status_chamado]))"))
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model cidadao {
   id       String    @id @db.Uuid
   cpf      String?   @unique @db.VarChar(11)
@@ -106,7 +102,6 @@ model gestor {
   @@index([orgaoid], map: "idx_gestor_orgao")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model manager_profile {
   id                      String                    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   usuarioid               String                    @unique @db.Uuid
@@ -126,7 +121,6 @@ model manager_profile {
   @@index([usuarioid], map: "idx_manager_profile_usuario")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model notificacao {
   id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   usuarioid String           @db.Uuid
@@ -148,7 +142,6 @@ model notificacao {
   @@index([usuarioid, lida, criadoem(sort: Desc)], map: "idx_notificacao_usuario_lida")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model notification_preference {
   id               String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   managerprofileid String          @db.Uuid
@@ -161,7 +154,6 @@ model notification_preference {
   @@index([managerprofileid], map: "idx_notif_pref_manager")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model orgao {
   id                                                           String              @id @db.VarChar(10)
   nome                                                         String              @unique @db.VarChar(200)
@@ -196,7 +188,6 @@ model orgao_categoria {
   @@index([categoriaid], map: "idx_orgao_categoria_categoria")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model regra_competencia {
   id                                               String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   categoriaid                                      Int
@@ -217,7 +208,6 @@ model regra_competencia {
   @@index([orgaosecundarioid], map: "idx_regra_orgao_secundario", where: raw("(orgaosecundarioid IS NOT NULL)"))
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model timeline_event {
   id           String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   chamadoid    String        @db.Uuid
@@ -236,7 +226,6 @@ model timeline_event {
   @@index([tipo], map: "idx_timeline_tipo")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model usuario {
   id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   nome          String          @db.VarChar(150)

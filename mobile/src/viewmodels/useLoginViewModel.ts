@@ -17,7 +17,6 @@ export function useLoginViewModel() {
     }
     try {
       setIsSubmitting(true);
-      // Após o signIn, o _layout raiz redireciona para a Home
       await signIn(loginEmail.trim(), loginPassword);
     } catch (error) {
       Alert.alert('Falha no Login', getApiErrorMessage(error, 'E-mail ou senha incorretos.'));

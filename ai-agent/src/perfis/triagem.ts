@@ -3,7 +3,6 @@ import { classificarERotearOcorrencia, type ClassificarArgs } from '../tools/cla
 import { buscarChamadosSimilares, type BuscarArgs } from '../tools/buscarChamadosSimilares';
 import type { AgentProfile } from './types';
 
-/** Perfil da entrega da AV2: triagem de uma nova ocorrência (dados mockados em memória). */
 export const SYSTEM_PROMPT_TRIAGEM = `
 Você é o **Assistente Fiscalize**, agente de triagem de demandas urbanas da cidade do Recife.
 Sua função é ajudar o cidadão a registrar uma ocorrência (buraco, poste apagado, vazamento, esgoto,
@@ -39,7 +38,6 @@ Nunca exponha nem peça dados pessoais de terceiros. Informe apenas protocolo, d
 export const PERFIL_TRIAGEM: AgentProfile = {
   nome: 'triagem',
   systemPrompt: SYSTEM_PROMPT_TRIAGEM,
-  // As descrições são lidas pelo modelo para decidir QUANDO e COMO chamar cada ferramenta.
   declarations: [
     {
       name: 'classificar_e_rotear_ocorrencia',

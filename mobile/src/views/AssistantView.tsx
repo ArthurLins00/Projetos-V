@@ -16,8 +16,6 @@ import { useAssistantViewModel } from '../viewmodels/useAssistantViewModel';
 import { ChatMessage } from '../models/Assistant';
 import { STATUS_COLORS } from '../models/Demand';
 
-// O modelo responde em Markdown simples: listas viram "•", *itálico* perde os asteriscos
-// e **negrito** é renderizado
 function toPlainMarkdown(text: string) {
   return text
     .replace(/^[ \t]*[*-][ \t]+/gm, '• ')

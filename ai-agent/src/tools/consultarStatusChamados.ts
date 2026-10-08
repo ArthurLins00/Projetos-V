@@ -12,15 +12,9 @@ export interface ConsultaResultado {
   total: number;
   resumo_por_status: Record<string, number>;
   chamados: ChamadoResumo[];
-  /** Protocolos que não existem OU que o usuário não tem permissão para ver (mesma resposta, de propósito). */
   nao_encontrados: string[];
 }
 
-/**
- * Tool — acompanhamento de chamados.
- * Com `protocolos`: consulta cada um. Sem protocolos: lista os chamados visíveis ao usuário
- * (opcionalmente filtrados por status). O escopo por perfil vem da fonte de dados (backend).
- */
 export async function consultarStatusChamados(args: ConsultarArgs, fonte: ChamadosSource): Promise<ConsultaResultado> {
   const status = args.status ? String(args.status) : undefined;
   if (status && !(STATUS_EXIBICAO as readonly string[]).includes(status)) {

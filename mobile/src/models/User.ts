@@ -7,7 +7,6 @@ export interface User {
   perfil: Perfil;
 }
 
-// Resposta de POST /auth/login
 export interface LoginResponse extends User {
   token: string;
 }

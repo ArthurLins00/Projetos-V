@@ -18,7 +18,6 @@ import 'dotenv/config';
 const app = express();
 
 app.use(createCorsMiddleware());
-// Upload de foto (base64) precisa de um limite maior que o padrão de 100kb; registrado antes do parser global
 app.use('/demands/:id/photo', express.json({ limit: PHOTO_BODY_LIMIT }));
 app.use(express.json());
 app.use(cookieParser());

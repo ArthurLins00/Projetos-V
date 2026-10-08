@@ -8,7 +8,6 @@ import { Demand } from '../models/Demand';
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 400;
 
-// Listagem + pesquisa (R do CRUD)
 export function useDemandListViewModel() {
   const router = useRouter();
   const { user, signOut } = useAuth();
@@ -24,7 +23,6 @@ export function useDemandListViewModel() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Descarta respostas antigas quando o filtro muda antes da requisição terminar
   const requestId = useRef(0);
 
   const fetchPage = useCallback(async (targetPage: number) => {
@@ -43,7 +41,6 @@ export function useDemandListViewModel() {
       setError(null);
     } catch (err) {
       if (currentRequest !== requestId.current) return;
-      // O erro aparece na própria lista (ListEmptyComponent)
       setError(getApiErrorMessage(err, 'Não foi possível carregar as demandas.'));
     } finally {
       if (currentRequest === requestId.current) {
@@ -54,13 +51,11 @@ export function useDemandListViewModel() {
     }
   }, [debouncedSearch, status]);
 
-  // Debounce da pesquisa para não chamar a API a cada tecla
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Recarrega ao voltar para a tela (após criar/editar/excluir) e quando filtros mudam
   useFocusEffect(
     useCallback(() => {
       fetchPage(1);

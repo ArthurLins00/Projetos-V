@@ -8,7 +8,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Câmera do dispositivo via Expo Camera (a permissão é pedida pelo ViewModel antes de abrir)
 export function CameraCapture({ visible, onCapture, onClose }: Props) {
   const cameraRef = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -19,7 +18,6 @@ export function CameraCapture({ visible, onCapture, onClose }: Props) {
     if (!cameraRef.current || !ready || capturing) return;
     try {
       setCapturing(true);
-      // base64 é o que vai para o backend; quality 0.5 mantém o upload leve
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.5, base64: true });
       if (photo?.uri && photo.base64) onCapture({ uri: photo.uri, base64: photo.base64 });
     } catch {

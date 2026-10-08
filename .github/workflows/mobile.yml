@@ -1,7 +1,5 @@
 name: Mobile
 
-# Typecheck do app. Os fluxos de tela (Maestro) precisam de emulador e rodam fora do CI.
-# Em main/dev (push e PR) quem roda o módulo é o ci.yml, junto com o resto do projeto.
 on:
   push:
     branches-ignore: [main, dev]
@@ -19,7 +17,6 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  # ── App mobile: typecheck ──
   mobile:
     name: Mobile (typecheck)
     runs-on: ubuntu-latest

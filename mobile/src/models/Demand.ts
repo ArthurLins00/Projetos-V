@@ -8,24 +8,22 @@ export interface DemandLog {
   timestamp: string;
 }
 
-// Ocorrência, no formato retornado pelo backend (GET /demands e GET /demands/:id)
 export interface Demand {
   id: string;
   protocolo: string;
   title: string;
   description: string;
-  status: string; // texto de exibição: "Aberto", "Em Análise", ...
+  status: string;
   location: string;
   latitude: number;
   longitude: number;
   category: Pick<Category, 'id' | 'nome'>;
-  photoUrl?: string | null; // caminho relativo no backend (ex.: /uploads/xxx.jpg)
+  photoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   logs?: DemandLog[];
 }
 
-// Corpo aceito por POST /demands e PUT /demands/:id
 export interface DemandPayload {
   title: string;
   description: string;
@@ -50,7 +48,6 @@ export interface DemandListResponse {
   totalPages: number;
 }
 
-// Filtros de status: `value` é o valor do enum aceito pela API
 export const STATUS_FILTERS: { label: string; value?: string }[] = [
   { label: 'Todos' },
   { label: 'Aberto', value: 'Aberto' },
@@ -61,7 +58,6 @@ export const STATUS_FILTERS: { label: string; value?: string }[] = [
   { label: 'Removidas', value: 'Fechado' },
 ];
 
-// O backend bloqueia edição/remoção pelo cidadão nesses status
 const LOCKED_STATUSES = ['Em Andamento', 'Resolvido', 'Fechado'];
 
 export function isDemandEditable(demand: Demand) {

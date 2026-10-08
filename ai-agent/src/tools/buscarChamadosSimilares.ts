@@ -10,7 +10,6 @@ export interface BuscarArgs {
   longitude: number;
 }
 
-/** Projeção pública de um chamado: sem nenhum dado pessoal do solicitante (RN-04). */
 export interface ChamadoSimilar {
   protocolo: string;
   distancia_aproximada_metros: number;
@@ -25,11 +24,6 @@ export interface BuscaResultado {
   chamados: ChamadoSimilar[];
 }
 
-/**
- * Tool 2 — RF-05, RF-18, RN-04.
- * Lista chamados NÃO finalizados da mesma categoria em até 200 m, retornando
- * apenas protocolo, distância aproximada (arredondada a 10 m) e status.
- */
 export function buscarChamadosSimilares(args: BuscarArgs): BuscaResultado {
   const categoriaId = Number(args.categoria_id);
   const categoria = CATEGORIAS.find((c) => c.id === categoriaId && c.ativa);
@@ -43,7 +37,6 @@ export function buscarChamadosSimilares(args: BuscarArgs): BuscaResultado {
     .map((c) => ({ chamado: c, distancia: distanciaMetros(latitude, longitude, c.latitude, c.longitude) }))
     .filter(({ distancia }) => distancia <= RAIO_MAXIMO_METROS)
     .sort((a, b) => a.distancia - b.distancia)
-    // Projeção explícita: solicitante/descrição nunca são copiados para a saída.
     .map(({ chamado, distancia }) => ({
       protocolo: chamado.protocolo,
       distancia_aproximada_metros: Math.round(distancia / 10) * 10,

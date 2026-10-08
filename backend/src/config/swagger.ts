@@ -1,21 +1,7 @@
-/**
- * Documentação OpenAPI 3.0 (Swagger) — gerada a partir da análise de todo o backend.
- *
- * Expõe duas rotas (registradas em src/server.ts):
- *   - GET /docs        → interface Swagger UI (carregada via CDN externo)
- *   - GET /docs.json   → especificação OpenAPI crua (consumível por ferramentas externas)
- *
- * "Link externo": a interface Swagger UI é servida a partir do CDN público
- * https://unpkg.com/swagger-ui-dist, portanto não há dependência npm adicional.
- * A especificação /docs.json também pode ser colada/importada no editor externo
- * https://editor.swagger.io para visualizar e exportar a documentação.
- */
-
 import { PORT } from './env';
 
 const BEARER = [{ cookieAuth: [] as string[] }, { bearerAuth: [] as string[] }];
 
-/** Resposta de erro padronizada (errorMiddleware.ts). */
 const errorResponse = (description: string) => ({
   description,
   content: {
@@ -186,7 +172,6 @@ export const openApiSpec = {
   },
 
   paths: {
-    /* ===================== HEALTH ===================== */
     '/health': {
       get: {
         tags: ['Health'],
@@ -216,7 +201,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== AUTH ===================== */
     '/auth/register': {
       post: {
         tags: ['Auth'],
@@ -338,7 +322,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== DEMANDS ===================== */
     '/demands': {
       get: {
         tags: ['Demands'],
@@ -499,7 +482,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== CATEGORIES ===================== */
     '/categories': {
       get: {
         tags: ['Categories'],
@@ -536,7 +518,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== AI ===================== */
     '/ai/chat': {
       post: {
         tags: ['AI'],
@@ -596,7 +577,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== USERS ===================== */
     '/users': {
       get: {
         tags: ['Users'],
@@ -654,7 +634,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== GESTOR ===================== */
     '/gestor/dashboard': {
       get: {
         tags: ['Gestor'],
@@ -820,7 +799,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== METRICS ===================== */
     '/metrics/total-demands': {
       get: {
         tags: ['Metrics'],
@@ -858,7 +836,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — ORGÃOS ===================== */
     '/admin/organs': {
       get: {
         tags: ['Admin'],
@@ -989,7 +966,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — USUÁRIOS ===================== */
     '/admin/users': {
       get: {
         tags: ['Admin'],
@@ -1091,7 +1067,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — REGRAS DE COMPETÊNCIA ===================== */
     '/admin/routing-rules': {
       get: {
         tags: ['Admin'],
@@ -1197,7 +1172,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — AUDITORIA ===================== */
     '/admin/audit-logs': {
       get: {
         tags: ['Admin'],
@@ -1232,10 +1206,6 @@ export const openApiSpec = {
   },
 } as const;
 
-/**
- * HTML da interface Swagger UI. Os assets (JS/CSS) são carregados de um CDN
- * externo (unpkg) — daí o "link externo". A especificação é buscada em /docs.json.
- */
 export const swaggerHtml = `<!DOCTYPE html>
 <html lang="pt-br">
   <head>

@@ -1,9 +1,5 @@
 name: Regressão completa
 
-# Executa toda a suíte automatizada da TAS (unitários, API e E2E) em um único job.
-# Acionamento manual: Actions → "Regressão completa" → Run workflow.
-# Também roda diariamente e é reutilizado pelo backend.yml (e, por ele, pelo ci.yml,
-# que cobre os PRs para a main).
 on:
   workflow_dispatch:
   workflow_call:
@@ -64,10 +60,6 @@ jobs:
           npx prisma generate
           npx prisma migrate deploy
           npm run seed
-
-      # ── Níveis de teste ──
-      # Os steps de API e E2E rodam mesmo se o nível anterior falhar, para que o
-      # resultado de cada nível apareça; qualquer falha marca o job como falho.
 
       - name: Testes Unitários
         working-directory: backend

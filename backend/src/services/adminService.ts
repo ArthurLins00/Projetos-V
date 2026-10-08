@@ -220,9 +220,6 @@ export const adminService = {
     slaHoras: number | undefined,
     prioridade: prioridadeEnum
   ) {
-    // ========================
-    // 1. VALIDAR CAMPOS OBRIGATÓRIOS E PRIORIDADE
-    // ========================
     if (!categoriaId || !orgaoprincipalId) {
       throw new AppError(
         400,
@@ -230,7 +227,6 @@ export const adminService = {
       );
     }
 
-    // Validar se a prioridade está no enum válido
     if (!prioridade || !Object.keys(prioridadeEnum).includes(prioridade)) {
       throw new AppError(
         400,
@@ -238,9 +234,6 @@ export const adminService = {
       );
     }
 
-    // ========================
-    // 2. VALIDAR CATEGORIA EXISTE
-    // ========================
     const categoria = await routingRuleRepository.categoriaExists(categoriaId);
 
     if (!categoria) {
@@ -250,9 +243,6 @@ export const adminService = {
       );
     }
 
-    // ========================
-    // 3. VALIDAR ÓRGÃO PRINCIPAL EXISTE E ESTÁ ATIVO
-    // ========================
     const orgaoPrincipal = await routingRuleRepository.orgaoExists(orgaoprincipalId);
 
     if (!orgaoPrincipal) {
@@ -269,9 +259,6 @@ export const adminService = {
       );
     }
 
-    // ========================
-    // 4. VALIDAR ÓRGÃO SECUNDÁRIO SE FORNECIDO (PODE ESTAR INATIVO)
-    // ========================
     if (orgaosecundarioId) {
       const orgaoSecundario = await routingRuleRepository.orgaoExists(orgaosecundarioId);
 
@@ -283,9 +270,6 @@ export const adminService = {
       }
     }
 
-    // ========================
-    // 5. VALIDAR RELACIONAMENTO CATEGORIA-ÓRGÃO PRINCIPAL
-    // ========================
     const relacionamento = await routingRuleRepository.categoriaBelongsToOrgao(
       categoriaId,
       orgaoprincipalId
@@ -298,9 +282,6 @@ export const adminService = {
       );
     }
 
-    // ========================
-    // 6. VALIDAR DUPLICATA (MESMA CATEGORIA + SUBCATEGORIA)
-    // ========================
     const regraExistente = await routingRuleRepository.regraExistsByCategoriaySubcategoria(
       categoriaId,
       subcategoria
@@ -313,14 +294,8 @@ export const adminService = {
       );
     }
 
-    // ========================
-    // 7. DETERMINAR SLA
-    // ========================
     const slaParaRegra = slaHoras !== undefined ? slaHoras : orgaoPrincipal.slahoras;
 
-    // ========================
-    // 8. CRIAR REGRA
-    // ========================
     const regra = await routingRuleRepository.create(
       categoriaId,
       subcategoria,
@@ -333,9 +308,6 @@ export const adminService = {
     return regra;
   },
 
-  // ========================
-  // 9. LISTA REGRA
-  // ========================
   async listRoutingRules(
     page: number,
     limit: number,
@@ -344,10 +316,6 @@ export const adminService = {
   ) {
     return routingRuleRepository.findAll(page, limit, organ_id, category_id);
   },
-
-  // ========================
-  // 10. ATUALIZA REGRA
-  // ========================
 
   async updateRoutingRule(
     id: string,
@@ -360,24 +328,20 @@ export const adminService = {
       prioridade?: prioridadeEnum;
     }
   ) {
-    // 1. Verifica se a regra existe
     const regraExistente = await routingRuleRepository.findById(id);
     if (!regraExistente) {
       throw new AppError(404, `Regra de competência com ID "${id}" não encontrada.`);
     }
 
-    // Valores efetivos (merge com o que já existe)
     const categoriaId = data.categoriaId ?? regraExistente.categoriaid;
     const orgaoprincipalId = data.orgaoprincipalId ?? regraExistente.orgaoprincipalid;
     const subcategoria = data.subcategoria ?? regraExistente.subcategoria;
 
-    // 2. Valida categoria se fornecida
     const categoria = await routingRuleRepository.categoriaExists(categoriaId);
     if (!categoria) {
       throw new AppError(404, `Categoria com ID ${categoriaId} não encontrada.`);
     }
 
-    // 3. Valida órgão principal se fornecido
     const orgaoPrincipal = await routingRuleRepository.orgaoExists(orgaoprincipalId);
     if (!orgaoPrincipal) {
       throw new AppError(404, `Órgão principal com ID "${orgaoprincipalId}" não encontrado.`);
@@ -386,7 +350,6 @@ export const adminService = {
       throw new AppError(400, `O órgão "${orgaoPrincipal.nome}" não está ativo.`);
     }
 
-    // 4. Valida órgão secundário se fornecido
     if (data.orgaosecundarioId) {
       const orgaoSecundario = await routingRuleRepository.orgaoExists(data.orgaosecundarioId);
       if (!orgaoSecundario) {
@@ -394,7 +357,6 @@ export const adminService = {
       }
     }
 
-    // 5. Valida relacionamento categoria ↔ órgão principal
     const relacionamento = await routingRuleRepository.categoriaBelongsToOrgao(
       categoriaId,
       orgaoprincipalId
@@ -406,7 +368,6 @@ export const adminService = {
       );
     }
 
-    // 6. Valida duplicata — ignora a própria regra
     const duplicata = await routingRuleRepository.regraExistsByCategoriaySubcategoriaExcluindo(
       categoriaId,
       subcategoria,
@@ -440,7 +401,6 @@ export const adminService = {
       }),
     };
 
-    // 7. Atualiza
     return routingRuleRepository.update(id, updateData);
   },
 

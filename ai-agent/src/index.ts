@@ -24,9 +24,6 @@ const CASOS_ACOMPANHAMENTO = [
   'E o protocolo DEM-20261003-E8SG?   (do vizinho: cidadão não vê; admin vê)',
 ];
 
-// npm start                                  → perfil triagem (entrega da AV2)
-// npm start -- --acompanhamento              → consulta de status como cidadão (dados mockados)
-// npm start -- --acompanhamento --admin      → consulta de status como admin (vê todos)
 const { values: flags } = parseArgs({
   options: { acompanhamento: { type: 'boolean' }, admin: { type: 'boolean' } },
 });
@@ -57,7 +54,7 @@ async function main() {
     try {
       linha = (await rl.question(ciano('Você › '))).trim();
     } catch {
-      break; // stdin fechado
+      break;
     }
     if (!linha) continue;
 

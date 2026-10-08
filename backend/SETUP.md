@@ -20,17 +20,11 @@ Instruções completas para configurar o ambiente de desenvolvimento do backend 
 Abra um terminal e execute:
 
 ```bash
-# Verificar Node.js
 node --version
-# Esperado: v18.x.x ou superior
 
-# Verificar npm
 npm --version
-# Esperado: 8.x.x ou superior
 
-# Verificar Git
 git --version
-# Esperado: git version 2.x.x ou superior
 ```
 
 ## 🔧 Setup Automático (Recomendado)
@@ -52,7 +46,6 @@ chmod +x setup.sh
 
 #### **Windows (PowerShell)**
 ```powershell
-# Abra como Administrador e execute:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\setup.sh
 ```
@@ -64,7 +57,6 @@ bash setup.sh
 
 #### **Windows (CMD)**
 ```cmd
-# Copie o conteúdo de setup.sh e execute passo a passo
 npm install
 npx prisma generate
 npx prisma migrate dev
@@ -75,28 +67,21 @@ npx prisma migrate dev
 O script cria um arquivo `.env` automaticamente. Edite-o com suas configurações:
 
 ```bash
-# Abra o arquivo .env em seu editor
-code .env  # VSCode
-# ou use qualquer outro editor
+code .env
 ```
 
 Exemplo de configuração:
 
 ```env
-# Banco de Dados
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/fiscalize?schema=public"
 
-# JWT
 JWT_SECRET="sua_chave_secreta_super_segura_aqui_123"
 JWT_EXPIRATION="24h"
 
-# Servidor
 PORT=3000
 
-# Frontend URL
 FRONTEND_URL="http://localhost:3001"
 
-# Ambiente
 NODE_ENV="development"
 ```
 
@@ -133,10 +118,8 @@ npx prisma generate
 ### 3. Criar/Sincronizar banco de dados
 
 ```bash
-# Criar nova migração (recomendado na primeira vez)
 npx prisma migrate dev
 
-# OU sincronizar com schema existente
 npx prisma db push
 ```
 
@@ -159,10 +142,8 @@ npx prisma db seed
 ### 6. Iniciar servidor
 
 ```bash
-# Modo desenvolvimento (com auto-reload)
 npm run dev
 
-# Modo produção
 npm run build
 npm start
 ```
@@ -174,23 +155,23 @@ npm start
 ```
 backend/
 ├── src/
-│   ├── config/          # Configurações da aplicação
-│   ├── controllers/      # Controladores de rotas
-│   ├── middlewares/      # Middlewares (auth, cors, etc)
-│   ├── repositories/     # Acesso ao banco de dados
-│   ├── routes/          # Definição de rotas
-│   ├── services/        # Lógica de negócio
-│   ├── utils/           # Utilitários
-│   └── server.ts        # Arquivo principal
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── repositories/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   └── server.ts
 ├── prisma/
-│   ├── schema.prisma    # Schema do banco de dados
-│   └── seed.ts          # Seed (dados iniciais)
-├── tests/               # Testes automatizados
-├── .env.example         # Exemplo de variáveis de ambiente
-├── package.json         # Dependências e scripts
-├── tsconfig.json        # Configuração TypeScript
-├── setup.sh             # Script de setup automático
-└── SETUP.md            # Este arquivo
+│   ├── schema.prisma
+│   └── seed.ts
+├── tests/
+├── .env.example
+├── package.json
+├── tsconfig.json
+├── setup.sh
+└── SETUP.md
 ```
 
 ---
@@ -238,7 +219,6 @@ npx prisma migrate dev --name init
 ### Usando cURL
 
 ```bash
-# 1. Registrar novo usuário
 curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
   -d '{
@@ -247,7 +227,6 @@ curl -X POST http://localhost:3000/auth/register \
     "senha": "senha123"
   }'
 
-# 2. Fazer login
 curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
@@ -256,12 +235,10 @@ curl -X POST http://localhost:3000/auth/login \
   }' \
   -c cookies.txt
 
-# 3. Consultar dados do usuário (com cookie)
 curl -X GET http://localhost:3000/auth/me \
   -H "Content-Type: application/json" \
   -b cookies.txt
 
-# 4. Fazer logout (com cookie)
 curl -X POST http://localhost:3000/auth/logout \
   -H "Content-Type: application/json" \
   -b cookies.txt
@@ -278,23 +255,19 @@ curl -X POST http://localhost:3000/auth/logout \
 ## 📦 Scripts disponíveis
 
 ```bash
-# Desenvolvimento
-npm run dev              # Inicia servidor com hot-reload
+npm run dev
 
-# Build e Produção
-npm run build            # Compila TypeScript
-npm start                # Inicia servidor compilado
+npm run build
+npm start
 
-# Testes
-npm test                 # Executa testes
-npm run test:watch      # Testes em modo watch
+npm test
+npm run test:watch
 
-# Prisma
-npx prisma generate      # Gera Prisma Client
-npx prisma migrate dev   # Cria/executa migrações
-npx prisma db push       # Sincroniza schema
-npx prisma studio       # Abre interface gráfica
-npx prisma db seed      # Executa seed
+npx prisma generate
+npx prisma migrate dev
+npx prisma db push
+npx prisma studio
+npx prisma db seed
 ```
 
 ---
@@ -304,7 +277,6 @@ npx prisma db seed      # Executa seed
 ### Erro: "Cannot find module '@prisma/client'"
 
 ```bash
-# Solução
 npx prisma generate
 npm install
 ```
@@ -317,19 +289,15 @@ npm install
 
 **Windows:**
 ```powershell
-# Verificar se serviço está rodando
 Get-Service postgresql-x64-*
 
-# Iniciar serviço
-Start-Service -Name postgresql-x64-15  # Substitua 15 pela sua versão
+Start-Service -Name postgresql-x64-15
 ```
 
 **Linux/macOS:**
 ```bash
-# Verificar status
 sudo systemctl status postgresql
 
-# Iniciar
 sudo systemctl start postgresql
 ```
 
@@ -339,10 +307,7 @@ sudo systemctl start postgresql
 
 **Solução:**
 ```bash
-# Criar usuário (Linux/macOS)
 sudo -u postgres createuser seu_usuario
-
-# Ou use pgAdmin para criar novo usuário
 ```
 
 ### Erro: "database "fiscalize" does not exist"
@@ -351,10 +316,7 @@ sudo -u postgres createuser seu_usuario
 
 **Solução:**
 ```bash
-# Criar banco
 psql -U postgres -c "CREATE DATABASE fiscalize;"
-
-# Ou use pgAdmin
 ```
 
 ### Erro: "permission denied: ./setup.sh" (Linux/macOS)
@@ -374,16 +336,12 @@ PORT=3001 npm run dev
 
 **Solução 2:** Liberar porta
 ```bash
-# Linux/macOS - encontrar processo na porta 3000
 lsof -i :3000
 
-# Encerrar processo
 kill -9 <PID>
 
-# Windows - encontrar processo
 netstat -ano | findstr :3000
 
-# Encerrar processo
 taskkill /PID <PID> /F
 ```
 

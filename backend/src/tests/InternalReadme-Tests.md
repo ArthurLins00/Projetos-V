@@ -19,13 +19,10 @@ Siga os passos abaixo para criar e enviar o seu teste automatizado sem gerar con
 Garanta que as referências do repositório principal (`upstream`) estejam atualizadas na sua máquina:
 
 ```bash
-# Baixa as novidades do repositório principal
 git fetch upstream
 
-# Entra na branch base de testes
 git checkout feat/automated-tests || git checkout -b feat/automated-tests upstream/feat/automated-tests
 
-# Garante que sua cópia local está atualizada
 git pull upstream feat/automated-tests
 ```
 
@@ -36,7 +33,6 @@ git pull upstream feat/automated-tests
 **Não faça alterações diretamente na branch `feat/automated-tests`.** Crie uma branch própria para o seu teste a partir dela:
 
 ```bash
-# Padrão de nome: test/nome-da-funcionalidade
 git checkout -b test/meu-novo-teste
 ```
 
@@ -82,14 +78,10 @@ git push -u origin test/meu-novo-teste
 Se outro Pull Request for aprovado antes do seu, atualize sua branch com as mudanças mais recentes do `upstream` antes de realizar o merge:
 
 ```bash
-# Garanta que está na sua branch de teste
 git checkout test/meu-novo-teste
 
-# Puxa as atualizações mais recentes do upstream
 git pull upstream feat/automated-tests
 
-# Caso haja conflito, resolva-o no editor de código, salve e faça o commit
-# Em seguida, envie de volta para o seu fork
 git push origin test/meu-novo-teste
 ```
 

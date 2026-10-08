@@ -1,8 +1,5 @@
 name: CI/CD
 
-# Testa o projeto como um todo (backend, mobile e agente de IA) em main/dev,
-# reutilizando os workflows de cada módulo. Cada módulo também roda isolado
-# (Actions → workflow do módulo → Run workflow, ou push em outras branches).
 on:
   push:
     branches: [main, dev]
@@ -15,18 +12,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Backend: regressão completa (unitários, API e E2E) + build ──
   backend:
     name: Backend
     uses: ./.github/workflows/backend.yml
     secrets: inherit
 
-  # ── App mobile: typecheck ──
   mobile:
     name: Mobile
     uses: ./.github/workflows/mobile.yml
 
-  # ── Agente de IA: typecheck + testes offline (+ ao vivo fora de PRs) ──
   ai-agent:
     name: Agente de IA
     uses: ./.github/workflows/ai-agent.yml

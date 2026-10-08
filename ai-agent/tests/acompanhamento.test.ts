@@ -1,7 +1,3 @@
-/**
- * Perfil "acompanhamento" (chat do app): consulta de status com regra de acesso por perfil.
- * Offline: usa fonte mockada, um backend falso (node:http) e o LLM roteirizado.
- */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
@@ -105,7 +101,6 @@ describe('Servidor do agente (POST /chat)', () => {
   const tokensUsados: string[] = [];
 
   before(async () => {
-    // Roteiro: a cada mensagem o "modelo" consulta a ferramenta e resume o resultado
     const passos = Array.from({ length: 2 }).flatMap(() => [
       chamarFerramenta('consultar_status_chamados', {}),
       responder((h) => `Você tem ${ultimaSaida(h, 'consultar_status_chamados').total} chamado(s).`),

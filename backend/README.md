@@ -40,9 +40,9 @@ JWT_SECRET="troque-por-uma-chave-secreta"
 Aplique as migrações, popule o banco e suba o servidor:
 
 ```bash
-npx prisma migrate deploy   # cria as tabelas
-npm run seed                # categorias, órgãos, regras de encaminhamento e usuários de teste
-npm run dev                 # http://localhost:3000, com recarga automática
+npx prisma migrate deploy
+npm run seed
+npm run dev
 ```
 
 Passo a passo mais detalhado, com solução de problemas: [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md).
@@ -265,9 +265,9 @@ Para inspecionar o banco num navegador: `npx prisma studio`.
 ## Testes
 
 ```bash
-npm test            # todos (unitários + API)
-npm run test:unit   # regras de negócio isoladas (src/tests/unit)
-npm run test:api    # rotas HTTP com Supertest (src/tests/api)
+npm test
+npm run test:unit
+npm run test:api
 ```
 
 Os testes unitários e de API usam um **mock do Prisma** e não precisam de banco. Os testes E2E, que rodam

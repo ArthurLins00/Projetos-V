@@ -56,7 +56,6 @@ export function DemandListView() {
         <FlatList
           testID="demand-list"
           data={vm.demands}
-          // Com o teclado aberto (após pesquisar), o primeiro toque já abre o card
           keyboardShouldPersistTaps="handled"
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
@@ -73,7 +72,6 @@ export function DemandListView() {
         />
       )}
 
-      {/* Assistente de IA: consulta o status dos chamados (só nesta tela inicial) */}
       <TouchableOpacity
         testID="assistant-button"
         accessibilityRole="button"

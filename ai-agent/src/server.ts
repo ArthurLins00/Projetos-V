@@ -9,13 +9,10 @@ const MAX_MESSAGE_CHARS = 1000;
 
 export interface AgentServerOptions {
   client: ModelClient;
-  /** URL do backend do Fiscalize (ex.: http://localhost:3000). */
   apiUrl: string;
-  /** Se definido, toda requisição precisa do header x-agent-secret com este valor. */
   secret?: string;
   sessionTtlMs?: number;
   maxSessions?: number;
-  /** Permite trocar a fonte de chamados nos testes. Padrão: API real com o JWT recebido. */
   createSource?: (token: string) => ChamadosSource;
 }
 
@@ -24,13 +21,6 @@ interface Session {
   lastUsed: number;
 }
 
-/**
- * Servidor HTTP do agente (perfil "acompanhamento") usado pelo backend em POST /ai/chat.
- *   POST /chat  { sessionId?, message }  + Authorization: Bearer <JWT do usuário>
- *   GET  /health
- * O JWT é repassado ao backend nas consultas das ferramentas: o escopo de acesso
- * (cidadão → só os seus; gestor/admin → todos) é sempre decidido pelo backend.
- */
 export function createAgentServer(options: AgentServerOptions): Server {
   const ttl = options.sessionTtlMs ?? 30 * 60 * 1000;
   const maxSessions = options.maxSessions ?? 500;
@@ -42,7 +32,7 @@ export function createAgentServer(options: AgentServerOptions): Server {
     for (const [key, s] of sessions) if (now - s.lastUsed > ttl) sessions.delete(key);
     let session = sessions.get(id);
     if (!session) {
-      if (sessions.size >= maxSessions) sessions.delete(sessions.keys().next().value!); // remove a mais antiga
+      if (sessions.size >= maxSessions) sessions.delete(sessions.keys().next().value!);
       session = { agent: new FiscalizeAgent(options.client, { perfil: PERFIL_ACOMPANHAMENTO }), lastUsed: now };
       sessions.set(id, session);
     }
