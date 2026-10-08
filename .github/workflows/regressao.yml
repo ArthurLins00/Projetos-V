@@ -1,0 +1,88 @@
+name: Regressão completa
+
+# Executa toda a suíte automatizada da TAS (unitários, API e E2E) em um único job.
+# Acionamento manual: Actions → "Regressão completa" → Run workflow.
+on:
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  regressao-completa:
+    name: Regressão completa
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fiscalize
+          POSTGRES_PASSWORD: fiscalize
+          POSTGRES_DB: fiscalize_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fiscalize"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://fiscalize:fiscalize@localhost:5432/fiscalize_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'Admin@123456' }}
+      E2E_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Instala dependências (raiz + backend)
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Prepara o banco (prisma generate + migrações + seed)
+        working-directory: backend
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run seed
+
+      # ── Níveis de teste ──
+      # Os steps de API e E2E rodam mesmo se o nível anterior falhar, para que o
+      # resultado de cada nível apareça; qualquer falha marca o job como falho.
+
+      - name: Testes Unitários
+        working-directory: backend
+        run: npm run test:unit -- --ci
+
+      - name: Testes de API
+        if: ${{ !cancelled() }}
+        working-directory: backend
+        run: npm run test:api -- --ci
+
+      - name: Testes End-to-End (E2E)
+        if: ${{ !cancelled() }}
+        run: npm run test:e2e
+
+      - name: Relatório do Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e-report
+            test-results
+          retention-days: 7
