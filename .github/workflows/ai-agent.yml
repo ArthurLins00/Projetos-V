@@ -1,11 +1,15 @@
 name: Agente de IA
 
+# Só roda quando o agente muda, para não gastar a cota do Gemini à toa.
+# Em main/dev (push e PR) quem roda o módulo é o ci.yml, junto com o resto do projeto.
 on:
   push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+    branches-ignore: [main, dev]
+    paths:
+      - 'ai-agent/**'
+      - '.github/workflows/ai-agent.yml'
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: ai-agent-${{ github.ref }}

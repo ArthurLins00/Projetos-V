@@ -2,8 +2,13 @@ name: Regressão completa
 
 # Executa toda a suíte automatizada da TAS (unitários, API e E2E) em um único job.
 # Acionamento manual: Actions → "Regressão completa" → Run workflow.
+# Também roda diariamente e é reutilizado pelo backend.yml (e, por ele, pelo ci.yml,
+# que cobre os PRs para a main).
 on:
   workflow_dispatch:
+  workflow_call:
+  schedule:
+    - cron: '0 6 * * *'
 
 env:
   NODE_VERSION: '22'
