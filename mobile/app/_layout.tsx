@@ -5,7 +5,6 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 function InitialLayout() {
   const { user, isLoading } = useAuth();
 
-  // Enquanto a sessão salva é restaurada (AuthContext), nenhuma tela é montada
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -14,9 +13,6 @@ function InitialLayout() {
     );
   }
 
-  // Rotas protegidas: sem usuário, as telas do app nem são montadas (evita chamadas
-  // à API sem token); com usuário, login/registro ficam indisponíveis. O Expo Router
-  // redireciona sozinho para o grupo liberado quando `user` muda (login/logout).
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!!user}>

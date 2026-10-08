@@ -1,4 +1,3 @@
-/** Os 3 casos de teste da entrega (usados pela CLI, pelo demo e pelos testes). */
 export const CASOS_DE_TESTE = [
   {
     id: 'CT-01',

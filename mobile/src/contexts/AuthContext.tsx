@@ -14,12 +14,10 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // [REQUISITO] Persistência de estado utilizando os hooks nativos: useState
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // [REQUISITO] Persistência de estado utilizando os hooks nativos: useEffect
   useEffect(() => {
     async function loadStorageData() {
       try {
@@ -39,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, senha: string) => {
-    // Backend retorna { id, nome, email, perfil, token }
     const { token: userToken, ...userData } = await authService.login(email, senha);
 
     await SecureStore.setItemAsync('user_token', userToken);
@@ -53,7 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.logout();
     } catch {
-      // Ignora erro de rede no logout
     } finally {
       await SecureStore.deleteItemAsync('user_token');
       await SecureStore.deleteItemAsync('user_data');

@@ -287,7 +287,6 @@ A solução é garantir que `import 'dotenv/config';` seja a **primeira linha do
 ```typescript
 import "dotenv/config";
 import express from "express";
-// ...demais imports
 ```
 
 ---

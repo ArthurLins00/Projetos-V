@@ -6,7 +6,6 @@ import { JWT_SECRET } from '../../config/env';
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 import { prisma } from '../../config/__mocks__/prisma';
 
-// POST /ai/chat: autenticação, validação e repasse ao serviço do agente (fetch simulado)
 describe('API do Assistente (/ai/chat)', () => {
   const cidadao = { id: 'cidadao-1', nome: 'Cidadão', email: 'cidadao@example.com', perfil: 'Cidadao', status: 'Ativo' };
   const token = jwt.sign({ id: cidadao.id, email: cidadao.email, perfil: cidadao.perfil }, JWT_SECRET, { expiresIn: '1h' });

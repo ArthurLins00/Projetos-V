@@ -21,7 +21,6 @@ export function LoginView() {
       </TouchableOpacity>
 
       {__DEV__ && (
-        // Usuário cidadão criado pelo seed do backend (prisma/seed.ts)
         <TouchableOpacity testID="login-dev" accessibilityRole="button" style={styles.devButton} onPress={() => vm.login('cidadao@fiscalize.gov.br', 'Cidadao@123456')}>
           <Text style={styles.devButtonText}>🚀 Entrar como Cidadão (Teste)</Text>
         </TouchableOpacity>

@@ -2,7 +2,6 @@ import type { AgentProfile, ToolContext } from '../perfis/types';
 
 export type ToolOutcome = { output: unknown } | { error: string };
 
-/** Executa a ferramenta pedida pelo modelo. Erros viram `{ error }` para o modelo poder se corrigir. */
 export async function executarFerramenta(
   perfil: AgentProfile,
   nome: string,

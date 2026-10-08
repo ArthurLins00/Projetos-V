@@ -3,7 +3,6 @@ import { PrismaClient, status_chamado } from '@prisma/client';
 export class Extract {
   private prisma: PrismaClient;
 
-  // Dicionário de opções válidas utilizando o enum oficial do Prisma
   private readonly STATUS_VALIDOS: Record<'ativos' | 'encerrados', status_chamado[]> = {
     ativos: [
       status_chamado.Aberto,
@@ -17,18 +16,10 @@ export class Extract {
     ],
   };
 
-  /**
-   * Inicializa a classe com valores fixos.
-   * @param prisma Instância do banco de dados (injetada usando DATABASE_URL do .env)
-   */
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
   }
 
-  /**
-   * Extrai os chamados brutos do banco, validando o parâmetro contra o dicionário.
-   * @param tipo Chave do dicionário para filtrar ('ativos' ou 'encerrados')
-   */
   async getChamadosBrutos(tipo: keyof typeof this.STATUS_VALIDOS) {
     if (!this.STATUS_VALIDOS[tipo]) {
       throw new Error(`Tipo inválido. Opções: ${Object.keys(this.STATUS_VALIDOS).join(', ')}`);

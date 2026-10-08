@@ -3,10 +3,6 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { tipo_orgao, prioridade } from '@prisma/client';
 
-// =============================================================
-// DADOS DE SEED
-// =============================================================
-
 const CATEGORIAS = [
   { nome: 'Infraestrutura', descricao: 'Buracos, pavimentação, calçadas danificadas' },
   { nome: 'Água e Esgoto', descricao: 'Vazamentos, falta de água, esgoto a céu aberto' },
@@ -95,7 +91,6 @@ const ORGAOS: {
     },
   ]
 
-// IDs fixos para garantir idempotência nas re-execuções
 const GESTOR_ID = '11111111-1111-1111-1111-111111111111'
 const CIDADAO_ID = '22222222-2222-2222-2222-222222222222'
 
@@ -107,25 +102,16 @@ const GESTORES_ORGAOS = [
   { id: '77777777-7777-7777-7777-777777777777', email: 'gestor.semc@fiscalize.gov.br',    nome: 'Gestor SEMC',    orgaoid: 'SEMC',    departamento: 'Manutenção da Cidade' },
 ]
 
-// =============================================================
-// REGRAS DE COMPETÊNCIA
-//
-// Cada entrada define: categoria + subcategoria → órgão responsável
-// Restrição: o órgão DEVE ter vínculo com a categoria via orgao_categoria
-// Unique constraint no banco: (categoriaid, subcategoria)
-// =============================================================
-
 type RegraInput = {
-  categoriaId: number;         // id da categoria
-  subcategoria: string;       // granularidade da regra
-  orgaoprincipalId: string;   // id do órgão (deve ter vínculo com a categoria)
-  orgaosecundarioId?: string; // opcional
-  slaHoras?: number;          // se omitido, herda do órgão principal
+  categoriaId: number;
+  subcategoria: string;
+  orgaoprincipalId: string;
+  orgaosecundarioId?: string;
+  slaHoras?: number;
   prioridade: prioridade;
 };
 
 const REGRAS: RegraInput[] = [
-  // ── INFRAESTRUTURA → EMLURB (vínculos: Infraestrutura, Saneamento Básico) ──
   {
     categoriaId: 1,
     subcategoria: 'Buraco na pista',
@@ -155,7 +141,6 @@ const REGRAS: RegraInput[] = [
     slaHoras: 6,
   },
 
-  // ── INFRAESTRUTURA → SINFRA (rodovias estaduais) ──
   {
     categoriaId: 1,
     subcategoria: 'Buraco em rodovia estadual',
@@ -171,7 +156,6 @@ const REGRAS: RegraInput[] = [
     slaHoras: 12,
   },
 
-  // ── INFRAESTRUTURA → SEMC (manutenção geral da cidade) ──
   {
     categoriaId: 1,
     subcategoria: 'Muro de arrimo com risco de queda',
@@ -179,15 +163,7 @@ const REGRAS: RegraInput[] = [
     prioridade: 'Alta',
     slaHoras: 24,
   },
-  // {
-  //   categoriaId: 1,
-  //   subcategoria: 'Ponte ou passarela danificada',
-  //   orgaoprincipalId: 'SEMC',
-  //   prioridade: 'Critica',
-  //   slaHoras: 12,
-  // },
 
-  // ── ÁGUA E ESGOTO → COMPESA ──
   {
     categoriaId: 2,
     subcategoria: 'Vazamento de água na rua',
@@ -209,22 +185,7 @@ const REGRAS: RegraInput[] = [
     prioridade: 'Critica',
     slaHoras: 24,
   },
-  // {
-  //   categoriaId: 2,
-  //   subcategoria: 'Bueiro entupido com esgoto',
-  //   orgaoprincipalId: 'COMPESA',
-  //   prioridade: 'Alta',
-  //   slaHoras: 24,
-  // },
-  // {
-  //   categoriaId: 2,
-  //   subcategoria: 'Água com odor ou coloração suspeita',
-  //   orgaoprincipalId: 'COMPESA',
-  //   prioridade: 'Critica',
-  //   slaHoras: 12,
-  // },
 
-  // ── ILUMINAÇÃO PÚBLICA → CELPE ──
   {
     categoriaId: 3,
     subcategoria: 'Poste apagado',
@@ -253,15 +214,7 @@ const REGRAS: RegraInput[] = [
     prioridade: 'Alta',
     slaHoras: 12,
   },
-  // {
-  //   categoriaId: 3,
-  //   subcategoria: 'Lâmpada queimada em praça pública',
-  //   orgaoprincipalId: 'CELPE',
-  //   prioridade: 'Media',
-  //   slaHoras: 72,
-  // },
 
-  // ── SANEAMENTO BÁSICO → EMLURB ──
   {
     categoriaId: 4,
     subcategoria: 'Lixo não coletado',
@@ -276,13 +229,6 @@ const REGRAS: RegraInput[] = [
     prioridade: 'Media',
     slaHoras: 72,
   },
-  // {
-  //   categoriaId: 4,
-  //   subcategoria: 'Ponto viciado de descarte irregular',
-  //   orgaoprincipalId: 'EMLURB',
-  //   prioridade: 'Baixa',
-  //   slaHoras: 96,
-  // },
   {
     categoriaId: 4,
     subcategoria: 'Acúmulo de lixo com infestação',
@@ -291,7 +237,6 @@ const REGRAS: RegraInput[] = [
     slaHoras: 24,
   },
 
-  // ── SINALIZAÇÃO → CTTU ──
   {
     categoriaId: 5,
     subcategoria: 'Semáforo com defeito',
@@ -313,15 +258,7 @@ const REGRAS: RegraInput[] = [
     prioridade: 'Media',
     slaHoras: 72,
   },
-  // {
-  //   categoriaId: 5,
-  //   subcategoria: 'Semáforo apagado em cruzamento movimentado',
-  //   orgaoprincipalId: 'CTTU',
-  //   prioridade: 'Critica',
-  //   slaHoras: 6,
-  // },
 
-  // ── OUTROS PROBLEMAS → SEMC ──
   {
     categoriaId: 6,
     subcategoria: 'Pichação em bem público',
@@ -345,10 +282,6 @@ const REGRAS: RegraInput[] = [
   },
 ];
 
-// =============================================================
-// SEED
-// =============================================================
-
 async function seed() {
   console.log('🌱 Iniciando seed do banco de dados...\n')
 
@@ -358,9 +291,6 @@ async function seed() {
 
   try {
 
-    // ----------------------------------------------------------
-    // 1. Categorias
-    // ----------------------------------------------------------
     for (const cat of CATEGORIAS) {
       await prisma.categoria.upsert({
         where: { nome: cat.nome },
@@ -379,18 +309,12 @@ async function seed() {
       return found.id
     }
 
-    // As REGRAS referenciam categorias pelo id lógico (posição em CATEGORIAS,
-    // 1-indexed), não pelo id serial do banco — que não começa necessariamente
-    // em 1 e varia entre execuções. Resolve o id real a partir do id lógico.
     const categoriaRealId = (idLogico: number): number => {
       const nome = CATEGORIAS[idLogico - 1]?.nome
       if (!nome) throw new Error(`Categoria lógica inválida nas REGRAS: ${idLogico}`)
       return catId(nome)
     }
 
-    // ----------------------------------------------------------
-    // 2. Órgãos + vínculos com categorias
-    // ----------------------------------------------------------
     for (const orgao of ORGAOS) {
       const { categorias, ...orgaoData } = orgao
 
@@ -410,9 +334,6 @@ async function seed() {
     }
     console.log(`✓ ${ORGAOS.length} órgãos criados/verificados com seus vínculos de categoria`)
 
-    // ----------------------------------------------------------
-    // 3. Regras de competência
-    // ----------------------------------------------------------
     let regrasCriadas = 0;
     let regrasIgnoradas = 0;
 
@@ -420,7 +341,6 @@ async function seed() {
       const categoriaid = categoriaRealId(regra.categoriaId);
       const categoriaNome = CATEGORIAS[regra.categoriaId - 1]!.nome;
 
-      // Garante que o órgão tem vínculo com a categoria antes de inserir
       const vinculo = await prisma.orgao_categoria.findUnique({
         where: {
           orgaoid_categoriaid: {
@@ -438,7 +358,6 @@ async function seed() {
         continue;
       }
 
-      // Busca SLA do órgão como fallback
       const orgao = await prisma.orgao.findUnique({
         where: { id: regra.orgaoprincipalId },
         select: { slahoras: true },
@@ -451,7 +370,7 @@ async function seed() {
             subcategoria: regra.subcategoria,
           },
         },
-        update: {}, // não sobrescreve regras editadas manualmente
+        update: {},
         create: {
           categoriaid,
           subcategoria: regra.subcategoria,
@@ -470,9 +389,6 @@ async function seed() {
       }`
     );
 
-    // ----------------------------------------------------------
-    // 4. Admin
-    // ----------------------------------------------------------
     const adminExistente = await prisma.usuario.findUnique({
       where: { email: adminEmail },
     })
@@ -506,9 +422,6 @@ async function seed() {
       console.log(`✓ Admin já existe: ${adminEmail}`)
     }
 
-    // ----------------------------------------------------------
-    // 4. Gestor de teste
-    // ----------------------------------------------------------
     const gestorExistente = await prisma.usuario.findUnique({
       where: { email: 'gestor@fiscalize.gov.br' },
     })
@@ -541,9 +454,6 @@ async function seed() {
       console.log(`✓ Gestor de teste já existe`)
     }
 
-    // ----------------------------------------------------------
-    // 5. Gestores por órgão
-    // ----------------------------------------------------------
     const senhaGestor = await bcrypt.hash('Gestor@123456', 10)
     let gestoresCriados = 0
     for (const g of GESTORES_ORGAOS) {
@@ -560,9 +470,6 @@ async function seed() {
     }
     console.log(`✓ ${GESTORES_ORGAOS.length} gestores por órgão verificados${gestoresCriados > 0 ? ` (${gestoresCriados} criados)` : ''}`)
 
-    // ----------------------------------------------------------
-    // 6. Cidadão de teste
-    // ----------------------------------------------------------
     const cidadaoExistente = await prisma.usuario.findUnique({
       where: { email: 'cidadao@fiscalize.gov.br' },
     })
@@ -594,9 +501,6 @@ async function seed() {
       console.log(`✓ Cidadão de teste já existe`)
     }
 
-    // ----------------------------------------------------------
-    // 6. Chamados de teste (breakdown por status)
-    // ----------------------------------------------------------
     const infraId = catId('Infraestrutura')
     const deadline = (horas: number) => new Date(Date.now() + horas * 60 * 60 * 1000)
 
@@ -689,10 +593,6 @@ async function seed() {
     console.log(`  └─ Resolvidos: 2`)
     console.log(`  └─ Fechados: 1`)
 
-    // ----------------------------------------------------------
-    // 7. Timeline events para chamados resolvidos/fechados
-    //    (necessário para /metrics/average-response-time)
-    // ----------------------------------------------------------
     const resolucoes = [
       { protocolo: 'DEM-SEED-006', horasAteResolucao: 24 },
       { protocolo: 'DEM-SEED-007', horasAteResolucao: 48 },

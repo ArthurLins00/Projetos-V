@@ -7,7 +7,6 @@ interface Props {
   demandId?: string;
 }
 
-// Formulário compartilhado entre criação e edição de ocorrências
 export function DemandFormView({ demandId }: Props) {
   const vm = useDemandFormViewModel(demandId);
 

@@ -1,7 +1,5 @@
 name: Backend
 
-# Testes do backend (unitários, API e E2E) a cada mudança no backend ou nos E2E.
-# Em main/dev (push e PR) quem roda o módulo é o ci.yml, junto com o resto do projeto.
 on:
   push:
     branches-ignore: [main, dev]
@@ -24,13 +22,11 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  # ── Testes: reutiliza o job de regressão completa (um step por nível) ──
   testes:
     name: Testes
     uses: ./.github/workflows/regressao.yml
     secrets: inherit
 
-  # ── Build: typecheck (tsc) e publicação do build da main ──
   build:
     name: Build (prisma generate + tsc)
     runs-on: ubuntu-latest

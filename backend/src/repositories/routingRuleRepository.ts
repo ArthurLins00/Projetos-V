@@ -2,9 +2,6 @@ import { prisma } from '../config/prisma';
 import { AppError } from '../middlewares/errorMiddleware';
 
 export const routingRuleRepository = {
-  /**
-   * Cria uma nova regra de competência
-   */
   async create(
     categoriaId: number,
     subcategoria: string,
@@ -47,27 +44,18 @@ export const routingRuleRepository = {
     });
   },
 
-  /**
-   * Verifica se uma categoria existe
-   */
   async categoriaExists(categoriaId: number) {
     return prisma.categoria.findUnique({
       where: { id: categoriaId },
     });
   },
 
-  /**
-   * Verifica se um órgão existe
-   */
   async orgaoExists(orgaoId: string) {
     return prisma.orgao.findUnique({
       where: { id: orgaoId },
     });
   },
 
-  /**
-   * Verifica se categoria e órgão estão relacionados
-   */
   async categoriaBelongsToOrgao(categoriaId: number, orgaoId: string) {
     return prisma.orgao_categoria.findUnique({
       where: {
@@ -79,9 +67,6 @@ export const routingRuleRepository = {
     });
   },
 
-  /**
-   * Verifica se já existe uma regra com a mesma categoria e subcategoria
-   */
   async regraExistsByCategoriaySubcategoria(
     categoriaId: number,
     subcategoria: string
@@ -95,11 +80,6 @@ export const routingRuleRepository = {
       },
     });
   },
-
-  /**
-   * Lista todas as regras de competência
-   */
-  // routingRuleRepository.ts
 
   async findAll(
     page: number = 1,
@@ -145,9 +125,6 @@ export const routingRuleRepository = {
     };
   },
 
-  /**
-   * Busca uma regra por ID
-   */
   async findById(id: string) {
     return prisma.regra_competencia.findUnique({
       where: { id },
@@ -176,9 +153,6 @@ export const routingRuleRepository = {
     });
   },
 
-  /**
-   * Atualiza uma regra de competência
-   */
   async update(
     id: string,
     data: {
@@ -221,9 +195,6 @@ export const routingRuleRepository = {
     });
   },
 
-  /**
-   * Deleta uma regra de competência
-   */
   async delete(id: string) {
     return prisma.regra_competencia.delete({
       where: { id },

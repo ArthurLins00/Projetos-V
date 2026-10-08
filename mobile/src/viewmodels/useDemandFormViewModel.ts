@@ -11,7 +11,6 @@ import { DemandPayload } from '../models/Demand';
 
 type Coords = { latitude: number; longitude: number };
 
-// Criação (C) e edição (U) de ocorrências. Sem `demandId` = criação.
 export function useDemandFormViewModel(demandId?: string) {
   const router = useRouter();
   const isEditing = !!demandId;
@@ -21,7 +20,6 @@ export function useDemandFormViewModel(demandId?: string) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [locationText, setLocationText] = useState('');
   const [coords, setCoords] = useState<Coords | null>(null);
-  // photoUri = o que aparece no preview; photoBase64 só existe quando há foto nova para enviar
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [savedPhotoUri, setSavedPhotoUri] = useState<string | null>(null);
@@ -34,7 +32,6 @@ export function useDemandFormViewModel(demandId?: string) {
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
-  // Carrega categorias e, na edição, os dados atuais da ocorrência
   useEffect(() => {
     let active = true;
     async function load() {
@@ -84,7 +81,6 @@ export function useDemandFormViewModel(demandId?: string) {
 
   const closeCamera = () => setCameraVisible(false);
 
-  // Descarta a foto nova (na edição, volta a mostrar a foto já salva)
   const removePhoto = () => {
     setPhotoBase64(null);
     setPhotoUri(savedPhotoUri);
@@ -100,7 +96,6 @@ export function useDemandFormViewModel(demandId?: string) {
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setCoords({ latitude: current.coords.latitude, longitude: current.coords.longitude });
 
-      // Preenche o endereço automaticamente se o usuário ainda não digitou
       if (!locationText) {
         const [address] = await Location.reverseGeocodeAsync(current.coords).catch(() => []);
         if (address) {

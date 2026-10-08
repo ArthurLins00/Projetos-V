@@ -5,11 +5,6 @@ import * as SecureStore from 'expo-secure-store';
 
 const API_PORT = 3000;
 
-// Descobre a URL do backend:
-// 1. EXPO_PUBLIC_API_URL no mobile/.env, se definida (ex.: servidor na nuvem);
-// 2. em desenvolvimento, o mesmo IP do computador que serve o Metro (funciona no
-//    Expo Go do iPhone/Android e no emulador, desde que estejam na mesma rede);
-// 3. fallback: 10.0.2.2 é o "localhost" do computador visto de dentro do emulador Android.
 function resolveApiUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv;
@@ -45,14 +40,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Converte o caminho salvo no backend (/uploads/...) em URL completa para o <Image>
 export function getPhotoUri(photoUrl?: string | null): string | null {
   if (!photoUrl) return null;
   return /^https?:\/\//.test(photoUrl) ? photoUrl : `${API_URL}${photoUrl}`;
 }
 
-// Extrai a mensagem de erro enviada pelo backend ({ error: '...' }).
-// Sem resposta = o app não alcançou o servidor (URL errada, backend parado ou firewall).
 export function getApiErrorMessage(error: any, fallback: string): string {
   if (error?.isAxiosError && !error.response) {
     return `Não foi possível conectar ao servidor (${API_URL}). Verifique se o backend está rodando e se o celular está na mesma rede Wi-Fi do computador.`;

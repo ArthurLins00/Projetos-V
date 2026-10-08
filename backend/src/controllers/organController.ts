@@ -27,7 +27,6 @@ export const organController = {
                 orgao,
             });
         } catch (error) {
-            // Verificar se é erro de conflito (statusCode 409)
             if (error instanceof Error && (error as any).statusCode === 409) {
                 return res.status(409).json({
                     message: error.message,
@@ -103,12 +102,6 @@ export const organController = {
         }
     },
 
-    /**
-   * GET /admin/organs/:id/categories
-   * Retorna as categorias vinculadas ao órgão informado.
-   * Usado pelo modal de regras para filtrar o select de categorias
-   * após o usuário selecionar um órgão principal.
-   */
     async listarCategoriasPorOrgao(req: Request, res: Response, next: NextFunction) {
         try {
             const id = req.params.id as string;

@@ -24,11 +24,6 @@ interface AgentResponse {
   error?: string;
 }
 
-/**
- * Ponte entre o app e o serviço do agente de IA (ai-agent, perfil "acompanhamento").
- * O JWT do usuário é repassado: quando o agente consulta GET /demands, o próprio backend aplica
- * o escopo de acesso (cidadão → só os seus chamados; gestor/admin → todos).
- */
 export const aiService = {
   async chat({ userId, token, sessionId, message }: ChatInput) {
     const clientSession = sessionId || randomUUID();
@@ -42,7 +37,6 @@ export const aiService = {
           Authorization: `Bearer ${token}`,
           ...(AI_AGENT_SECRET && { 'x-agent-secret': AI_AGENT_SECRET }),
         },
-        // A sessão é prefixada com o id do usuário: ninguém continua a conversa de outra pessoa.
         body: JSON.stringify({ sessionId: `${userId}:${clientSession}`, message }),
         signal: AbortSignal.timeout(AGENT_TIMEOUT_MS),
       });
@@ -57,7 +51,6 @@ export const aiService = {
       throw new AppError(502, 'Não foi possível obter a resposta do assistente. Tente novamente.');
     }
 
-    // Chamados citados pelas ferramentas, para o app mostrar atalhos para o detalhe
     const chamados = new Map<string, { id: string; protocolo: string; titulo: string; status: string }>();
     for (const call of body.toolCalls ?? []) {
       for (const c of (call.ok && call.output?.chamados) || []) {

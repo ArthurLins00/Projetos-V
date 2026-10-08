@@ -1,7 +1,5 @@
 name: Agente de IA
 
-# Só roda quando o agente muda, para não gastar a cota do Gemini à toa.
-# Em main/dev (push e PR) quem roda o módulo é o ci.yml, junto com o resto do projeto.
 on:
   push:
     branches-ignore: [main, dev]
@@ -19,7 +17,6 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  # ── Agente de IA: typecheck + testes offline (+ ao vivo se houver GEMINI_API_KEY) ──
   ai-agent:
     name: Agente de IA
     runs-on: ubuntu-latest
@@ -38,7 +35,6 @@ jobs:
       - name: Testes (cliente roteirizado, sem rede)
         run: npm test
       - name: Testes ao vivo contra o Gemini
-        # Só em push (secrets não ficam disponíveis em PRs vindos de fork)
         if: github.event_name != 'pull_request'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

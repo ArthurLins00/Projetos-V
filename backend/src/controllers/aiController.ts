@@ -5,7 +5,6 @@ import { aiService } from '../services/aiService';
 
 const MAX_MESSAGE_CHARS = 1000;
 
-// Mesmo critério do authMiddleware: cookie primeiro, depois Authorization: Bearer
 function getToken(req: AuthRequest): string | undefined {
   const fromCookie = req.cookies?.token as string | undefined;
   if (fromCookie) return fromCookie;

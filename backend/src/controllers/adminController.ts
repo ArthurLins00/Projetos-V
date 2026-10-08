@@ -45,7 +45,6 @@ export const adminController = {
 
       const adminId = (req as any).user.id;
 
-      // ✔ FIX AQUI (FORÇA string)
       if (!id || Array.isArray(id)) {
         return res.status(400).json({
           error: 'ID inválido',
@@ -73,7 +72,6 @@ export const adminController = {
 
       const adminId = (req as any).user.id;
 
-      // ✔ FIX AQUI (FORÇA string)
       if (!id || Array.isArray(id)) {
         return res.status(400).json({
           error: 'ID inválido',
@@ -91,9 +89,6 @@ export const adminController = {
     }
   },
 
-  // ============================
-  // 🔥 NOVO MÉTODO: ALTERAR ROLE
-  // ============================
   async alterarRole(
     req: Request,
     res: Response,
@@ -105,14 +100,12 @@ export const adminController = {
 
       const { role } = req.body;
 
-      // validação de id
       if (!id || Array.isArray(id)) {
         return res.status(400).json({
           error: 'ID inválido',
         });
       }
 
-      // validação de role
       if (!role || !['Cidadao', 'Gestor'].includes(role)) {
         return res.status(400).json({
           error: "Role inválida. Use 'Cidadao' ou 'Gestor'.",
@@ -212,7 +205,7 @@ export const adminController = {
         subcategoria,
         orgaoprincipalId,
         orgaosecundarioId,
-        slaHoras, // opcional - pode ser undefined
+        slaHoras,
         prioridade
       );
 
@@ -235,13 +228,12 @@ export const adminController = {
 
       const result = await adminService.listRoutingRules(page, limit, organ_id, category_id);
 
-      // Mapeia para o shape esperado pelo MatrizPage
       const regras = result.regras.map((r: any) => ({
         id: r.id,
-        categoria: r.categoria,                                                        // { id, nome }
+        categoria: r.categoria,
         subcategoria: r.subcategoria,
-        orgaoPrincipal: r.orgao_regra_competencia_orgaoprincipalidToorgao,             // { id, sigla, nome }
-        orgaoSecundario: r.orgao_regra_competencia_orgaosecundarioidToorgao ?? null,   // { id, sigla, nome } | null
+        orgaoPrincipal: r.orgao_regra_competencia_orgaoprincipalidToorgao,
+        orgaoSecundario: r.orgao_regra_competencia_orgaosecundarioidToorgao ?? null,
         sla: r.slahoras,
         prioridade: r.prioridade,
       }));
@@ -283,7 +275,6 @@ export const adminController = {
         ...(prioridade !== undefined && { prioridade }),
       })
 
-      // Mesmo shape do GET — front-end não precisa tratar diferente
       return res.status(200).json({
         id: regra.id,
         categoria: regra.categoria,

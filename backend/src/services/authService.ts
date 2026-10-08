@@ -6,7 +6,6 @@ import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
 import { JWT_SECRET, JWT_EXPIRATION } from '../config/env';
 
-// Blocklist em memória (em produção: Redis)
 const tokenBlocklist = new Set<string>();
 
 export const authService = {
@@ -28,7 +27,7 @@ export const authService = {
           email,
           senha: hashedPassword,
           perfil: 'Cidadao',
-          status: 'Ativo', // ✔ conforme schema.prisma
+          status: 'Ativo',
         },
       });
 
@@ -51,7 +50,6 @@ export const authService = {
       throw new AppError(401, 'Credenciais inválidas.');
     }
 
-    // ✔ CORRETO conforme ENUM do schema.prisma
     if (usuario.status !== 'Ativo') {
       throw new AppError(
         403,
@@ -75,8 +73,6 @@ export const authService = {
         perfil: usuario.perfil,
       },
       JWT_SECRET,
-      // jwtid único: sem ele, dois logins no mesmo segundo geram o mesmo token
-      // e o logout de uma sessão revogaria a outra
       { expiresIn: JWT_EXPIRATION, jwtid: randomUUID() } as SignOptions
     );
 
@@ -114,7 +110,6 @@ export const authService = {
         if (ttl > 0) {
           tokenBlocklist.add(token);
 
-          // unref: o timer não impede o processo de encerrar (ex.: fim dos testes)
           setTimeout(() => {
             tokenBlocklist.delete(token);
           }, ttl * 1000).unref();

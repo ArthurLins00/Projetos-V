@@ -7,7 +7,6 @@ jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'))
 jest.mock('../../utils/cache', () => ({ invalidateMetricsCache: jest.fn() }));
 import { prisma } from '../../config/__mocks__/prisma';
 
-// Rotas /demands e /categories: validação, autorização e formato das respostas
 describe('API de Demandas (/demands)', () => {
   const cidadao = { id: 'cidadao-1', nome: 'Cidadão', email: 'cidadao@example.com', perfil: 'Cidadao', status: 'Ativo' };
   const tokenCidadao = jwt.sign({ id: cidadao.id, email: cidadao.email, perfil: cidadao.perfil }, JWT_SECRET, {
@@ -36,7 +35,6 @@ describe('API de Demandas (/demands)', () => {
   const auth = { Authorization: `Bearer ${tokenCidadao}` };
 
   beforeEach(() => {
-    // authMiddleware busca o usuário do token no banco
     prisma.usuario.findUnique.mockResolvedValue(cidadao as any);
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
   });
@@ -155,7 +153,6 @@ describe('API de Demandas (/demands)', () => {
 
   it('PUT /demands/:id/photo aceita corpo maior que o limite padrão de 100kb', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
-    // ~300kb de dados não-imagem: deve chegar ao service (400 de formato), não ser barrado com 413
     const grande = Buffer.alloc(300 * 1024, 1).toString('base64');
 
     const response = await request(app).put('/demands/chamado-1/photo').set(auth).send({ photo: grande });

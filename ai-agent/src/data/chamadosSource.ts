@@ -1,16 +1,5 @@
-/**
- * Origem dos chamados consultados pelo perfil "acompanhamento".
- *
- * Regra de acesso (mesma do backend, GET /demands):
- *   - Cidadão: só enxerga os próprios chamados;
- *   - Gestor / Admin: enxergam todos.
- * No modo integrado quem aplica a regra é o BACKEND, porque a consulta usa o JWT do próprio
- * usuário: o agente nunca tem mais acesso do que a pessoa que está conversando com ele.
- */
-
 export type Perfil = 'Cidadao' | 'Gestor' | 'Admin';
 
-/** Projeção devolvida ao modelo: sem nome/e-mail/CPF de quem abriu o chamado (minimização de dados). */
 export interface ChamadoResumo {
   id: string;
   protocolo: string;
@@ -33,8 +22,6 @@ export interface ChamadosSource {
 
 export const STATUS_EXIBICAO = ['Aberto', 'Em Análise', 'Aguardando', 'Em Andamento', 'Resolvido', 'Fechado'] as const;
 
-// ───────────────────────────── Mock (sem backend) ─────────────────────────────
-
 interface ChamadoMock extends ChamadoResumo {
   donoId: string;
 }
@@ -52,7 +39,6 @@ export const CHAMADOS_DEMO: ChamadoMock[] = [
   { id: 'c4', donoId: 'cidadao-vizinho', protocolo: 'DEM-20261003-E8SG', titulo: 'Esgoto a céu aberto', categoria: 'Água e Esgoto', status: 'Em Análise', endereco: 'Rua da Aurora, 80', criado_em: '2026-10-03T07:20:00Z', atualizado_em: '2026-10-04T11:00:00Z' },
 ];
 
-/** Simula o backend em memória, aplicando a mesma regra de acesso por perfil. */
 export class MockChamadosSource implements ChamadosSource {
   constructor(private readonly usuario: { id: string; perfil: Perfil }) {}
 
@@ -66,9 +52,6 @@ export class MockChamadosSource implements ChamadosSource {
   }
 }
 
-// ──────────────────────────── API real do Fiscalize ────────────────────────────
-
-// Valores do enum aceitos pelo filtro ?status= de GET /demands
 const STATUS_API: Record<string, string> = {
   Aberto: 'Aberto',
   'Em Análise': 'Em_An_lise',
@@ -89,7 +72,6 @@ interface DemandApi {
   updatedAt: string;
 }
 
-/** Consulta GET /demands do backend com o token do usuário que está no chat. */
 export class BackendChamadosSource implements ChamadosSource {
   constructor(private readonly apiUrl: string, private readonly token: string) {}
 
@@ -111,7 +93,6 @@ export class BackendChamadosSource implements ChamadosSource {
       throw new Error(body.error ?? `Falha ao consultar chamados (HTTP ${response.status}).`);
     }
 
-    // Projeção explícita: o campo `creator` (nome/e-mail) da API é descartado.
     return (body.data ?? []).map((d) => ({
       id: d.id,
       protocolo: d.protocolo,
