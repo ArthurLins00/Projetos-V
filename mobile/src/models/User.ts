@@ -10,3 +10,15 @@ export interface User {
 export interface LoginResponse extends User {
   token: string;
 }
+
+export interface UserProfile extends User {
+  status: string;
+  criadoem: string;
+}
+
+export interface UpdateProfilePayload {
+  nome?: string;
+  email?: string;
+  senhaAtual?: string;
+  novaSenha?: string;
+}

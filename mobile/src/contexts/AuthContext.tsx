@@ -9,6 +9,7 @@ interface AuthContextData {
   isLoading: boolean;
   signIn: (email: string, senha: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -58,8 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUser = async (updated: User) => {
+    const { id, nome, email, perfil } = updated;
+    const userData = { id, nome, email, perfil };
+    await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

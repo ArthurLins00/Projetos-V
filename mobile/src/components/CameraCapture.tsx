@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { CameraView, CameraType } from 'expo-camera';
+import { Ionicons } from '@expo/vector-icons';
+import { darkColors as colors } from '../theme';
 
 interface Props {
   visible: boolean;
@@ -39,19 +41,21 @@ export function CameraCapture({ visible, onCapture, onClose }: Props) {
           />
         )}
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.sideButton} onPress={onClose}>
-            <Text style={styles.sideText}>Cancelar</Text>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" style={styles.sideButton} onPress={onClose}>
+            <Ionicons name="close" size={26} color={colors.onPrimary} />
           </TouchableOpacity>
 
           <TouchableOpacity testID="camera-shutter" accessibilityRole="button" accessibilityLabel="Tirar foto" style={styles.shutter} onPress={takePicture} disabled={!ready || capturing}>
-            {capturing ? <ActivityIndicator color="#007BFF" /> : <View style={styles.shutterInner} />}
+            {capturing ? <ActivityIndicator color={colors.primary} /> : <View style={styles.shutterInner} />}
           </TouchableOpacity>
 
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Virar câmera"
             style={styles.sideButton}
             onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
           >
-            <Text style={styles.sideText}>Virar</Text>
+            <Ionicons name="camera-reverse-outline" size={26} color={colors.onPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -62,9 +66,8 @@ export function CameraCapture({ visible, onCapture, onClose }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   camera: { flex: 1 },
-  controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingVertical: 30, backgroundColor: '#000' },
-  sideButton: { width: 80, alignItems: 'center' },
-  sideText: { color: '#fff', fontWeight: 'bold' },
+  controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingTop: 24, paddingBottom: 40, backgroundColor: '#000' },
+  sideButton: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF26' },
   shutter: { width: 72, height: 72, borderRadius: 36, borderWidth: 4, borderColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   shutterInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff' },
 });

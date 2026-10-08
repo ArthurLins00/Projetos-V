@@ -4,17 +4,19 @@ import {
   Text,
   TextInput,
   FlatList,
-  TouchableOpacity,
-  StyleSheet,
+  Pressable,
+  
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAssistantViewModel } from '../viewmodels/useAssistantViewModel';
 import { ChatMessage } from '../models/Assistant';
-import { STATUS_COLORS } from '../models/Demand';
+import { StatusBadge } from '../components/ui';
+import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 function toPlainMarkdown(text: string) {
   return text
@@ -23,6 +25,7 @@ function toPlainMarkdown(text: string) {
 }
 
 function RichText({ text, style }: { text: string; style: object }) {
+  const styles = useStyles();
   const parts = toPlainMarkdown(text).split(/\*\*(.+?)\*\*/g);
   return (
     <Text style={style}>
@@ -31,29 +34,47 @@ function RichText({ text, style }: { text: string; style: object }) {
   );
 }
 
+function BotAvatar() {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={styles.avatar}>
+      <Ionicons name="sparkles" size={14} color={colors.onPrimary} />
+    </View>
+  );
+}
+
 export function AssistantView() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const vm = useAssistantViewModel();
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  const canSend = !!vm.input.trim() && !vm.sending;
 
   const renderMessage = ({ item }: { item: ChatMessage }) => {
     const isUser = item.role === 'user';
     return (
-      <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble, item.error && styles.errorBubble]}>
-        <RichText text={item.text} style={isUser ? styles.userText : styles.botText} />
-        {item.demands?.map((demand) => (
-          <TouchableOpacity
-            key={demand.id}
-            testID="assistant-demand-link"
-            accessibilityRole="button"
-            style={styles.demandLink}
-            onPress={() => vm.openDemand(demand.id)}
-          >
-            <Text style={styles.demandProtocol}>{demand.protocolo}</Text>
-            <Text style={[styles.demandStatus, { color: STATUS_COLORS[demand.status] ?? '#666' }]}>{demand.status}</Text>
-            <Text style={styles.demandOpen}>Abrir ›</Text>
-          </TouchableOpacity>
-        ))}
+      <View style={[styles.row, isUser && styles.rowUser]}>
+        {!isUser && <BotAvatar />}
+        <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble, item.error && styles.errorBubble]}>
+          <RichText text={item.text} style={isUser ? styles.userText : styles.botText} />
+          {item.demands?.map((demand) => (
+            <Pressable
+              key={demand.id}
+              testID="assistant-demand-link"
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.demandLink, pressed && styles.pressed]}
+              onPress={() => vm.openDemand(demand.id)}
+            >
+              <View style={styles.demandInfo}>
+                <Text style={styles.demandProtocol} numberOfLines={1}>{demand.protocolo}</Text>
+                <StatusBadge status={demand.status} />
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+            </Pressable>
+          ))}
+        </View>
       </View>
     );
   };
@@ -67,9 +88,10 @@ export function AssistantView() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <TouchableOpacity testID="assistant-clear" accessibilityRole="button" onPress={vm.clear}>
+            <Pressable testID="assistant-clear" accessibilityRole="button" hitSlop={8} style={styles.clear} onPress={vm.clear}>
+              <Ionicons name="refresh" size={16} color={colors.primary} />
               <Text style={styles.clearText}>Limpar</Text>
-            </TouchableOpacity>
+            </Pressable>
           ),
         }}
       />
@@ -86,22 +108,26 @@ export function AssistantView() {
         ListFooterComponent={
           <>
             {vm.sending && (
-              <View style={[styles.bubble, styles.botBubble, styles.typing]}>
-                <ActivityIndicator size="small" color="#007BFF" />
-                <Text style={styles.typingText}>Consultando seus chamados…</Text>
+              <View style={styles.row}>
+                <BotAvatar />
+                <View style={[styles.bubble, styles.botBubble, styles.typing]}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={styles.typingText}>Consultando seus chamados…</Text>
+                </View>
               </View>
             )}
             {vm.suggestions.length > 0 && (
               <View style={styles.suggestions}>
                 {vm.suggestions.map((suggestion) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={suggestion}
                     accessibilityRole="button"
-                    style={styles.suggestion}
+                    style={({ pressed }) => [styles.suggestion, pressed && styles.pressed]}
                     onPress={() => vm.send(suggestion)}
                   >
+                    <Ionicons name="chatbubble-ellipses-outline" size={15} color={colors.primary} />
                     <Text style={styles.suggestionText}>{suggestion}</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             )}
@@ -110,55 +136,81 @@ export function AssistantView() {
       />
 
       <View style={[styles.inputBar, { paddingBottom: 10 + insets.bottom }]}>
-        <TextInput
-          testID="assistant-input"
-          style={styles.input}
-          placeholder="Pergunte sobre seus chamados…"
-          value={vm.input}
-          onChangeText={vm.setInput}
-          onSubmitEditing={() => vm.send()}
-          returnKeyType="send"
-          maxLength={1000}
-          editable={!vm.sending}
-        />
-        <TouchableOpacity
-          testID="assistant-send"
-          accessibilityRole="button"
-          accessibilityLabel="Enviar mensagem"
-          style={[styles.sendButton, (!vm.input.trim() || vm.sending) && styles.sendDisabled]}
-          onPress={() => vm.send()}
-          disabled={!vm.input.trim() || vm.sending}
-        >
-          <Text style={styles.sendText}>➤</Text>
-        </TouchableOpacity>
+        <View style={styles.inputWrap}>
+          <TextInput
+            testID="assistant-input"
+            style={styles.input}
+            placeholder="Pergunte sobre seus chamados…"
+            placeholderTextColor={colors.textSubtle}
+            value={vm.input}
+            onChangeText={vm.setInput}
+            onSubmitEditing={() => vm.send()}
+            returnKeyType="send"
+            maxLength={1000}
+            editable={!vm.sending}
+          />
+          <Pressable
+            testID="assistant-send"
+            accessibilityRole="button"
+            accessibilityLabel="Enviar mensagem"
+            style={[styles.sendButton, !canSend && styles.sendDisabled]}
+            onPress={() => vm.send()}
+            disabled={!canSend}
+          >
+            <Ionicons name="arrow-up" size={20} color={colors.onPrimary} />
+          </Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  list: { padding: 15, paddingBottom: 20 },
-  bubble: { maxWidth: '85%', padding: 12, borderRadius: 14, marginBottom: 10 },
-  userBubble: { alignSelf: 'flex-end', backgroundColor: '#007BFF', borderBottomRightRadius: 4 },
-  botBubble: { alignSelf: 'flex-start', backgroundColor: '#fff', borderBottomLeftRadius: 4, elevation: 1 },
-  errorBubble: { backgroundColor: '#FDECEA' },
-  userText: { color: '#fff', fontSize: 15 },
-  botText: { color: '#333', fontSize: 15, lineHeight: 21 },
-  bold: { fontWeight: 'bold' },
-  demandLink: { flexDirection: 'row', alignItems: 'center', marginTop: 8, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, backgroundColor: '#F0F6FF', gap: 8 },
-  demandProtocol: { fontWeight: 'bold', color: '#333', flexShrink: 1 },
-  demandStatus: { fontWeight: '600', flex: 1 },
-  demandOpen: { color: '#007BFF', fontWeight: 'bold' },
+const useStyles = makeStyles((colors) => ({
+  container: { flex: 1, backgroundColor: colors.background },
+  list: { padding: 16, paddingBottom: 20 },
+  row: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginBottom: 12 },
+  rowUser: { justifyContent: 'flex-end' },
+  avatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 11, borderRadius: radius.lg },
+  userBubble: { backgroundColor: colors.primary, borderBottomRightRadius: 6 },
+  botBubble: { backgroundColor: colors.surface, borderBottomLeftRadius: 6, ...shadow(1) },
+  errorBubble: { backgroundColor: colors.dangerSoft },
+  userText: { color: colors.onPrimary, fontSize: 15, lineHeight: 21 },
+  botText: { color: colors.text, fontSize: 15, lineHeight: 22 },
+  bold: { fontWeight: '700' },
+  demandLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    padding: 10,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+  },
+  demandInfo: { flex: 1, gap: 6 },
+  demandProtocol: { fontWeight: '700', color: colors.text, fontSize: 14 },
+  pressed: { opacity: 0.75 },
   typing: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  typingText: { color: '#666' },
-  suggestions: { gap: 8, marginTop: 4 },
-  suggestion: { alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#007BFF' },
-  suggestionText: { color: '#007BFF' },
-  inputBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 10, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee', gap: 8 },
-  input: { flex: 1, backgroundColor: '#f5f5f5', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, fontSize: 15 },
-  sendButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#007BFF', justifyContent: 'center', alignItems: 'center' },
-  sendDisabled: { backgroundColor: '#9CC8FF' },
-  sendText: { color: '#fff', fontSize: 18 },
-  clearText: { color: '#007BFF', fontWeight: 'bold' },
-});
+  typingText: { color: colors.textMuted },
+  suggestions: { gap: 8, marginTop: 4, paddingLeft: 36 },
+  suggestion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  suggestionText: { color: colors.text, fontSize: 14, fontWeight: '500' },
+  inputBar: { paddingHorizontal: 12, paddingTop: 10, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 16, paddingRight: 5, minHeight: 50, borderRadius: radius.pill, backgroundColor: colors.surfaceMuted },
+  input: { flex: 1, fontSize: 15, color: colors.text, paddingVertical: 10 },
+  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' },
+  sendDisabled: { backgroundColor: colors.textSubtle },
+  clear: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  clearText: { color: colors.primary, fontWeight: '700' },
+}));

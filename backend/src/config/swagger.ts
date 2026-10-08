@@ -320,6 +320,52 @@ export const openApiSpec = {
           401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
+      put: {
+        tags: ['Auth'],
+        summary: 'Atualizar dados do usuário autenticado (nome, e-mail e/ou senha)',
+        description: 'Alterar e-mail ou senha exige `senhaAtual`. O nome pode ser alterado sem ela.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  nome: { type: 'string', maxLength: 150, example: 'Maria da Silva' },
+                  email: { type: 'string', format: 'email', maxLength: 100, example: 'maria@email.com' },
+                  senhaAtual: { type: 'string', example: 'Cidadao@123456' },
+                  novaSenha: { type: 'string', minLength: 6, example: 'NovaSenha@123' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/AuthUser' },
+                    {
+                      type: 'object',
+                      properties: {
+                        status: { type: 'string', enum: ['Ativo', 'Inativo'] },
+                        criadoem: { type: 'string', format: 'date-time' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { description: 'Não autenticado ou senha atual incorreta' },
+          409: { $ref: '#/components/responses/Conflict' },
+        },
+      },
     },
 
     '/demands': {

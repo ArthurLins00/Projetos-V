@@ -28,10 +28,13 @@ appId: com.projetosv.fiscalize
 - setLocation:
     latitude: -8.0476
     longitude: -34.877
+- scrollUntilVisible:
+    element:
+      id: "form-gps"
 - tapOn:
     id: "form-gps"
 - extendedWaitUntil:
-    visible: "📍 GPS OK"
+    visible: "GPS OK"
     timeout: 15000
 
 - tapOn:
