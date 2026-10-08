@@ -24,6 +24,9 @@ cidadão acompanha o andamento pelo app até a resolução.
   **filtro por status**, paginação e "puxar para atualizar".
 - **Detalhe** da ocorrência com foto, coordenadas e histórico de alterações.
 - **Editar e remover** a ocorrência enquanto ela ainda não está em andamento.
+- **Assistente de IA** (balão 💬 na tela inicial): responde em linguagem natural sobre o status de
+  um ou mais chamados, usando Gemini com function calling. O cidadão consulta só os próprios
+  chamados; gestor e admin, todos. Detalhes em [`ai-agent/README.md`](ai-agent/README.md#integração-com-o-app-fiscalize).
 - **Perfis:** Cidadão, Gestor e Admin, com permissões hierárquicas. O gestor vê a fila do seu órgão
   e atualiza o status das ocorrências.
 
@@ -57,6 +60,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── backend/          API REST (Express + Prisma), seed do banco e testes unitários/API
 ├── mobile/           App React Native (Expo) e fluxos E2E do Maestro (mobile/e2e)
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
+├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
 ├── TESTES.md         O que cada nível de teste cobre e como rodar
 └── package.json      Scripts que rodam toda a suíte de testes
 ```

@@ -7,6 +7,7 @@ import demandRoutes from './routes/demandRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import adminRoutes from './routes/adminRoutes';
 import metricsRoutes from './routes/metricsRoutes';
+import aiRoutes from './routes/aiRoutes';
 import { errorHandler } from './middlewares/errorMiddleware';
 import { createCorsMiddleware } from './config/cors';
 import { healthCheckHandler } from './config/health';
@@ -43,6 +44,7 @@ app.use('/demands', demandRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/admin', adminRoutes);
 app.use('/metrics', metricsRoutes);
+app.use('/ai', aiRoutes);
 
 app.use(errorHandler);
 

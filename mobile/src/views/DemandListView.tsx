@@ -73,6 +73,17 @@ export function DemandListView() {
         />
       )}
 
+      {/* Assistente de IA: consulta o status dos chamados (só nesta tela inicial) */}
+      <TouchableOpacity
+        testID="assistant-button"
+        accessibilityRole="button"
+        accessibilityLabel="Abrir assistente de chamados"
+        style={[styles.fab, styles.assistantFab, { bottom: 20 + insets.bottom }]}
+        onPress={vm.openAssistant}
+      >
+        <Text style={styles.assistantFabText}>💬</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
         testID="new-demand-button"
         accessibilityRole="button"
@@ -103,5 +114,7 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 100 },
   empty: { textAlign: 'center', marginTop: 20, color: '#666' },
   fab: { position: 'absolute', right: 20, backgroundColor: '#007BFF', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
-  fabText: { color: '#fff', fontSize: 30, fontWeight: 'bold', marginTop: -2 }
+  fabText: { color: '#fff', fontSize: 30, fontWeight: 'bold', marginTop: -2 },
+  assistantFab: { right: undefined, left: 20, backgroundColor: '#fff', borderWidth: 2, borderColor: '#007BFF' },
+  assistantFabText: { fontSize: 26 }
 });

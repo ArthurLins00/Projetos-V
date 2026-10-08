@@ -1,0 +1,27 @@
+{
+  "name": "fiscalize-ai-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fiscalize — Agente conversacional (Gemini + Function Calling) para triagem de ocorrências urbanas (AV2, Trilha B)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "demo": "tsx scripts/demo.ts",
+    "serve": "tsx src/serve.ts",
+    "test": "node --import tsx --test --test-reporter=spec \"tests/*.test.ts\"",
+    "test:live": "node --import tsx --test --test-reporter=spec \"tests/live/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.21.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
