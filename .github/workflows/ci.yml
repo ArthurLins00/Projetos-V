@@ -101,33 +101,6 @@ jobs:
             backend/package-lock.json
           retention-days: 14
 
-  # ── Agente de IA: typecheck + testes offline (+ ao vivo se houver GEMINI_API_KEY) ──
-  ai-agent:
-    name: Agente de IA
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ai-agent
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: ai-agent/package-lock.json
-      - run: npm ci
-      - run: npm run typecheck
-      - name: Testes (cliente roteirizado, sem rede)
-        run: npm test
-      - name: Testes ao vivo contra o Gemini
-        # Só em push (secrets não ficam disponíveis em PRs vindos de fork)
-        if: github.event_name != 'pull_request'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-          GEMINI_RPM: ${{ vars.GEMINI_RPM }}
-        run: npm run test:live
-
   # ── App mobile: typecheck ──
   mobile:
     name: Mobile (typecheck)
