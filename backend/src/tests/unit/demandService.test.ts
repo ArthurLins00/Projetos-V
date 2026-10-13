@@ -104,6 +104,31 @@ describe('demandService (unitário)', () => {
     });
   });
 
+  describe('create', () => {
+    it('grava estado, cidade e zona e devolve no formato da API', async () => {
+      prisma.categoria.findUnique.mockResolvedValue({ id: 1, ativo: true } as any);
+      prisma.cidadao.findUnique.mockResolvedValue({ id: CIDADAO_ID } as any);
+      prisma.regra_competencia.findFirst.mockResolvedValue(null);
+      prisma.orgao_categoria.findFirst.mockResolvedValue(null);
+      prisma.chamado.create.mockResolvedValue(makeChamado({ uf: 'PE', cidade: 'Recife', zona: 'Rural' }));
+
+      const result = await demandService.create({
+        title: 'Buraco na via',
+        description: 'Buraco grande na pista',
+        categoryId: 1,
+        location: 'Rua das Flores, 123',
+        state: 'PE',
+        city: 'Recife',
+        zone: 'Rural',
+        userId: CIDADAO_ID,
+      });
+
+      const { data } = prisma.chamado.create.mock.calls[0][0] as any;
+      expect(data).toMatchObject({ uf: 'PE', cidade: 'Recife', zona: 'Rural' });
+      expect(result).toMatchObject({ state: 'PE', city: 'Recife', zone: 'Rural' });
+    });
+  });
+
   describe('deleteDemand', () => {
     it('cidadão dono remove a demanda aberta: status vira Fechado e o histórico é registrado', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());

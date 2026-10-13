@@ -3,7 +3,8 @@ import { View, Text, Pressable, Image, ActivityIndicator, ScrollView } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandFormViewModel } from '../viewmodels/useDemandFormViewModel';
 import { CameraCapture } from '../components/CameraCapture';
-import { Button, Chip, TextField } from '../components/ui';
+import { Button, Chip, SelectField, TextField } from '../components/ui';
+import { ZONES } from '../models/Region';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 interface Props {
@@ -103,6 +104,58 @@ export function DemandFormView({ demandId }: Props) {
         />
       </Section>
 
+      <Section title="Região" icon="earth-outline">
+        <SelectField
+          testID="form-state"
+          label="Estado"
+          icon="flag-outline"
+          placeholder="Selecione o estado"
+          searchPlaceholder="Buscar estado"
+          value={vm.stateUf}
+          options={vm.stateOptions}
+          onSelect={vm.selectState}
+        />
+
+        {vm.citiesFailed ? (
+          <TextField
+            testID="form-city-text"
+            label="Cidade"
+            icon="business-outline"
+            placeholder="Digite a cidade"
+            value={vm.city ?? ''}
+            onChangeText={vm.setCity}
+          />
+        ) : (
+          <SelectField
+            testID="form-city"
+            label="Cidade"
+            icon="business-outline"
+            placeholder={vm.stateUf ? 'Selecione a cidade' : 'Escolha o estado primeiro'}
+            searchPlaceholder="Buscar cidade"
+            value={vm.city}
+            options={vm.cityOptions}
+            onSelect={vm.setCity}
+            loading={vm.loadingCities}
+            disabled={!vm.stateUf}
+          />
+        )}
+
+        <Text style={styles.label}>Zona</Text>
+        <View style={styles.chips}>
+          {ZONES.map((option) => (
+            <Chip
+              key={option.value}
+              testID={`form-zone-${option.value}`}
+              accessibilityRole="radio"
+              label={option.label}
+              selected={vm.zone === option.value}
+              onPress={() => vm.setZone(option.value)}
+            />
+          ))}
+        </View>
+        <Text style={styles.hint}>Dica: ao usar o GPS, o estado e a cidade são preenchidos automaticamente.</Text>
+      </Section>
+
       <Section title="Localização e foto" icon="location-outline">
         <View style={styles.tiles}>
           <ActionTile
@@ -160,6 +213,7 @@ const useStyles = makeStyles((colors) => ({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
   label: { fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 8, marginLeft: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  hint: { fontSize: 12, color: colors.textSubtle, marginTop: -6, marginBottom: 14, marginLeft: 2 },
   tiles: { flexDirection: 'row', gap: 12, marginBottom: 14 },
   tile: {
     flex: 1,

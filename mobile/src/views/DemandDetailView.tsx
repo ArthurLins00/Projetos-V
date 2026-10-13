@@ -5,6 +5,7 @@ import { useDemandDetailViewModel } from '../viewmodels/useDemandDetailViewModel
 import { getPhotoUri } from '../services/api';
 import { Button, EmptyState, StatusBadge } from '../components/ui';
 import { LocationMapModal } from '../components/LocationMapModal';
+import { formatRegion } from '../models/Region';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 interface Props {
@@ -50,6 +51,7 @@ export function DemandDetailView({ demandId }: Props) {
 
   const { demand } = vm;
   const photoUri = getPhotoUri(demand.photoUrl);
+  const region = formatRegion(demand.city, demand.state, demand.zone);
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
@@ -67,6 +69,7 @@ export function DemandDetailView({ demandId }: Props) {
       <View style={styles.card}>
         <InfoRow icon="pricetag-outline" label="Categoria" value={demand.category?.nome ?? '—'} />
         <InfoRow icon="location-outline" label="Endereço" value={demand.location} />
+        {region && <InfoRow icon="earth-outline" label="Município e zona" value={region} />}
         <Pressable
           testID="detail-gps-location"
           accessibilityRole="button"

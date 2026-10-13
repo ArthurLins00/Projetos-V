@@ -4,6 +4,36 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 import { demandService } from '../services/demandService';
 import { AppError } from '../middlewares/errorMiddleware';
 
+const UFS = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+];
+const ZONAS = ['Urbana', 'Rural'] as const;
+
+function parseRegion(body: any) {
+  const { state, city, zone } = body ?? {};
+  const region: { state?: string; city?: string; zone?: (typeof ZONAS)[number] } = {};
+
+  if (state !== undefined) {
+    const uf = typeof state === 'string' ? state.trim().toUpperCase() : '';
+    if (!UFS.includes(uf)) throw new AppError(400, 'Estado inválido: informe a sigla da UF (ex: PE).');
+    region.state = uf;
+  }
+
+  if (city !== undefined) {
+    const nome = typeof city === 'string' ? city.trim() : '';
+    if (!nome || nome.length > 100) throw new AppError(400, 'Cidade deve ter entre 1 e 100 caracteres.');
+    region.city = nome;
+  }
+
+  if (zone !== undefined) {
+    if (!ZONAS.includes(zone)) throw new AppError(400, "Zona inválida: use 'Urbana' ou 'Rural'.");
+    region.zone = zone;
+  }
+
+  return region;
+}
+
 export const demandController = {
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -20,6 +50,7 @@ export const demandController = {
         location: String(location),
         ...(latitude !== undefined && { latitude: Number(latitude) }),
         ...(longitude !== undefined && { longitude: Number(longitude) }),
+        ...parseRegion(req.body),
         userId: req.user!.id,
       });
 
@@ -73,6 +104,7 @@ export const demandController = {
         ...(category_id !== undefined && { categoryId: Number(category_id) }),
         ...(latitude !== undefined && { latitude: Number(latitude) }),
         ...(longitude !== undefined && { longitude: Number(longitude) }),
+        ...parseRegion(req.body),
       });
 
       res.status(200).json(demand);

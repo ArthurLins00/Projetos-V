@@ -114,6 +114,24 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/Categoria inválida/i);
   });
 
+  it.each([
+    [{ state: 'XX' }, /Estado inválido/i],
+    [{ state: 'PE', city: '   ' }, /Cidade/i],
+    [{ state: 'PE', city: 'Recife', zone: 'Litoral' }, /Zona inválida/i],
+  ])('POST /demands valida estado, cidade e zona %j (400)', async (region, mensagem) => {
+    const response = await request(app).post('/demands').set(auth).send({
+      title: 'Poste apagado',
+      description: 'Rua escura',
+      category_id: 1,
+      location: 'Rua A, 1',
+      ...region,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatch(mensagem);
+    expect(prisma.chamado.create).not.toHaveBeenCalled();
+  });
+
   it('DELETE /demands/:id: cidadão remove a própria demanda (204)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
 

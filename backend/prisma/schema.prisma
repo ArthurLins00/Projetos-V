@@ -42,6 +42,9 @@ model chamado {
   categoriaid        Int
   subcategoria       String           @db.VarChar(100)
   endereco           String           @db.VarChar(255)
+  uf                 String?          @db.VarChar(2)
+  cidade             String?          @db.VarChar(100)
+  zona               zona?
   latitude           Decimal          @db.Decimal(10, 8)
   longitude          Decimal          @db.Decimal(11, 8)
   status             status_chamado   @default(Aberto)
@@ -345,6 +348,11 @@ enum tipo_orgao {
   Estadual
   Federal
   Concession_ria @map("Concessionária")
+}
+
+enum zona {
+  Urbana
+  Rural
 }
 
 enum tipo_timeline {

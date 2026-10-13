@@ -1,7 +1,7 @@
 import { prisma } from '../config/prisma';
 import { AppError } from '../middlewares/errorMiddleware';
 import { invalidateMetricsCache } from '../utils/cache';
-import { status_chamado } from '@prisma/client';
+import { status_chamado, zona } from '@prisma/client';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
@@ -29,6 +29,9 @@ interface UpdateDemandInput {
   categoryId?: number;
   latitude?: number;
   longitude?: number;
+  state?: string;
+  city?: string;
+  zone?: zona;
 }
 
 interface ListDemandsInput {
@@ -51,6 +54,9 @@ interface CreateDemandInput {
   location: string;
   latitude?: number;
   longitude?: number;
+  state?: string;
+  city?: string;
+  zone?: zona;
   userId: string;
 }
 
@@ -122,6 +128,9 @@ export const demandService = {
         location: c.endereco,
         latitude: Number(c.latitude),
         longitude: Number(c.longitude),
+        state: c.uf,
+        city: c.cidade,
+        zone: c.zona,
         category: c.categoria,
         creator: c.cidadao.usuario,
         photoUrl: c.fotourl,
@@ -165,6 +174,9 @@ export const demandService = {
       location: chamado.endereco,
       latitude: Number(chamado.latitude),
       longitude: Number(chamado.longitude),
+      state: chamado.uf,
+      city: chamado.cidade,
+      zone: chamado.zona,
       category: chamado.categoria,
       creator: chamado.cidadao.usuario,
       photoUrl: chamado.fotourl,
@@ -175,7 +187,7 @@ export const demandService = {
   },
 
   async update(input: UpdateDemandInput) {
-    const { id, userId, title, description, location, categoryId, latitude, longitude } = input;
+    const { id, userId, title, description, location, categoryId, latitude, longitude, state, city, zone } = input;
 
     const chamado = await prisma.chamado.findUnique({
       where: { id },
@@ -236,6 +248,9 @@ export const demandService = {
           ...(categoryId !== undefined && { categoriaid: categoryId }),
           ...(latitude !== undefined && { latitude }),
           ...(longitude !== undefined && { longitude }),
+          ...(state !== undefined && { uf: state }),
+          ...(city !== undefined && { cidade: city }),
+          ...(zone !== undefined && { zona: zone }),
           orgaoid,
           prioridade,
           slahoras,
@@ -260,12 +275,18 @@ export const demandService = {
             subcategoria: chamado.subcategoria,
             descricao: chamado.descricao,
             endereco: chamado.endereco,
+            uf: chamado.uf,
+            cidade: chamado.cidade,
+            zona: chamado.zona,
             categoriaid: chamado.categoriaid,
           },
           dadosnovos: {
             subcategoria: title ?? chamado.subcategoria,
             descricao: description ?? chamado.descricao,
             endereco: location ?? chamado.endereco,
+            uf: state ?? chamado.uf,
+            cidade: city ?? chamado.cidade,
+            zona: zone ?? chamado.zona,
             categoriaid: categoryId ?? chamado.categoriaid,
           },
         },
@@ -287,6 +308,9 @@ export const demandService = {
       location: updated.endereco,
       latitude: Number(updated.latitude),
       longitude: Number(updated.longitude),
+      state: updated.uf,
+      city: updated.cidade,
+      zone: updated.zona,
       status: displayStatus(updated.status),
       photoUrl: updated.fotourl,
       createdAt: updated.criadoem,
@@ -295,7 +319,7 @@ export const demandService = {
   },
 
   async create(input: CreateDemandInput) {
-    const { title, description, categoryId, location, latitude, longitude, userId } = input;
+    const { title, description, categoryId, location, latitude, longitude, state, city, zone, userId } = input;
 
     const categoria = await prisma.categoria.findUnique({ where: { id: categoryId } });
     if (!categoria || !categoria.ativo) {
@@ -349,6 +373,9 @@ export const demandService = {
           endereco: location,
           latitude: latitude ?? 0,
           longitude: longitude ?? 0,
+          uf: state ?? null,
+          cidade: city ?? null,
+          zona: zone ?? null,
           prioridade,
           slahoras,
           sladeadline,
@@ -387,6 +414,9 @@ export const demandService = {
       location: chamado.endereco,
       latitude: Number(chamado.latitude),
       longitude: Number(chamado.longitude),
+      state: chamado.uf,
+      city: chamado.cidade,
+      zone: chamado.zona,
       status: displayStatus(chamado.status),
       photoUrl: chamado.fotourl,
       createdAt: chamado.criadoem,

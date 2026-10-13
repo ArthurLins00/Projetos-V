@@ -25,6 +25,37 @@ appId: com.projetosv.fiscalize
 - inputText: "Poste apagado ha uma semana"
 - hideKeyboard
 
+- scrollUntilVisible:
+    element:
+      id: "form-state"
+- tapOn:
+    id: "form-state"
+- tapOn:
+    id: "form-state-search"
+- inputText: "Pernambuco"
+- tapOn:
+    id: "form-state-option-PE"
+- tapOn:
+    id: "form-city"
+- extendedWaitUntil:
+    visible:
+      id: "form-city-search"
+    timeout: 10000
+- tapOn:
+    id: "form-city-search"
+- inputText: "Recife"
+- extendedWaitUntil:
+    visible:
+      id: "form-city-option-Recife"
+    timeout: 15000
+- tapOn:
+    id: "form-city-option-Recife"
+- scrollUntilVisible:
+    element:
+      id: "form-zone-Urbana"
+- tapOn:
+    id: "form-zone-Urbana"
+
 - setLocation:
     latitude: -8.0476
     longitude: -34.877

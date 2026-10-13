@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { useCameraPermissions } from 'expo-camera';
 import { demandService } from '../services/demandService';
 import { categoryService } from '../services/categoryService';
+import { cityService } from '../services/cityService';
 import { getApiErrorMessage, getPhotoUri } from '../services/api';
 import { Category } from '../models/Category';
 import { DemandPayload } from '../models/Demand';
+import { BRAZIL_STATES, findStateUf, normalizeText, Zone } from '../models/Region';
 
 type Coords = { latitude: number; longitude: number };
 
@@ -23,6 +25,12 @@ export function useDemandFormViewModel(demandId?: string) {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [savedPhotoUri, setSavedPhotoUri] = useState<string | null>(null);
+  const [stateUf, setStateUf] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+  const [zone, setZone] = useState<Zone | null>(null);
+  const [cities, setCities] = useState<string[]>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [citiesFailed, setCitiesFailed] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -48,6 +56,9 @@ export function useDemandFormViewModel(demandId?: string) {
           setCategoryId(demand.category.id);
           setLocationText(demand.location);
           setCoords({ latitude: demand.latitude, longitude: demand.longitude });
+          setStateUf(demand.state ?? null);
+          setCity(demand.city ?? null);
+          setZone(demand.zone ?? null);
           const remotePhoto = getPhotoUri(demand.photoUrl);
           setSavedPhotoUri(remotePhoto);
           setPhotoUri(remotePhoto);
@@ -63,6 +74,41 @@ export function useDemandFormViewModel(demandId?: string) {
       active = false;
     };
   }, [demandId]);
+
+  useEffect(() => {
+    if (!stateUf) {
+      setCities([]);
+      return;
+    }
+    let active = true;
+    setLoadingCities(true);
+    setCitiesFailed(false);
+    cityService
+      .listByState(stateUf)
+      .then((list) => {
+        if (!active) return;
+        setCities(list);
+        setCity((current) => (current ? list.find((name) => normalizeText(name) === normalizeText(current)) ?? current : current));
+      })
+      .catch(() => {
+        if (active) setCitiesFailed(true);
+      })
+      .finally(() => {
+        if (active) setLoadingCities(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [stateUf]);
+
+  const stateOptions = useMemo(() => BRAZIL_STATES.map((state) => ({ value: state.uf, label: `${state.nome} (${state.uf})` })), []);
+  const cityOptions = useMemo(() => cities.map((name) => ({ value: name, label: name })), [cities]);
+
+  const selectState = (uf: string) => {
+    if (uf === stateUf) return;
+    setStateUf(uf);
+    setCity(null);
+  };
 
   const openCamera = async () => {
     let granted = cameraPermission?.granted;
@@ -96,11 +142,19 @@ export function useDemandFormViewModel(demandId?: string) {
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setCoords({ latitude: current.coords.latitude, longitude: current.coords.longitude });
 
-      if (!locationText) {
+      const needsAddress = !locationText;
+      const needsRegion = !stateUf || !city;
+      if (needsAddress || needsRegion) {
         const [address] = await Location.reverseGeocodeAsync(current.coords).catch(() => []);
-        if (address) {
+        if (address && needsAddress) {
           const parts = [address.street, address.streetNumber, address.district, address.city].filter(Boolean);
           if (parts.length) setLocationText(parts.join(', '));
+        }
+        const detectedUf = findStateUf(address?.region);
+        const detectedCity = address?.city ?? address?.subregion;
+        if (needsRegion && detectedUf && detectedCity) {
+          setStateUf(detectedUf);
+          setCity(detectedCity);
         }
       }
     } catch {
@@ -114,6 +168,9 @@ export function useDemandFormViewModel(demandId?: string) {
     if (!title.trim() || !description.trim() || !categoryId || !locationText.trim() || !coords) {
       return Alert.alert('Erro', 'Preencha todos os campos e capture o GPS.');
     }
+    if (!stateUf || !city?.trim() || !zone) {
+      return Alert.alert('Erro', 'Informe o estado, a cidade e se o local é de zona urbana ou rural.');
+    }
 
     const payload: DemandPayload = {
       title: title.trim(),
@@ -122,6 +179,9 @@ export function useDemandFormViewModel(demandId?: string) {
       location: locationText.trim(),
       latitude: coords.latitude,
       longitude: coords.longitude,
+      state: stateUf,
+      city: city.trim(),
+      zone,
     };
 
     try {
@@ -166,6 +226,16 @@ export function useDemandFormViewModel(demandId?: string) {
     locationText,
     setLocationText,
     coords,
+    stateUf,
+    selectState,
+    stateOptions,
+    city,
+    setCity,
+    cityOptions,
+    loadingCities,
+    citiesFailed,
+    zone,
+    setZone,
     photoUri,
     hasNewPhoto: !!photoBase64,
     categories,
