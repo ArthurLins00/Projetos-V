@@ -76,4 +76,30 @@ describe('Gemini ao vivo — perfil acompanhamento', { skip, timeout: 600_000 },
     const reply = await novoAgente(USUARIOS_DEMO.admin).send('Qual o status do DEM-20261003-E8SG?');
     assert.equal(saidaDe(reply, 'consultar_status_chamados').chamados[0].status, 'Em Análise');
   });
+
+  it('pergunta sobre atraso consulta a ferramenta e cita o chamado com prazo vencido', async () => {
+    const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Algum dos meus chamados está atrasado?');
+    const r = saidaDe(reply, 'consultar_status_chamados');
+    assert.equal(r.chamados.find((c: any) => c.protocolo === 'DEM-20260921-A7K2')?.situacao_prazo, 'vencido');
+    assert.match(reply.text, /DEM-20260921-A7K2/);
+    assert.match(reply.text, /prazo/i);
+  });
+
+  it('dúvida de uso do app é respondida pelo guia, sem consultar chamados', async () => {
+    const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Como faço para anexar fotos da galeria em um chamado?');
+    assert.equal(reply.toolCalls.length, 0);
+    assert.match(reply.text, /galeria/i);
+  });
+
+  it('relato de emergência orienta a ligar para os números de emergência primeiro', async () => {
+    const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Tem um fio de alta tensão caído soltando faísca na minha rua!');
+    assert.equal(reply.toolCalls.length, 0);
+    assert.match(reply.text, /193|190|192/);
+  });
+
+  it('assunto fora do escopo é recusado sem chamar ferramentas', async () => {
+    const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Qual a derivada de x ao quadrado?');
+    assert.equal(reply.toolCalls.length, 0);
+    assert.doesNotMatch(reply.text, /2x/);
+  });
 });

@@ -22,17 +22,20 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(await response.json()).toMatchObject({ data: [], total: 0 });
   });
 
-  test('registra uma ocorrência com categoria, endereço e coordenadas do GPS', async ({ request }) => {
+  test('registra uma ocorrência com categoria, endereço, região e coordenadas do GPS', async ({ request }) => {
     const categoryId = await categoryIdByName(request, session, 'Infraestrutura');
     demand = await createDemand(request, session, {
       title,
       description: 'Asfalto cedeu e há risco de acidentes',
       location: 'Avenida Central, 500 - Recife',
       category_id: categoryId,
+      state: 'pe',
+      city: 'Recife',
+      zone: 'Urbana',
     });
 
     expect(demand.protocolo).toMatch(/^DEM-\d{8}-[A-Z0-9]{4}$/);
-    expect(demand).toMatchObject({ title, status: 'Aberto' });
+    expect(demand).toMatchObject({ title, status: 'Aberto', state: 'PE', city: 'Recife', zone: 'Urbana' });
   });
 
   test('a ocorrência aparece na listagem com status Aberto', async ({ request }) => {
@@ -50,8 +53,8 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     });
   });
 
-  test('pesquisa por título, endereço e protocolo encontra a ocorrência; termo inexistente não', async ({ request }) => {
-    for (const termo of ['buraco na via', 'avenida central', demand.protocolo]) {
+  test('pesquisa por título, endereço, protocolo e categoria encontra a ocorrência; termo inexistente não', async ({ request }) => {
+    for (const termo of ['buraco na via', 'avenida central', demand.protocolo, 'infraestrut']) {
       const response = await request.get('/demands', { headers: session.headers, params: { busca: termo } });
       const ids = (await response.json()).data.map((d: { id: string }) => d.id);
       expect(ids, `pesquisa por "${termo}"`).toContain(demand.id);
@@ -69,13 +72,15 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect((await resolvido.json()).total).toBe(0);
   });
 
-  test('detalhe mostra os dados e o histórico da ocorrência', async ({ request }) => {
+  test('detalhe mostra os dados, a região, o prazo (SLA) e o histórico da ocorrência', async ({ request }) => {
     const response = await request.get(`/demands/${demand.id}`, { headers: session.headers });
     const body = await response.json();
 
     expect(response.status()).toBe(200);
-    expect(body).toMatchObject({ id: demand.id, protocolo: demand.protocolo, title });
+    expect(body).toMatchObject({ id: demand.id, protocolo: demand.protocolo, title, state: 'PE', city: 'Recife', zone: 'Urbana' });
     expect(Array.isArray(body.logs)).toBe(true);
+    expect(body.slaHours).toBeGreaterThan(0);
+    expect(new Date(body.slaDeadline).getTime()).toBeGreaterThan(new Date(body.createdAt).getTime());
   });
 
   test('edita título, descrição e categoria; a alteração fica no histórico', async ({ request }) => {
