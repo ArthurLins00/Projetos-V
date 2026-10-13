@@ -42,11 +42,13 @@ model chamado {
   categoriaid        Int
   subcategoria       String           @db.VarChar(100)
   endereco           String           @db.VarChar(255)
+  uf                 String?          @db.VarChar(2)
+  cidade             String?          @db.VarChar(100)
+  zona               zona?
   latitude           Decimal          @db.Decimal(10, 8)
   longitude          Decimal          @db.Decimal(11, 8)
   status             status_chamado   @default(Aberto)
   prioridade         prioridade
-  fotourl            String?          @db.VarChar(500)
   slahoras           Int
   sladeadline        DateTime         @db.Timestamp(6)
   slaencerradoha     Decimal?         @db.Decimal(8, 2)
@@ -61,6 +63,7 @@ model chamado {
   orgao              orgao?           @relation(fields: [orgaoid], references: [id], onUpdate: NoAction)
   notificacao        notificacao[]
   timeline_event     timeline_event[]
+  chamado_foto       chamado_foto[]
 
   @@index([categoriaid], map: "idx_chamado_categoria")
   @@index([cidadaoid, criadoem(sort: Desc)], map: "idx_chamado_cidadao")
@@ -77,6 +80,16 @@ model chamado {
   @@index([gestorid, status, criadoem(sort: Desc)], map: "idx_fila_gestor", where: raw("((gestorid IS NOT NULL) AND (status = ANY (ARRAY['Aberto'::status_chamado, 'Em Análise'::status_chamado])))"))
   @@index([orgaoid, status, atualizadoem(sort: Desc)], map: "idx_relatorio_resolucao", where: raw("(status = ANY (ARRAY['Resolvido'::status_chamado, 'Fechado'::status_chamado]))"))
   @@index([orgaoid, sladeadline], map: "idx_sla_vencido", where: raw("(status <> ALL (ARRAY['Resolvido'::status_chamado, 'Fechado'::status_chamado]))"))
+}
+
+model chamado_foto {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  chamadoid String   @db.Uuid
+  url       String   @db.VarChar(500)
+  criadoem  DateTime @default(now()) @db.Timestamp(6)
+  chamado   chamado  @relation(fields: [chamadoid], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([chamadoid, criadoem], map: "idx_chamado_foto_chamado")
 }
 
 model cidadao {
@@ -345,6 +358,11 @@ enum tipo_orgao {
   Estadual
   Federal
   Concession_ria @map("Concessionária")
+}
+
+enum zona {
+  Urbana
+  Rural
 }
 
 enum tipo_timeline {

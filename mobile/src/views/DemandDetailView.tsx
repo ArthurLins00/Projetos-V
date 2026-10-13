@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, ScrollView, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandDetailViewModel } from '../viewmodels/useDemandDetailViewModel';
 import { getPhotoUri } from '../services/api';
+import { PhotoCarousel } from '../components/PhotoCarousel';
 import { Button, EmptyState, StatusBadge } from '../components/ui';
+import { LocationMapModal } from '../components/LocationMapModal';
+import { formatRegion } from '../models/Region';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 interface Props {
@@ -48,11 +51,12 @@ export function DemandDetailView({ demandId }: Props) {
   }
 
   const { demand } = vm;
-  const photoUri = getPhotoUri(demand.photoUrl);
+  const photoUris = (demand.photos ?? []).map((photo) => getPhotoUri(photo.url)!);
+  const region = formatRegion(demand.city, demand.state, demand.zone);
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-      {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
+      {photoUris.length > 0 && <PhotoCarousel uris={photoUris} />}
 
       <View style={styles.card}>
         <View style={styles.headerRow}>
@@ -66,7 +70,35 @@ export function DemandDetailView({ demandId }: Props) {
       <View style={styles.card}>
         <InfoRow icon="pricetag-outline" label="Categoria" value={demand.category?.nome ?? '—'} />
         <InfoRow icon="location-outline" label="Endereço" value={demand.location} />
-        <InfoRow icon="navigate-outline" label="Coordenadas (GPS)" value={`${demand.latitude.toFixed(6)}, ${demand.longitude.toFixed(6)}`} />
+        {region && <InfoRow icon="earth-outline" label="Município e zona" value={region} />}
+        <Pressable
+          testID="detail-gps-location"
+          accessibilityRole="button"
+          accessibilityLabel="Ver localização no mapa"
+          onPress={vm.openMap}
+          style={({ pressed }) => [styles.infoRow, pressed && styles.pressed]}
+        >
+          <View style={styles.infoIcon}>
+            <Ionicons name="navigate-outline" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.infoText}>
+            <Text style={styles.infoLabel}>Localização (GPS)</Text>
+            {vm.resolvingAddress ? (
+              <ActivityIndicator size="small" color={colors.primary} style={styles.addressLoader} />
+            ) : vm.gpsAddress ? (
+              <>
+                <Text style={styles.infoValue}>{vm.gpsAddress.street}</Text>
+                {!!vm.gpsAddress.area && <Text style={styles.addressArea}>{vm.gpsAddress.area}</Text>}
+              </>
+            ) : (
+              <Text style={styles.infoValue}>Ver no mapa</Text>
+            )}
+            <Text style={styles.coords}>
+              {demand.latitude.toFixed(6)}, {demand.longitude.toFixed(6)}
+            </Text>
+          </View>
+          <Ionicons name="map-outline" size={20} color={colors.primary} />
+        </Pressable>
         <InfoRow icon="time-outline" label="Registrada em" value={new Date(demand.createdAt).toLocaleString('pt-BR')} />
       </View>
 
@@ -103,6 +135,14 @@ export function DemandDetailView({ demandId }: Props) {
           <Text style={styles.lockedText}>Esta demanda não pode mais ser editada ou removida ({demand.status}).</Text>
         </View>
       )}
+
+      <LocationMapModal
+        visible={vm.mapVisible}
+        latitude={demand.latitude}
+        longitude={demand.longitude}
+        address={vm.gpsAddress}
+        onClose={vm.closeMap}
+      />
     </ScrollView>
   );
 }
@@ -111,7 +151,6 @@ const useStyles = makeStyles((colors) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   container: { padding: 16, paddingBottom: 40 },
-  photo: { width: '100%', height: 220, borderRadius: radius.lg, marginBottom: 14, backgroundColor: colors.surfaceMuted },
   card: { backgroundColor: colors.surface, padding: 18, borderRadius: radius.lg, marginBottom: 14, ...shadow(1) },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   protocol: { fontSize: 12, fontWeight: '600', color: colors.textSubtle, fontVariant: ['tabular-nums'] },
@@ -122,6 +161,10 @@ const useStyles = makeStyles((colors) => ({
   infoText: { flex: 1 },
   infoLabel: { fontSize: 12, fontWeight: '600', color: colors.textSubtle },
   infoValue: { fontSize: 15, color: colors.text, marginTop: 1 },
+  addressArea: { fontSize: 13, color: colors.textMuted, marginTop: 1 },
+  coords: { fontSize: 11, color: colors.textSubtle, marginTop: 2, fontVariant: ['tabular-nums'] },
+  addressLoader: { alignSelf: 'flex-start', marginVertical: 2 },
+  pressed: { opacity: 0.6 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 14 },
   timelineItem: { flexDirection: 'row' },
   timelineRail: { width: 22, alignItems: 'center' },

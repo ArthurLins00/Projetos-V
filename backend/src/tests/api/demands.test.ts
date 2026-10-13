@@ -22,7 +22,6 @@ describe('API de Demandas (/demands)', () => {
     endereco: 'Rua das Flores, 123',
     latitude: -8.05,
     longitude: -34.9,
-    fotourl: null,
     cidadaoid: cidadao.id,
     gestorid: null,
     categoria: { id: 3, nome: 'Iluminação Pública' },
@@ -114,6 +113,24 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/Categoria inválida/i);
   });
 
+  it.each([
+    [{ state: 'XX' }, /Estado inválido/i],
+    [{ state: 'PE', city: '   ' }, /Cidade/i],
+    [{ state: 'PE', city: 'Recife', zone: 'Litoral' }, /Zona inválida/i],
+  ])('POST /demands valida estado, cidade e zona %j (400)', async (region, mensagem) => {
+    const response = await request(app).post('/demands').set(auth).send({
+      title: 'Poste apagado',
+      description: 'Rua escura',
+      category_id: 1,
+      location: 'Rua A, 1',
+      ...region,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatch(mensagem);
+    expect(prisma.chamado.create).not.toHaveBeenCalled();
+  });
+
   it('DELETE /demands/:id: cidadão remove a própria demanda (204)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
 
@@ -132,18 +149,19 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado.update).not.toHaveBeenCalled();
   });
 
-  it('PUT /demands/:id/photo exige o campo photo (400)', async () => {
-    const response = await request(app).put('/demands/chamado-1/photo').set(auth).send({});
+  it('POST /demands/:id/photos exige o campo photo (400)', async () => {
+    const response = await request(app).post('/demands/chamado-1/photos').set(auth).send({});
 
     expect(response.status).toBe(400);
     expect(response.body.error).toMatch(/photo/i);
   });
 
-  it('PUT /demands/:id/photo recusa arquivo que não é imagem (400)', async () => {
+  it('POST /demands/:id/photos recusa arquivo que não é imagem (400)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
+    prisma.chamado_foto.count.mockResolvedValue(0);
 
     const response = await request(app)
-      .put('/demands/chamado-1/photo')
+      .post('/demands/chamado-1/photos')
       .set(auth)
       .send({ photo: Buffer.from('texto qualquer').toString('base64') });
 
@@ -151,13 +169,25 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/Formato de imagem inválido/i);
   });
 
-  it('PUT /demands/:id/photo aceita corpo maior que o limite padrão de 100kb', async () => {
+  it('POST /demands/:id/photos aceita corpo maior que o limite padrão de 100kb', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
+    prisma.chamado_foto.count.mockResolvedValue(0);
     const grande = Buffer.alloc(300 * 1024, 1).toString('base64');
 
-    const response = await request(app).put('/demands/chamado-1/photo').set(auth).send({ photo: grande });
+    const response = await request(app).post('/demands/chamado-1/photos').set(auth).send({ photo: grande });
 
     expect(response.status).toBe(400);
+    expect(response.body.error).toMatch(/Formato de imagem inválido/i);
+  });
+
+  it('DELETE /demands/:id/photos/:photoId remove a foto (204)', async () => {
+    prisma.chamado.findUnique.mockResolvedValue(chamado as any);
+    prisma.chamado_foto.findFirst.mockResolvedValue({ id: 'foto-1', chamadoid: 'chamado-1', url: '/uploads/nao-existe.jpg' } as any);
+
+    const response = await request(app).delete('/demands/chamado-1/photos/foto-1').set(auth);
+
+    expect(response.status).toBe(204);
+    expect(prisma.chamado_foto.delete).toHaveBeenCalledWith({ where: { id: 'foto-1' } });
   });
 
   it('GET /categories lista as categorias ativas', async () => {

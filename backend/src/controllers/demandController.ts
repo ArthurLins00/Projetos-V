@@ -4,6 +4,36 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 import { demandService } from '../services/demandService';
 import { AppError } from '../middlewares/errorMiddleware';
 
+const UFS = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+];
+const ZONAS = ['Urbana', 'Rural'] as const;
+
+function parseRegion(body: any) {
+  const { state, city, zone } = body ?? {};
+  const region: { state?: string; city?: string; zone?: (typeof ZONAS)[number] } = {};
+
+  if (state !== undefined) {
+    const uf = typeof state === 'string' ? state.trim().toUpperCase() : '';
+    if (!UFS.includes(uf)) throw new AppError(400, 'Estado inválido: informe a sigla da UF (ex: PE).');
+    region.state = uf;
+  }
+
+  if (city !== undefined) {
+    const nome = typeof city === 'string' ? city.trim() : '';
+    if (!nome || nome.length > 100) throw new AppError(400, 'Cidade deve ter entre 1 e 100 caracteres.');
+    region.city = nome;
+  }
+
+  if (zone !== undefined) {
+    if (!ZONAS.includes(zone)) throw new AppError(400, "Zona inválida: use 'Urbana' ou 'Rural'.");
+    region.zone = zone;
+  }
+
+  return region;
+}
+
 export const demandController = {
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -20,6 +50,7 @@ export const demandController = {
         location: String(location),
         ...(latitude !== undefined && { latitude: Number(latitude) }),
         ...(longitude !== undefined && { longitude: Number(longitude) }),
+        ...parseRegion(req.body),
         userId: req.user!.id,
       });
 
@@ -73,6 +104,7 @@ export const demandController = {
         ...(category_id !== undefined && { categoryId: Number(category_id) }),
         ...(latitude !== undefined && { latitude: Number(latitude) }),
         ...(longitude !== undefined && { longitude: Number(longitude) }),
+        ...parseRegion(req.body),
       });
 
       res.status(200).json(demand);
@@ -107,7 +139,7 @@ async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
   }
 },
 
-async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+async addPhoto(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
 
@@ -121,9 +153,25 @@ async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
       throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
     }
 
-    const result = await demandService.uploadPhoto(id, req.user!.id, photo);
+    const result = await demandService.addPhoto(id, req.user!.id, photo);
 
-    res.status(200).json(result);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+},
+
+async removePhoto(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id, photoId } = req.params;
+
+    if (!id || Array.isArray(id) || !photoId || Array.isArray(photoId)) {
+      throw new AppError(400, 'ID inválido');
+    }
+
+    await demandService.removePhoto(id, req.user!.id, photoId);
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

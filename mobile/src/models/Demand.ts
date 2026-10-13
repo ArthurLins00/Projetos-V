@@ -1,4 +1,5 @@
 import { Category } from './Category';
+import { Zone } from './Region';
 
 export interface DemandLog {
   tipo: string;
@@ -6,6 +7,13 @@ export interface DemandLog {
   descricao: string;
   autor: string;
   timestamp: string;
+}
+
+export const MAX_DEMAND_PHOTOS = 5;
+
+export interface DemandPhoto {
+  id: string;
+  url: string;
 }
 
 export interface Demand {
@@ -17,8 +25,12 @@ export interface Demand {
   location: string;
   latitude: number;
   longitude: number;
+  state?: string | null;
+  city?: string | null;
+  zone?: Zone | null;
   category: Pick<Category, 'id' | 'nome'>;
   photoUrl?: string | null;
+  photos?: DemandPhoto[];
   createdAt: string;
   updatedAt: string;
   logs?: DemandLog[];
@@ -31,6 +43,9 @@ export interface DemandPayload {
   location: string;
   latitude?: number;
   longitude?: number;
+  state?: string;
+  city?: string;
+  zone?: Zone;
 }
 
 export interface DemandListParams {

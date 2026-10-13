@@ -3,7 +3,9 @@ import { View, Text, Pressable, Image, ActivityIndicator, ScrollView } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandFormViewModel } from '../viewmodels/useDemandFormViewModel';
 import { CameraCapture } from '../components/CameraCapture';
-import { Button, Chip, TextField } from '../components/ui';
+import { Button, Chip, SelectField, TextField } from '../components/ui';
+import { ZONES } from '../models/Region';
+import { MAX_DEMAND_PHOTOS } from '../models/Demand';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 interface Props {
@@ -103,7 +105,59 @@ export function DemandFormView({ demandId }: Props) {
         />
       </Section>
 
-      <Section title="Localização e foto" icon="location-outline">
+      <Section title="Região" icon="earth-outline">
+        <SelectField
+          testID="form-state"
+          label="Estado"
+          icon="flag-outline"
+          placeholder="Selecione o estado"
+          searchPlaceholder="Buscar estado"
+          value={vm.stateUf}
+          options={vm.stateOptions}
+          onSelect={vm.selectState}
+        />
+
+        {vm.citiesFailed ? (
+          <TextField
+            testID="form-city-text"
+            label="Cidade"
+            icon="business-outline"
+            placeholder="Digite a cidade"
+            value={vm.city ?? ''}
+            onChangeText={vm.setCity}
+          />
+        ) : (
+          <SelectField
+            testID="form-city"
+            label="Cidade"
+            icon="business-outline"
+            placeholder={vm.stateUf ? 'Selecione a cidade' : 'Escolha o estado primeiro'}
+            searchPlaceholder="Buscar cidade"
+            value={vm.city}
+            options={vm.cityOptions}
+            onSelect={vm.setCity}
+            loading={vm.loadingCities}
+            disabled={!vm.stateUf}
+          />
+        )}
+
+        <Text style={styles.label}>Zona</Text>
+        <View style={styles.chips}>
+          {ZONES.map((option) => (
+            <Chip
+              key={option.value}
+              testID={`form-zone-${option.value}`}
+              accessibilityRole="radio"
+              label={option.label}
+              selected={vm.zone === option.value}
+              onPress={() => vm.setZone(option.value)}
+            />
+          ))}
+        </View>
+        <Text style={styles.hint}>Dica: ao usar o GPS, o estado e a cidade são preenchidos automaticamente.</Text>
+      </Section>
+
+      <Section title="Localização" icon="location-outline">
         <View style={styles.tiles}>
           <ActionTile
             testID="form-gps"
@@ -114,26 +168,49 @@ export function DemandFormView({ demandId }: Props) {
             loading={vm.locating}
             onPress={vm.captureLocation}
           />
+        </View>
+      </Section>
+
+      <Section title={`Fotos (${vm.photos.length}/${MAX_DEMAND_PHOTOS})`} icon="images-outline">
+        <View style={styles.tiles}>
           <ActionTile
             testID="form-photo"
             icon="camera-outline"
-            title={vm.photoUri ? 'Refazer foto' : 'Tirar foto'}
-            subtitle={vm.photoUri ? 'Foto anexada' : 'Opcional'}
-            done={!!vm.photoUri}
+            title="Câmera"
+            subtitle="Tirar uma foto"
+            done={false}
             onPress={vm.openCamera}
+          />
+          <ActionTile
+            testID="form-gallery"
+            icon="images-outline"
+            title="Galeria"
+            subtitle="Escolher fotos"
+            done={false}
+            onPress={vm.pickFromGallery}
           />
         </View>
 
-        {vm.photoUri && (
-          <View style={styles.previewWrap}>
-            <Image source={{ uri: vm.photoUri }} style={styles.preview} />
-            {vm.hasNewPhoto && (
-              <Pressable accessibilityRole="button" style={styles.discard} onPress={vm.removePhoto}>
-                <Ionicons name="trash-outline" size={14} color={colors.onPrimary} />
-                <Text style={styles.discardText}>Descartar foto nova</Text>
-              </Pressable>
-            )}
+        {vm.photos.length > 0 ? (
+          <View style={styles.thumbs}>
+            {vm.photos.map((photo, index) => (
+              <View key={photo.key} testID={`form-photo-thumb-${index}`} style={styles.thumbWrap}>
+                <Image source={{ uri: photo.uri }} style={styles.thumb} />
+                <Pressable
+                  testID={`form-photo-remove-${index}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover foto ${index + 1}`}
+                  hitSlop={8}
+                  style={styles.thumbRemove}
+                  onPress={() => vm.removePhoto(photo.key)}
+                >
+                  <Ionicons name="close" size={14} color={colors.onPrimary} />
+                </Pressable>
+              </View>
+            ))}
           </View>
+        ) : (
+          <Text style={styles.hint}>Opcional. Você pode anexar até {MAX_DEMAND_PHOTOS} fotos.</Text>
         )}
       </Section>
 
@@ -160,6 +237,7 @@ const useStyles = makeStyles((colors) => ({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
   label: { fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 8, marginLeft: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  hint: { fontSize: 12, color: colors.textSubtle, marginTop: -6, marginBottom: 14, marginLeft: 2 },
   tiles: { flexDirection: 'row', gap: 12, marginBottom: 14 },
   tile: {
     flex: 1,
@@ -177,20 +255,19 @@ const useStyles = makeStyles((colors) => ({
   tileTitleDone: { color: colors.success },
   tileSubtitle: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   pressed: { opacity: 0.8 },
-  previewWrap: { marginBottom: 14, borderRadius: radius.md, overflow: 'hidden' },
-  preview: { width: '100%', height: 200, backgroundColor: colors.surfaceMuted },
-  discard: {
+  thumbs: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  thumbWrap: { width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceMuted },
+  thumb: { width: '100%', height: '100%' },
+  thumbRemove: {
     position: 'absolute',
-    right: 10,
-    bottom: 10,
-    flexDirection: 'row',
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: radius.pill,
+    justifyContent: 'center',
     backgroundColor: colors.overlay,
   },
-  discardText: { color: colors.onPrimary, fontSize: 13, fontWeight: '600' },
   submit: { marginTop: 6 },
 }));

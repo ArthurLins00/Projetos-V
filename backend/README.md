@@ -110,9 +110,10 @@ completos estão no Swagger (`/docs`).
 |---|---|---|---|
 | `GET` | `/demands` | todos | Lista paginada. Filtros: `busca`, `status`, `categoria`, `regiao`, `page`, `limit` |
 | `POST` | `/demands` | Cidadão | Registra uma ocorrência |
-| `GET` | `/demands/:id` | todos | Detalhe com histórico (`logs`) |
-| `PUT` | `/demands/:id` | Cidadão (dono) | Edita título, descrição, categoria, endereço e coordenadas |
-| `PUT` | `/demands/:id/photo` | Cidadão (dono) | Envia a foto (`{ "photo": "<base64>" }`, JPEG ou PNG, até ~15 MB) |
+| `GET` | `/demands/:id` | todos | Detalhe com histórico (`logs`) e fotos (`photos`) |
+| `PUT` | `/demands/:id` | Cidadão (dono) | Edita título, descrição, categoria, endereço, coordenadas, estado, cidade e zona |
+| `POST` | `/demands/:id/photos` | Cidadão (dono) | Adiciona uma foto (`{ "photo": "<base64>" }`, JPEG ou PNG, até ~15 MB; máximo 5 por demanda) |
+| `DELETE` | `/demands/:id/photos/:photoId` | Cidadão (dono) | Remove uma foto |
 | `DELETE` | `/demands/:id` | Cidadão (dono) ou Gestor | Remove (soft delete: o status vira `Fechado`) |
 | `PATCH` | `/demands/:id/status` | Gestor | Altera o status (`status_id` com o valor do enum) |
 

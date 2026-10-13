@@ -18,7 +18,7 @@ import 'dotenv/config';
 const app = express();
 
 app.use(createCorsMiddleware());
-app.use('/demands/:id/photo', express.json({ limit: PHOTO_BODY_LIMIT }));
+app.use('/demands/:id/photos', express.json({ limit: PHOTO_BODY_LIMIT }));
 app.use('/auth/me/photo', express.json({ limit: PHOTO_BODY_LIMIT }));
 app.use(express.json());
 app.use(cookieParser());

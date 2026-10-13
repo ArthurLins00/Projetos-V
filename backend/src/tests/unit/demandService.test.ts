@@ -27,7 +27,6 @@ function makeChamado(overrides: Record<string, unknown> = {}) {
     endereco: 'Rua das Flores, 123',
     latitude: -8.05,
     longitude: -34.9,
-    fotourl: null,
     cidadaoid: CIDADAO_ID,
     gestorid: null,
     categoria: { id: 1, nome: 'Infraestrutura' },
@@ -101,6 +100,31 @@ describe('demandService (unitário)', () => {
         status: 'Aberto',
         photoUrl: null,
       });
+    });
+  });
+
+  describe('create', () => {
+    it('grava estado, cidade e zona e devolve no formato da API', async () => {
+      prisma.categoria.findUnique.mockResolvedValue({ id: 1, ativo: true } as any);
+      prisma.cidadao.findUnique.mockResolvedValue({ id: CIDADAO_ID } as any);
+      prisma.regra_competencia.findFirst.mockResolvedValue(null);
+      prisma.orgao_categoria.findFirst.mockResolvedValue(null);
+      prisma.chamado.create.mockResolvedValue(makeChamado({ uf: 'PE', cidade: 'Recife', zona: 'Rural' }));
+
+      const result = await demandService.create({
+        title: 'Buraco na via',
+        description: 'Buraco grande na pista',
+        categoryId: 1,
+        location: 'Rua das Flores, 123',
+        state: 'PE',
+        city: 'Recife',
+        zone: 'Rural',
+        userId: CIDADAO_ID,
+      });
+
+      const { data } = prisma.chamado.create.mock.calls[0][0] as any;
+      expect(data).toMatchObject({ uf: 'PE', cidade: 'Recife', zona: 'Rural' });
+      expect(result).toMatchObject({ state: 'PE', city: 'Recife', zone: 'Rural' });
     });
   });
 
@@ -195,55 +219,73 @@ describe('demandService (unitário)', () => {
     });
   });
 
-  describe('uploadPhoto', () => {
-    it('salva um JPEG válido no disco e grava o caminho em fotourl', async () => {
+  describe('addPhoto', () => {
+    beforeEach(() => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());
+      prisma.chamado_foto.count.mockResolvedValue(0);
+      prisma.chamado_foto.create.mockImplementation((async ({ data }: any) => ({ id: 'foto-1', url: data.url })) as any);
+    });
 
-      const { photoUrl } = await demandService.uploadPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64);
+    it('salva um JPEG válido no disco e registra a foto', async () => {
+      const foto = await demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64);
 
-      expect(photoUrl).toMatch(/^\/uploads\/chamado-1-\d+\.jpg$/);
-      const saved = await fs.readFile(path.join(TMP_UPLOADS, path.basename(photoUrl)));
+      expect(foto).toEqual({ id: 'foto-1', url: expect.stringMatching(/^\/uploads\/chamado-1-\d+-\w+\.jpg$/) });
+      const saved = await fs.readFile(path.join(TMP_UPLOADS, path.basename(foto.url)));
       expect(saved.subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
-      expect(prisma.chamado.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ fotourl: photoUrl }) }),
-      );
     });
 
     it('aceita o prefixo data URI (data:image/jpeg;base64,...)', async () => {
-      prisma.chamado.findUnique.mockResolvedValue(makeChamado());
+      const foto = await demandService.addPhoto('chamado-1', CIDADAO_ID, `data:image/jpeg;base64,${JPEG_BASE64}`);
 
-      const { photoUrl } = await demandService.uploadPhoto('chamado-1', CIDADAO_ID, `data:image/jpeg;base64,${JPEG_BASE64}`);
-
-      expect(photoUrl).toMatch(/\.jpg$/);
+      expect(foto.url).toMatch(/\.jpg$/);
     });
 
     it('rejeita conteúdo que não é imagem, mesmo em base64 (400)', async () => {
-      prisma.chamado.findUnique.mockResolvedValue(makeChamado());
       const texto = Buffer.from('não sou uma imagem').toString('base64');
 
-      await expect(demandService.uploadPhoto('chamado-1', CIDADAO_ID, texto)).rejects.toMatchObject({
-        statusCode: 400,
-      });
-      expect(prisma.chamado.update).not.toHaveBeenCalled();
+      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, texto)).rejects.toMatchObject({ statusCode: 400 });
+      expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
     });
 
-    it('substitui a foto anterior e apaga o arquivo antigo', async () => {
-      await fs.mkdir(TMP_UPLOADS, { recursive: true });
-      const antigo = path.join(TMP_UPLOADS, 'chamado-1-antigo.jpg');
-      await fs.writeFile(antigo, Buffer.from([0xff, 0xd8, 0xff]));
-      prisma.chamado.findUnique.mockResolvedValue(makeChamado({ fotourl: '/uploads/chamado-1-antigo.jpg' }));
+    it('recusa a foto quando o limite de 5 foi atingido (400)', async () => {
+      prisma.chamado_foto.count.mockResolvedValue(5);
 
-      await demandService.uploadPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64);
-
-      await expect(fs.access(antigo)).rejects.toThrow();
+      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 400 });
+      expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
     });
 
     it('cidadão não pode enviar foto para demanda de outra pessoa (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID }));
 
-      await expect(demandService.uploadPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({
-        statusCode: 403,
-      });
+      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it('não permite alterar fotos de demanda em andamento (403)', async () => {
+      prisma.chamado.findUnique.mockResolvedValue(makeChamado({ status: 'Em_Andamento' }));
+
+      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 403 });
+    });
+  });
+
+  describe('removePhoto', () => {
+    it('apaga o registro e o arquivo da foto', async () => {
+      await fs.mkdir(TMP_UPLOADS, { recursive: true });
+      const arquivo = path.join(TMP_UPLOADS, 'chamado-1-antiga.jpg');
+      await fs.writeFile(arquivo, Buffer.from([0xff, 0xd8, 0xff]));
+      prisma.chamado.findUnique.mockResolvedValue(makeChamado());
+      prisma.chamado_foto.findFirst.mockResolvedValue({ id: 'foto-1', chamadoid: 'chamado-1', url: '/uploads/chamado-1-antiga.jpg' } as any);
+
+      await demandService.removePhoto('chamado-1', CIDADAO_ID, 'foto-1');
+
+      expect(prisma.chamado_foto.delete).toHaveBeenCalledWith({ where: { id: 'foto-1' } });
+      await expect(fs.access(arquivo)).rejects.toThrow();
+    });
+
+    it('remover foto inexistente retorna 404', async () => {
+      prisma.chamado.findUnique.mockResolvedValue(makeChamado());
+      prisma.chamado_foto.findFirst.mockResolvedValue(null);
+
+      await expect(demandService.removePhoto('chamado-1', CIDADAO_ID, 'nao-existe')).rejects.toMatchObject({ statusCode: 404 });
     });
   });
 });

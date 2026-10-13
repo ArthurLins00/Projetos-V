@@ -142,11 +142,12 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-28 | Cidadão edita ocorrência de outra pessoa | 403 |
 | U-29 | Edição de ocorrência em andamento | 403 |
 | U-30 | Edição válida | Campos atualizados; histórico com dados antigos e novos |
-| U-31 | Upload de JPEG válido | Arquivo salvo e caminho gravado em `fotourl` |
+| U-31 | Upload de JPEG válido | Arquivo salvo e foto registrada em `chamado_foto` |
 | U-32 | Upload com prefixo `data:image/jpeg;base64,` | Aceito |
 | U-33 | Upload de conteúdo que não é imagem | 400 (valida a assinatura do arquivo, não a extensão) |
-| U-34 | Substituição de foto | Arquivo anterior apagado |
+| U-34 | Remoção de foto | Registro e arquivo apagados |
 | U-35 | Upload em ocorrência de outra pessoa | 403 |
+| U-36 | Upload além do limite de 5 fotos | 400 |
 
 ### 3.2 API — `backend/src/tests/api` (33)
 

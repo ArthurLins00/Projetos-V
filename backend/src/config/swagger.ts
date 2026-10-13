@@ -82,6 +82,13 @@ export const openApiSpec = {
           descricao: { type: 'string', nullable: true },
         },
       },
+      DemandPhoto: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          url: { type: 'string', example: '/uploads/<id>-1760000000000-ab12.jpg' },
+        },
+      },
       Demand: {
         type: 'object',
         properties: {
@@ -93,6 +100,15 @@ export const openApiSpec = {
           location: { type: 'string', example: 'Rua das Flores, 123' },
           latitude: { type: 'number', format: 'double', example: -23.55052 },
           longitude: { type: 'number', format: 'double', example: -46.633308 },
+          state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+          city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+          zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
+          photoUrl: { type: 'string', nullable: true, description: 'Primeira foto (capa)' },
+          photos: {
+            type: 'array',
+            description: 'Todas as fotos (apenas no detalhe)',
+            items: { $ref: '#/components/schemas/DemandPhoto' },
+          },
           category: { $ref: '#/components/schemas/Category' },
           creator: {
             type: 'object',
@@ -541,6 +557,9 @@ export const openApiSpec = {
                   location: { type: 'string', example: 'Rua das Flores, 123' },
                   latitude: { type: 'number', format: 'double' },
                   longitude: { type: 'number', format: 'double' },
+                  state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+                  city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+                  zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
                 },
               },
             },
@@ -599,6 +618,9 @@ export const openApiSpec = {
                   category_id: { type: 'integer' },
                   latitude: { type: 'number', format: 'double' },
                   longitude: { type: 'number', format: 'double' },
+                  state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+                  city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+                  zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
                 },
               },
             },
@@ -624,6 +646,53 @@ export const openApiSpec = {
           401: { $ref: '#/components/responses/Unauthorized' },
           403: { $ref: '#/components/responses/Forbidden' },
           404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+    '/demands/{id}/photos': {
+      post: {
+        tags: ['Demands'],
+        summary: 'Adicionar uma foto à demanda (JPEG ou PNG em base64, até 5 por demanda)',
+        security: BEARER,
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['photo'],
+                properties: { photo: { type: 'string', description: 'Imagem em base64 (aceita prefixo data:image/...;base64,)' } },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Foto adicionada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/DemandPhoto' } } },
+          },
+          400: { description: 'Imagem inválida ou limite de fotos atingido' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { description: 'Demanda de outra pessoa ou com status que não permite alteração' },
+          404: { description: 'Demanda não encontrada' },
+        },
+      },
+    },
+    '/demands/{id}/photos/{photoId}': {
+      delete: {
+        tags: ['Demands'],
+        summary: 'Remover uma foto da demanda',
+        security: BEARER,
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'photoId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          204: { description: 'Foto removida' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { description: 'Demanda de outra pessoa ou com status que não permite alteração' },
+          404: { description: 'Demanda ou foto não encontrada' },
         },
       },
     },

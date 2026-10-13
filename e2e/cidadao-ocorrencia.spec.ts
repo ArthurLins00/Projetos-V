@@ -95,21 +95,32 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(detail.logs.map((l: { titulo: string }) => l.titulo)).toContain('Demanda atualizada');
   });
 
-  test('anexa uma foto e ela fica disponível para exibição no app', async ({ request }) => {
-    const upload = await request.put(`/demands/${demand.id}/photo`, {
-      headers: session.headers,
-      data: { photo: JPEG_BASE64 },
-    });
-    expect(upload.status(), await upload.text()).toBe(200);
-    const { photoUrl } = await upload.json();
-    expect(photoUrl).toMatch(/^\/uploads\/.+\.jpg$/);
+  test('anexa duas fotos, elas ficam disponíveis no app e uma pode ser removida', async ({ request }) => {
+    const enviadas = [];
+    for (let i = 0; i < 2; i++) {
+      const upload = await request.post(`/demands/${demand.id}/photos`, {
+        headers: session.headers,
+        data: { photo: JPEG_BASE64 },
+      });
+      expect(upload.status(), await upload.text()).toBe(201);
+      enviadas.push(await upload.json());
+    }
+    expect(enviadas[0].url).toMatch(/^\/uploads\/.+\.jpg$/);
 
     const detail = await (await request.get(`/demands/${demand.id}`, { headers: session.headers })).json();
-    expect(detail.photoUrl).toBe(photoUrl);
+    expect(detail.photos).toEqual(enviadas);
+    expect(detail.photoUrl).toBe(enviadas[0].url);
 
-    const image = await request.get(photoUrl);
+    const image = await request.get(enviadas[1].url);
     expect(image.status()).toBe(200);
     expect(image.headers()['content-type']).toContain('image/jpeg');
+
+    const remove = await request.delete(`/demands/${demand.id}/photos/${enviadas[0].id}`, { headers: session.headers });
+    expect(remove.status()).toBe(204);
+
+    const depois = await (await request.get(`/demands/${demand.id}`, { headers: session.headers })).json();
+    expect(depois.photos).toEqual([enviadas[1]]);
+    expect(depois.photoUrl).toBe(enviadas[1].url);
   });
 
   test('remove a ocorrência: some da lista padrão e aparece em "Removidas"', async ({ request }) => {
