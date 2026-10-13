@@ -233,6 +233,7 @@ model usuario {
   senha         String          @db.VarChar(255)
   perfil        perfil
   status        status_enum     @default(Ativo)
+  fotourl       String?         @db.VarChar(500)
   criadoem      DateTime        @default(now()) @db.Timestamp(6)
   atualizadoem  DateTime        @default(now()) @db.Timestamp(6)
   atualizadopor String?         @db.Uuid

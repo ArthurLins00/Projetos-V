@@ -60,8 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateUser = async (updated: User) => {
-    const { id, nome, email, perfil } = updated;
-    const userData = { id, nome, email, perfil };
+    const { id, nome, email, perfil, fotourl } = updated;
+    const userData = { id, nome, email, perfil, fotourl };
     await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
     setUser(userData);
   };

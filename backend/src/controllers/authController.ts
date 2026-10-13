@@ -51,6 +51,7 @@ export const authController = {
         nome: usuario.nome,
         email: usuario.email,
         perfil: usuario.perfil,
+        fotourl: usuario.fotourl,
         token,
       });
     } catch (error) {
@@ -137,8 +138,47 @@ export const authController = {
         email: usuario.email, 
         perfil: usuario.perfil,
         status: usuario.status,
-        criadoem: usuario.criadoem 
+        fotourl: usuario.fotourl,
+        criadoem: usuario.criadoem
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { photo } = req.body ?? {};
+
+      if (!photo || typeof photo !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
+      }
+
+      const usuario = await authService.updatePhoto(usuarioId, photo);
+
+      res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async removePhoto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const usuario = await authService.removePhoto(usuarioId);
+
+      res.status(200).json(usuario);
     } catch (error) {
       next(error);
     }

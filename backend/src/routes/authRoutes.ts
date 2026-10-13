@@ -11,5 +11,7 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/logout', authenticate, authController.logout);
 router.get('/me', authenticate, authController.me);
 router.put('/me', authenticate, authController.updateMe);
+router.put('/me/photo', authenticate, authController.uploadPhoto);
+router.delete('/me/photo', authenticate, authController.removePhoto);
 
 export default router;

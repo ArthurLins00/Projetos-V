@@ -6,8 +6,28 @@ import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
 import { JWT_SECRET, JWT_EXPIRATION } from '../config/env';
 import { mailService } from './mailService';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
+import { detectImageExtension } from '../utils/image';
 
 const tokenBlocklist = new Set<string>();
+
+const PROFILE_SELECT = {
+  id: true,
+  nome: true,
+  email: true,
+  perfil: true,
+  status: true,
+  fotourl: true,
+  criadoem: true,
+} as const;
+
+async function deleteUploadedFile(url: string | null) {
+  if (url?.startsWith(`${UPLOADS_ROUTE}/`)) {
+    await fs.unlink(path.join(UPLOADS_DIR, path.basename(url))).catch(() => undefined);
+  }
+}
 
 const RESET_CODE_TTL_MS = 15 * 60 * 1000;
 const RESET_CODE_RESEND_MS = 60 * 1000;
@@ -92,14 +112,7 @@ export const authService = {
   async getUserById(userId: string) {
     const usuario = await prisma.usuario.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        perfil: true,
-        status: true,
-        criadoem: true,
-      },
+      select: PROFILE_SELECT,
     });
 
     if (!usuario) {
@@ -148,15 +161,52 @@ export const authService = {
         atualizadoem: new Date(),
         atualizadopor: userId,
       },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        perfil: true,
-        status: true,
-        criadoem: true,
-      },
+      select: PROFILE_SELECT,
     });
+  },
+
+  async updatePhoto(userId: string, base64: string) {
+    const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
+
+    if (!usuario) {
+      throw new AppError(404, 'Usuário não encontrado.');
+    }
+
+    const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+    const extension = detectImageExtension(buffer);
+    if (!extension) throw new AppError(400, 'Formato de imagem inválido. Envie JPEG ou PNG.');
+
+    const fileName = `avatar-${userId}-${Date.now()}.${extension}`;
+    await fs.mkdir(UPLOADS_DIR, { recursive: true });
+    await fs.writeFile(path.join(UPLOADS_DIR, fileName), buffer);
+
+    const atualizado = await prisma.usuario.update({
+      where: { id: userId },
+      data: { fotourl: `${UPLOADS_ROUTE}/${fileName}`, atualizadoem: new Date(), atualizadopor: userId },
+      select: PROFILE_SELECT,
+    });
+
+    await deleteUploadedFile(usuario.fotourl);
+
+    return atualizado;
+  },
+
+  async removePhoto(userId: string) {
+    const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
+
+    if (!usuario) {
+      throw new AppError(404, 'Usuário não encontrado.');
+    }
+
+    const atualizado = await prisma.usuario.update({
+      where: { id: userId },
+      data: { fotourl: null, atualizadoem: new Date(), atualizadopor: userId },
+      select: PROFILE_SELECT,
+    });
+
+    await deleteUploadedFile(usuario.fotourl);
+
+    return atualizado;
   },
 
   async requestPasswordReset(email: string) {

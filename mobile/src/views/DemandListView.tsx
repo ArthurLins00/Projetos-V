@@ -28,7 +28,7 @@ export function DemandListView() {
               style={({ pressed }) => pressed && styles.pressed}
               onPress={vm.openProfile}
             >
-              <Avatar name={vm.user?.nome} size={44} />
+              <Avatar name={vm.user?.nome} photoUrl={vm.user?.fotourl} size={44} />
             </Pressable>
             <View style={styles.identityText}>
               {vm.user && <Text style={styles.greeting} numberOfLines={1}>Olá, {vm.user.nome}</Text>}

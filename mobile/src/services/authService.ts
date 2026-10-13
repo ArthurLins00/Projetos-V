@@ -32,6 +32,16 @@ export const authService = {
     return response.data;
   },
 
+  async uploadPhoto(base64: string): Promise<UserProfile> {
+    const response = await api.put<UserProfile>('/auth/me/photo', { photo: base64 }, { timeout: 60000 });
+    return response.data;
+  },
+
+  async removePhoto(): Promise<UserProfile> {
+    const response = await api.delete<UserProfile>('/auth/me/photo');
+    return response.data;
+  },
+
   async logout() {
     const response = await api.post('/auth/logout');
     return response.data;

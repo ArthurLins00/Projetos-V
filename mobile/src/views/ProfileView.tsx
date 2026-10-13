@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileViewModel } from '../viewmodels/useProfileViewModel';
 import { Avatar, Button, TextField } from '../components/ui';
@@ -40,7 +40,24 @@ export function ProfileView() {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
       <ScrollView style={styles.flex} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
-          <Avatar name={vm.user?.nome} size={84} />
+          <Pressable
+            testID="profile-photo"
+            accessibilityRole="button"
+            accessibilityLabel="Alterar foto de perfil"
+            onPress={vm.changePhoto}
+            disabled={vm.uploadingPhoto}
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Avatar name={vm.user?.nome} photoUrl={vm.photoUrl} size={96} />
+            {vm.uploadingPhoto && (
+              <View style={styles.photoOverlay}>
+                <ActivityIndicator color={colors.onPrimary} />
+              </View>
+            )}
+            <View style={styles.photoBadge}>
+              <Ionicons name="camera" size={15} color={colors.onPrimary} />
+            </View>
+          </Pressable>
           <Text testID="profile-name" style={styles.name}>{vm.user?.nome}</Text>
           <Text style={styles.email}>{vm.user?.email}</Text>
           <View style={styles.tags}>
@@ -139,6 +156,21 @@ const useStyles = makeStyles((colors) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   container: { padding: 16, paddingBottom: 40 },
   hero: { alignItems: 'center', paddingTop: 8, paddingBottom: 22 },
+  pressed: { opacity: 0.8 },
+  photoOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 48, backgroundColor: '#00000066', alignItems: 'center', justifyContent: 'center' },
+  photoBadge: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.primary,
+    borderWidth: 2,
+    borderColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   name: { fontSize: 22, fontWeight: '800', color: colors.text, marginTop: 14, letterSpacing: -0.3 },
   email: { fontSize: 14, color: colors.textMuted, marginTop: 2 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12 },

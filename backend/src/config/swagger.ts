@@ -64,6 +64,7 @@ export const openApiSpec = {
           nome: { type: 'string', example: 'Maria Silva' },
           email: { type: 'string', format: 'email' },
           perfil: { $ref: '#/components/schemas/Perfil' },
+          fotourl: { type: 'string', nullable: true, example: '/uploads/avatar-<id>-1760000000000.jpg' },
         },
       },
       Perfil: { type: 'string', enum: ['Cidadao', 'Gestor', 'Admin'], example: 'Cidadao' },
@@ -428,6 +429,45 @@ export const openApiSpec = {
           400: { $ref: '#/components/responses/BadRequest' },
           401: { description: 'Não autenticado ou senha atual incorreta' },
           409: { $ref: '#/components/responses/Conflict' },
+        },
+      },
+    },
+    '/auth/me/photo': {
+      put: {
+        tags: ['Auth'],
+        summary: 'Enviar/substituir a foto de perfil (JPEG ou PNG em base64)',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['photo'],
+                properties: { photo: { type: 'string', description: 'Imagem em base64 (aceita prefixo data:image/...;base64,)' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a nova `fotourl`',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['Auth'],
+        summary: 'Remover a foto de perfil',
+        security: BEARER,
+        responses: {
+          200: {
+            description: 'Usuário atualizado com `fotourl` nula',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
