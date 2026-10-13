@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
@@ -10,6 +11,7 @@ import { ThemePreference, useTheme } from '../theme';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function useProfileViewModel() {
+  const router = useRouter();
   const { user, updateUser, signOut } = useAuth();
   const { preference, setPreference } = useTheme();
 
@@ -183,5 +185,6 @@ export function useProfileViewModel() {
     themePreference: preference,
     setThemePreference: (value: ThemePreference) => setPreference(value),
     confirmSignOut,
+    openHelp: () => router.push('/(app)/help'),
   };
 }

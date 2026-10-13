@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router/stack';
 import { useTheme } from '../../src/theme';
 import { TermsGate } from '../../src/components/TermsGate';
+import { usePushNotifications } from '../../src/hooks/usePushNotifications';
 
 export default function AppLayout() {
   const { colors } = useTheme();
+  usePushNotifications();
 
   return (
     <>
@@ -23,6 +25,7 @@ export default function AppLayout() {
         <Stack.Screen name="demand/[id]/edit" options={{ title: 'Editar Demanda' }} />
         <Stack.Screen name="assistant" options={{ title: 'Assistente Fiscalize' }} />
         <Stack.Screen name="profile" options={{ title: 'Meu Perfil' }} />
+        <Stack.Screen name="help" options={{ title: 'Ajuda' }} />
       </Stack>
       <TermsGate />
     </>

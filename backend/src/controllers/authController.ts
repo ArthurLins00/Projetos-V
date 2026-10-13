@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
+import { notificationService } from '../services/notificationService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
@@ -165,6 +166,50 @@ export const authController = {
       const usuario = await authService.updatePhoto(usuarioId, photo);
 
       res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async registerPushToken(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { token } = req.body ?? {};
+
+      if (!token || typeof token !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: token');
+      }
+
+      await notificationService.registerPushToken(usuarioId, token);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async removePushToken(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { token } = req.body ?? {};
+
+      if (!token || typeof token !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: token');
+      }
+
+      await notificationService.removePushToken(usuarioId, token);
+
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

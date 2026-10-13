@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
+import { pushService } from '../services/pushService';
 import { User } from '../models/User';
 
 interface AuthContextData {
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      await pushService.unregister();
       await authService.logout();
     } catch {
     } finally {

@@ -103,6 +103,13 @@ completos estão no Swagger (`/docs`).
 | `POST` | `/auth/login` | Login (`email`, `senha`); retorna `{ id, nome, email, perfil, token }` |
 | `POST` | `/auth/logout` | Revoga o token atual |
 | `GET` | `/auth/me` | Dados do usuário logado |
+| `POST` | `/auth/me/push-token` | Registra o token de push (Expo) do aparelho (`token`) |
+| `DELETE` | `/auth/me/push-token` | Remove o token de push do aparelho (`token`), usado ao sair da conta |
+
+Quando um gestor aceita, transfere, muda o status ou encerra um chamado, o cidadão recebe a atualização
+por **e-mail** (via SMTP; sem `SMTP_HOST`, o e-mail aparece no log em desenvolvimento) e por **push** nos
+aparelhos registrados (via [Expo Push](https://docs.expo.dev/push-notifications/sending-notifications/)).
+A notificação também fica gravada na tabela `notificacao`.
 
 ### Ocorrências — `/demands`
 
