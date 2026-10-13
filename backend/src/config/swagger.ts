@@ -477,6 +477,47 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/me/push-token': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registrar o token de push (Expo) do aparelho para receber atualizações dos chamados',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['token'],
+                properties: { token: { type: 'string', example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' } },
+              },
+            },
+          },
+        },
+        responses: {
+          204: { description: 'Token registrado' },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['Auth'],
+        summary: 'Remover o token de push do aparelho (ao sair da conta)',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { type: 'object', required: ['token'], properties: { token: { type: 'string' } } },
+            },
+          },
+        },
+        responses: {
+          204: { description: 'Token removido' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
     '/auth/me/photo': {
       put: {
         tags: ['Auth'],

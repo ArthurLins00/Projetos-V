@@ -3,6 +3,7 @@ import { AppError } from '../middlewares/errorMiddleware';
 import { status_chamado } from '@prisma/client';
 import { prisma } from '../config/prisma';
 import { invalidateMetricsCache } from '../utils/cache';
+import { notificationService } from '../services/notificationService';
 
 const STATUS_DISPLAY: Record<status_chamado, string> = {
   Aberto: 'Aberto',
@@ -272,6 +273,13 @@ export const gestorController = {
 
       await invalidateMetricsCache(chamado.gestorid);
 
+      const detalhe = resolutionNote ? ` ${resolutionNote}` : justificativa ? ` Motivo: ${justificativa}` : '';
+      await notificationService.notifyDemandUpdate(id, {
+        titulo: novoStatus === 'Resolvido' ? 'Chamado resolvido' : 'Status atualizado',
+        mensagem: `Seu chamado agora está "${status}".${detalhe}`,
+        tipo: novoStatus === 'Resolvido' ? 'chamado_concluido' : 'status_atualizado',
+      });
+
       res.status(200).json({ message: 'Status atualizado com sucesso.', chamado: updated });
     } catch (error) {
       next(error);
@@ -329,6 +337,12 @@ export const gestorController = {
 
       await invalidateMetricsCache(gestorId);
 
+      await notificationService.notifyDemandUpdate(id, {
+        titulo: 'Chamado em análise',
+        mensagem: 'Seu chamado foi aceito pela equipe responsável e está em análise.',
+        tipo: 'equipe_designada',
+      });
+
       res.status(200).json({ message: 'Chamado aceito com sucesso.', chamado: updated });
     } catch (error) {
       next(error);
@@ -377,6 +391,12 @@ export const gestorController = {
       });
 
       await invalidateMetricsCache(gestorId);
+
+      await notificationService.notifyDemandUpdate(id, {
+        titulo: 'Chamado encaminhado',
+        mensagem: `Seu chamado foi encaminhado para ${orgaoDestino.nome}.`,
+        tipo: 'status_atualizado',
+      });
 
       res.status(200).json({ message: 'Chamado transferido com sucesso.' });
     } catch (error) {

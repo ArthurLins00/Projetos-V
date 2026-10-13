@@ -6,6 +6,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
 import { detectImageExtension } from '../utils/image';
+import { notificationService } from './notificationService';
 
 const STATUS_DISPLAY: Record<status_chamado, string> = {
   Aberto: 'Aberto',
@@ -540,6 +541,12 @@ export const demandService = {
 
     await invalidateMetricsCache(chamado.gestorid);
 
+    await notificationService.notifyDemandUpdate(chamadoId, {
+      titulo: newStatus === 'Resolvido' ? 'Chamado resolvido' : 'Status atualizado',
+      mensagem: `Seu chamado agora está "${displayStatus(updated.status)}".`,
+      tipo: newStatus === 'Resolvido' ? 'chamado_concluido' : 'status_atualizado',
+    });
+
     return {
       id: updated.id,
       status: displayStatus(updated.status),
@@ -587,5 +594,13 @@ export const demandService = {
     });
 
     await invalidateMetricsCache(chamado.gestorid);
+
+    if (perfil !== 'Cidadao') {
+      await notificationService.notifyDemandUpdate(chamadoId, {
+        titulo: 'Chamado encerrado',
+        mensagem: 'Seu chamado foi encerrado pela equipe responsável.',
+        tipo: 'status_atualizado',
+      });
+    }
   },
 }

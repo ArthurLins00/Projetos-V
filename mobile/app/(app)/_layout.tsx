@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router/stack';
 import { useTheme } from '../../src/theme';
 import { TermsGate } from '../../src/components/TermsGate';
+import { usePushNotifications } from '../../src/hooks/usePushNotifications';
 
 export default function AppLayout() {
   const { colors } = useTheme();
+  usePushNotifications();
 
   return (
     <>

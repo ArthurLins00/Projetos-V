@@ -14,5 +14,7 @@ router.put('/me', authenticate, authController.updateMe);
 router.put('/me/photo', authenticate, authController.uploadPhoto);
 router.delete('/me/photo', authenticate, authController.removePhoto);
 router.post('/me/terms', authenticate, authController.acceptTerms);
+router.post('/me/push-token', authenticate, authController.registerPushToken);
+router.delete('/me/push-token', authenticate, authController.removePushToken);
 
 export default router;
