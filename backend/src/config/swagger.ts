@@ -274,6 +274,70 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Solicitar código de recuperação de senha (enviado por e-mail, expira em 15 min)',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: { email: { type: 'string', format: 'email' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Resposta genérica, independente de o e-mail existir',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
+    '/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Redefinir senha com o código recebido por e-mail',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'codigo', 'novaSenha'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  codigo: { type: 'string', example: '123456' },
+                  novaSenha: { type: 'string', format: 'password', minLength: 6 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Senha redefinida',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
     '/auth/logout': {
       post: {
         tags: ['Auth'],

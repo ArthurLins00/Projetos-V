@@ -12,6 +12,16 @@ export const authService = {
     return response.data;
   },
 
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  async resetPassword(email: string, codigo: string, novaSenha: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/reset-password', { email, codigo, novaSenha });
+    return response.data;
+  },
+
   async me(): Promise<UserProfile> {
     const response = await api.get<UserProfile>('/auth/me');
     return response.data;

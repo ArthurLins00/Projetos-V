@@ -306,6 +306,10 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | `ALLOWED_ORIGINS` | em produção | — | Origens liberadas no CORS, separadas por vírgula |
 | `FRONTEND_URL` | não | — | Origem extra liberada no CORS em desenvolvimento |
 | `REDIS_URL` | não | — | Redis para cache de métricas (sem ele, o cache fica desligado) |
+| `SMTP_HOST` | em produção | — | Servidor SMTP para os e-mails de recuperação de senha (sem ele, em desenvolvimento o código é exibido no log do servidor) |
+| `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
+| `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
+| `MAIL_FROM` | não | `Fiscalize <no-reply@fiscalize.gov.br>` | Remetente dos e-mails |
 | `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
 | `SEED_ADMIN_PASSWORD` | não | `Admin@123456` | Senha do admin criado pelo seed |

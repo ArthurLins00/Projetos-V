@@ -34,6 +34,10 @@ export function LoginView() {
         secureTextEntry
       />
 
+      <Pressable testID="login-go-forgot" accessibilityRole="link" hitSlop={8} onPress={vm.goToForgotPassword} style={styles.forgot}>
+        <Text style={styles.link}>Esqueceu a senha?</Text>
+      </Pressable>
+
       <Button testID="login-submit" title="Entrar" onPress={() => vm.login()} loading={vm.isSubmitting} style={styles.submit} />
 
       <View style={styles.footer}>
@@ -60,6 +64,7 @@ export function LoginView() {
 const useStyles = makeStyles((colors) => ({
   heading: { fontSize: 20, fontWeight: '700', color: colors.text },
   caption: { fontSize: 14, color: colors.textMuted, marginTop: 4, marginBottom: 22 },
+  forgot: { alignSelf: 'flex-end', marginBottom: 14 },
   submit: { marginTop: 6 },
   footer: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 20 },
   footerText: { color: colors.textMuted, fontSize: 14 },

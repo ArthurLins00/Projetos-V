@@ -58,6 +58,49 @@ export const authController = {
     }
   },
 
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body ?? {};
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (typeof email !== 'string' || !emailRegex.test(email.trim())) {
+        throw new AppError(400, 'E-mail inválido');
+      }
+
+      await authService.requestPasswordReset(email.trim());
+
+      res.status(200).json({
+        message: 'Se o e-mail estiver cadastrado, você receberá um código de recuperação.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, codigo, novaSenha } = req.body ?? {};
+
+      if (!email || !codigo || !novaSenha) {
+        throw new AppError(400, 'Campos obrigatórios: email, codigo, novaSenha');
+      }
+
+      if (typeof codigo !== 'string' || !/^\d{6}$/.test(codigo.trim())) {
+        throw new AppError(400, 'Código inválido ou expirado.');
+      }
+
+      if (typeof novaSenha !== 'string' || novaSenha.length < 6) {
+        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      }
+
+      await authService.resetPassword(String(email).trim(), codigo.trim(), novaSenha);
+
+      res.status(200).json({ message: 'Senha redefinida com sucesso.' });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async logout(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       let token = req.cookies.token;

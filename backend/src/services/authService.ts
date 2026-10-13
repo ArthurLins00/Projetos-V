@@ -1,12 +1,22 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { randomUUID } from 'crypto';
+import { createHash, randomInt, randomUUID, timingSafeEqual } from 'crypto';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
 import { JWT_SECRET, JWT_EXPIRATION } from '../config/env';
+import { mailService } from './mailService';
 
 const tokenBlocklist = new Set<string>();
+
+const RESET_CODE_TTL_MS = 15 * 60 * 1000;
+const RESET_CODE_RESEND_MS = 60 * 1000;
+const RESET_CODE_MAX_ATTEMPTS = 5;
+
+type ResetCode = { hash: string; expiresAt: number; createdAt: number; attempts: number };
+const resetCodes = new Map<string, ResetCode>();
+
+const hashCode = (code: string) => createHash('sha256').update(code).digest();
 
 export const authService = {
   async register(nome: string, email: string, senha: string) {
@@ -147,6 +157,72 @@ export const authService = {
         criadoem: true,
       },
     });
+  },
+
+  async requestPasswordReset(email: string) {
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+
+    if (!usuario || usuario.status !== 'Ativo') {
+      return;
+    }
+
+    const existente = resetCodes.get(email);
+    if (existente && Date.now() - existente.createdAt < RESET_CODE_RESEND_MS) {
+      return;
+    }
+
+    const codigo = randomInt(0, 1_000_000).toString().padStart(6, '0');
+    const now = Date.now();
+    resetCodes.set(email, {
+      hash: hashCode(codigo).toString('hex'),
+      createdAt: now,
+      expiresAt: now + RESET_CODE_TTL_MS,
+      attempts: 0,
+    });
+
+    await mailService.send(
+      email,
+      'Fiscalize — código de recuperação de senha',
+      `Olá, ${usuario.nome}.\n\nSeu código para redefinir a senha é: ${codigo}\n\n` +
+        'Ele expira em 15 minutos. Se você não solicitou a recuperação, ignore este e-mail.'
+    );
+  },
+
+  async resetPassword(email: string, codigo: string, novaSenha: string) {
+    const invalido = new AppError(400, 'Código inválido ou expirado.');
+    const registro = resetCodes.get(email);
+
+    if (!registro || registro.expiresAt < Date.now()) {
+      resetCodes.delete(email);
+      throw invalido;
+    }
+
+    registro.attempts += 1;
+    if (registro.attempts > RESET_CODE_MAX_ATTEMPTS) {
+      resetCodes.delete(email);
+      throw invalido;
+    }
+
+    if (!timingSafeEqual(hashCode(codigo), Buffer.from(registro.hash, 'hex'))) {
+      throw invalido;
+    }
+
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    if (!usuario || usuario.status !== 'Ativo') {
+      resetCodes.delete(email);
+      throw invalido;
+    }
+
+    await prisma.usuario.update({
+      where: { id: usuario.id },
+      data: {
+        senha: await bcrypt.hash(novaSenha, 10),
+        atualizadoem: new Date(),
+        atualizadopor: usuario.id,
+      },
+    });
+
+    resetCodes.delete(email);
   },
 
   async addTokenToBlocklist(token: string) {
