@@ -131,6 +131,7 @@ export const demandService = {
         { descricao: { contains: busca, mode: 'insensitive' } },
         { endereco: { contains: busca, mode: 'insensitive' } },
         { protocolo: { contains: busca, mode: 'insensitive' } },
+        { categoria: { nome: { contains: busca, mode: 'insensitive' } } },
       ];
     }
 

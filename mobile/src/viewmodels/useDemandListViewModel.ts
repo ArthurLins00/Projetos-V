@@ -31,8 +31,7 @@ export function useDemandListViewModel() {
       const result = await demandService.list({
         page: targetPage,
         limit: PAGE_SIZE,
-        ...(debouncedSearch && { busca: debouncedSearch }),
-        ...(status && { status }),
+        ...(debouncedSearch ? { busca: debouncedSearch } : status && { status }),
       });
       if (currentRequest !== requestId.current) return;
       setDemands((prev) => (targetPage === 1 ? result.data : [...prev, ...result.data]));
@@ -73,8 +72,15 @@ export function useDemandListViewModel() {
     fetchPage(page + 1);
   };
 
+  const searching = !!search.trim();
+
   const selectStatus = (value?: string) => {
-    if (value === status) return;
+    if (searching) {
+      setSearch('');
+      setDebouncedSearch('');
+    } else if (value === status) {
+      return;
+    }
     setLoading(true);
     setStatus(value);
   };
@@ -90,6 +96,7 @@ export function useDemandListViewModel() {
     search,
     setSearch,
     status,
+    searching,
     selectStatus,
     loading,
     refreshing,
