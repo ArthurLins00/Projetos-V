@@ -59,7 +59,7 @@ describe('API de Demandas (/demands)', () => {
       photoUrl: null,
     });
     const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
-    expect(where.OR).toHaveLength(4);
+    expect(where.OR).toHaveLength(5);
   });
 
   it('GET /demands ignora pesquisa vazia', async () => {

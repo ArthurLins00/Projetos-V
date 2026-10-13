@@ -77,13 +77,14 @@ describe('demandService (unitário)', () => {
       expect(where.status).toBeUndefined();
     });
 
-    it('pesquisa textual busca em título, descrição, endereço e protocolo (sem diferenciar maiúsculas)', async () => {
+    it('pesquisa textual busca em título, descrição, endereço, protocolo e categoria (sem diferenciar maiúsculas)', async () => {
       await demandService.list({ userId: CIDADAO_ID, perfil: 'Cidadao', busca: 'buraco', page: 1, limit: 20 });
 
       const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
       const campos = where.OR.map((cond: Record<string, unknown>) => Object.keys(cond)[0]);
-      expect(campos).toEqual(['subcategoria', 'descricao', 'endereco', 'protocolo']);
+      expect(campos).toEqual(['subcategoria', 'descricao', 'endereco', 'protocolo', 'categoria']);
       expect(where.OR[0].subcategoria).toEqual({ contains: 'buraco', mode: 'insensitive' });
+      expect(where.OR[4].categoria).toEqual({ nome: { contains: 'buraco', mode: 'insensitive' } });
     });
 
     it('aplica paginação e converte o registro para o formato da API', async () => {
