@@ -12,6 +12,16 @@ export const authService = {
     return response.data;
   },
 
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  async resetPassword(email: string, codigo: string, novaSenha: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/reset-password', { email, codigo, novaSenha });
+    return response.data;
+  },
+
   async me(): Promise<UserProfile> {
     const response = await api.get<UserProfile>('/auth/me');
     return response.data;
@@ -19,6 +29,21 @@ export const authService = {
 
   async updateMe(payload: UpdateProfilePayload): Promise<UserProfile> {
     const response = await api.put<UserProfile>('/auth/me', payload);
+    return response.data;
+  },
+
+  async uploadPhoto(base64: string): Promise<UserProfile> {
+    const response = await api.put<UserProfile>('/auth/me/photo', { photo: base64 }, { timeout: 60000 });
+    return response.data;
+  },
+
+  async acceptTerms(versao: number): Promise<UserProfile> {
+    const response = await api.post<UserProfile>('/auth/me/terms', { versao });
+    return response.data;
+  },
+
+  async removePhoto(): Promise<UserProfile> {
+    const response = await api.delete<UserProfile>('/auth/me/photo');
     return response.data;
   },
 

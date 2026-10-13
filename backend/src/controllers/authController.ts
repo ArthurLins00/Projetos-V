@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
+import { notificationService } from '../services/notificationService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
@@ -51,8 +52,53 @@ export const authController = {
         nome: usuario.nome,
         email: usuario.email,
         perfil: usuario.perfil,
+        fotourl: usuario.fotourl,
+        termosversao: usuario.termosversao,
         token,
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body ?? {};
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (typeof email !== 'string' || !emailRegex.test(email.trim())) {
+        throw new AppError(400, 'E-mail inválido');
+      }
+
+      await authService.requestPasswordReset(email.trim());
+
+      res.status(200).json({
+        message: 'Se o e-mail estiver cadastrado, você receberá um código de recuperação.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, codigo, novaSenha } = req.body ?? {};
+
+      if (!email || !codigo || !novaSenha) {
+        throw new AppError(400, 'Campos obrigatórios: email, codigo, novaSenha');
+      }
+
+      if (typeof codigo !== 'string' || !/^\d{6}$/.test(codigo.trim())) {
+        throw new AppError(400, 'Código inválido ou expirado.');
+      }
+
+      if (typeof novaSenha !== 'string' || novaSenha.length < 6) {
+        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      }
+
+      await authService.resetPassword(String(email).trim(), codigo.trim(), novaSenha);
+
+      res.status(200).json({ message: 'Senha redefinida com sucesso.' });
     } catch (error) {
       next(error);
     }
@@ -94,8 +140,114 @@ export const authController = {
         email: usuario.email, 
         perfil: usuario.perfil,
         status: usuario.status,
-        criadoem: usuario.criadoem 
+        fotourl: usuario.fotourl,
+        termosversao: usuario.termosversao,
+        criadoem: usuario.criadoem
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { photo } = req.body ?? {};
+
+      if (!photo || typeof photo !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
+      }
+
+      const usuario = await authService.updatePhoto(usuarioId, photo);
+
+      res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async registerPushToken(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { token } = req.body ?? {};
+
+      if (!token || typeof token !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: token');
+      }
+
+      await notificationService.registerPushToken(usuarioId, token);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async removePushToken(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { token } = req.body ?? {};
+
+      if (!token || typeof token !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: token');
+      }
+
+      await notificationService.removePushToken(usuarioId, token);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async acceptTerms(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { versao } = req.body ?? {};
+
+      if (!Number.isInteger(versao) || versao < 1) {
+        throw new AppError(400, 'Campo obrigatório: versao (inteiro positivo)');
+      }
+
+      const usuario = await authService.acceptTerms(usuarioId, versao);
+
+      res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async removePhoto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const usuario = await authService.removePhoto(usuarioId);
+
+      res.status(200).json(usuario);
     } catch (error) {
       next(error);
     }

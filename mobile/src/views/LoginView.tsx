@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, Pressable, View } from 'react-native';
 import { useLoginViewModel } from '../viewmodels/useLoginViewModel';
 import { AuthLayout } from '../components/AuthLayout';
+import { EmergencyNotice } from '../components/EmergencyNotice';
 import { Button, TextField } from '../components/ui';
 import { makeStyles } from '../theme';
 
@@ -34,7 +35,13 @@ export function LoginView() {
         secureTextEntry
       />
 
+      <Pressable testID="login-go-forgot" accessibilityRole="link" hitSlop={8} onPress={vm.goToForgotPassword} style={styles.forgot}>
+        <Text style={styles.link}>Esqueceu a senha?</Text>
+      </Pressable>
+
       <Button testID="login-submit" title="Entrar" onPress={() => vm.login()} loading={vm.isSubmitting} style={styles.submit} />
+
+      <EmergencyNotice style={styles.notice} />
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Não tem uma conta?</Text>
@@ -60,7 +67,9 @@ export function LoginView() {
 const useStyles = makeStyles((colors) => ({
   heading: { fontSize: 20, fontWeight: '700', color: colors.text },
   caption: { fontSize: 14, color: colors.textMuted, marginTop: 4, marginBottom: 22 },
+  forgot: { alignSelf: 'flex-end', marginBottom: 14 },
   submit: { marginTop: 6 },
+  notice: { marginTop: 20 },
   footer: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 20 },
   footerText: { color: colors.textMuted, fontSize: 14 },
   link: { color: colors.primary, fontWeight: '700', fontSize: 14 },

@@ -22,17 +22,20 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(await response.json()).toMatchObject({ data: [], total: 0 });
   });
 
-  test('registra uma ocorrência com categoria, endereço e coordenadas do GPS', async ({ request }) => {
+  test('registra uma ocorrência com categoria, endereço, região e coordenadas do GPS', async ({ request }) => {
     const categoryId = await categoryIdByName(request, session, 'Infraestrutura');
     demand = await createDemand(request, session, {
       title,
       description: 'Asfalto cedeu e há risco de acidentes',
       location: 'Avenida Central, 500 - Recife',
       category_id: categoryId,
+      state: 'pe',
+      city: 'Recife',
+      zone: 'Urbana',
     });
 
     expect(demand.protocolo).toMatch(/^DEM-\d{8}-[A-Z0-9]{4}$/);
-    expect(demand).toMatchObject({ title, status: 'Aberto' });
+    expect(demand).toMatchObject({ title, status: 'Aberto', state: 'PE', city: 'Recife', zone: 'Urbana' });
   });
 
   test('a ocorrência aparece na listagem com status Aberto', async ({ request }) => {
@@ -50,8 +53,8 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     });
   });
 
-  test('pesquisa por título, endereço e protocolo encontra a ocorrência; termo inexistente não', async ({ request }) => {
-    for (const termo of ['buraco na via', 'avenida central', demand.protocolo]) {
+  test('pesquisa por título, endereço, protocolo e categoria encontra a ocorrência; termo inexistente não', async ({ request }) => {
+    for (const termo of ['buraco na via', 'avenida central', demand.protocolo, 'infraestrut']) {
       const response = await request.get('/demands', { headers: session.headers, params: { busca: termo } });
       const ids = (await response.json()).data.map((d: { id: string }) => d.id);
       expect(ids, `pesquisa por "${termo}"`).toContain(demand.id);
@@ -69,13 +72,15 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect((await resolvido.json()).total).toBe(0);
   });
 
-  test('detalhe mostra os dados e o histórico da ocorrência', async ({ request }) => {
+  test('detalhe mostra os dados, a região, o prazo (SLA) e o histórico da ocorrência', async ({ request }) => {
     const response = await request.get(`/demands/${demand.id}`, { headers: session.headers });
     const body = await response.json();
 
     expect(response.status()).toBe(200);
-    expect(body).toMatchObject({ id: demand.id, protocolo: demand.protocolo, title });
+    expect(body).toMatchObject({ id: demand.id, protocolo: demand.protocolo, title, state: 'PE', city: 'Recife', zone: 'Urbana' });
     expect(Array.isArray(body.logs)).toBe(true);
+    expect(body.slaHours).toBeGreaterThan(0);
+    expect(new Date(body.slaDeadline).getTime()).toBeGreaterThan(new Date(body.createdAt).getTime());
   });
 
   test('edita título, descrição e categoria; a alteração fica no histórico', async ({ request }) => {
@@ -95,21 +100,32 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(detail.logs.map((l: { titulo: string }) => l.titulo)).toContain('Demanda atualizada');
   });
 
-  test('anexa uma foto e ela fica disponível para exibição no app', async ({ request }) => {
-    const upload = await request.put(`/demands/${demand.id}/photo`, {
-      headers: session.headers,
-      data: { photo: JPEG_BASE64 },
-    });
-    expect(upload.status(), await upload.text()).toBe(200);
-    const { photoUrl } = await upload.json();
-    expect(photoUrl).toMatch(/^\/uploads\/.+\.jpg$/);
+  test('anexa duas fotos, elas ficam disponíveis no app e uma pode ser removida', async ({ request }) => {
+    const enviadas = [];
+    for (let i = 0; i < 2; i++) {
+      const upload = await request.post(`/demands/${demand.id}/photos`, {
+        headers: session.headers,
+        data: { photo: JPEG_BASE64 },
+      });
+      expect(upload.status(), await upload.text()).toBe(201);
+      enviadas.push(await upload.json());
+    }
+    expect(enviadas[0].url).toMatch(/^\/uploads\/.+\.jpg$/);
 
     const detail = await (await request.get(`/demands/${demand.id}`, { headers: session.headers })).json();
-    expect(detail.photoUrl).toBe(photoUrl);
+    expect(detail.photos).toEqual(enviadas);
+    expect(detail.photoUrl).toBe(enviadas[0].url);
 
-    const image = await request.get(photoUrl);
+    const image = await request.get(enviadas[1].url);
     expect(image.status()).toBe(200);
     expect(image.headers()['content-type']).toContain('image/jpeg');
+
+    const remove = await request.delete(`/demands/${demand.id}/photos/${enviadas[0].id}`, { headers: session.headers });
+    expect(remove.status()).toBe(204);
+
+    const depois = await (await request.get(`/demands/${demand.id}`, { headers: session.headers })).json();
+    expect(depois.photos).toEqual([enviadas[1]]);
+    expect(depois.photoUrl).toBe(enviadas[1].url);
   });
 
   test('remove a ocorrência: some da lista padrão e aparece em "Removidas"', async ({ request }) => {

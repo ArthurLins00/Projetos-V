@@ -31,3 +31,9 @@ export function getAllowedOrigins(): string[] {
 
 export const AI_AGENT_URL = (process.env.AI_AGENT_URL?.trim() || 'http://127.0.0.1:3333').replace(/\/$/, '');
 export const AI_AGENT_SECRET = process.env.AI_AGENT_SECRET?.trim() || '';
+
+export const SMTP_HOST = process.env.SMTP_HOST?.trim() || '';
+export const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
+export const SMTP_USER = process.env.SMTP_USER?.trim() || '';
+export const SMTP_PASS = process.env.SMTP_PASS || '';
+export const MAIL_FROM = process.env.MAIL_FROM?.trim() || 'Fiscalize <no-reply@fiscalize.gov.br>';

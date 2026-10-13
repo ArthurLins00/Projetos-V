@@ -51,7 +51,15 @@ export async function categoryIdByName(request: APIRequestContext, session: Sess
 export async function createDemand(
   request: APIRequestContext,
   session: Session,
-  overrides: Partial<{ title: string; description: string; category_id: number; location: string }> = {},
+  overrides: Partial<{
+    title: string;
+    description: string;
+    category_id: number;
+    location: string;
+    state: string;
+    city: string;
+    zone: 'Urbana' | 'Rural';
+  }> = {},
 ) {
   const categoryId = overrides.category_id ?? (await categoryIdByName(request, session, 'Iluminação Pública'));
   const response = await request.post('/demands', {

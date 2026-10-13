@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import { demandService } from '../services/demandService';
+import { notificationsService } from '../services/notificationsService';
 import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Demand } from '../models/Demand';
@@ -10,7 +12,7 @@ const SEARCH_DEBOUNCE_MS = 400;
 
 export function useDemandListViewModel() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   const [demands, setDemands] = useState<Demand[]>([]);
   const [search, setSearch] = useState('');
@@ -22,8 +24,20 @@ export function useDemandListViewModel() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const requestId = useRef(0);
+
+  const refreshUnreadCount = useCallback(() => {
+    notificationsService.unreadCount().then(setUnreadCount).catch(() => undefined);
+  }, []);
+
+  useFocusEffect(refreshUnreadCount);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(refreshUnreadCount);
+    return () => subscription.remove();
+  }, [refreshUnreadCount]);
 
   const fetchPage = useCallback(async (targetPage: number) => {
     const currentRequest = ++requestId.current;
@@ -31,8 +45,7 @@ export function useDemandListViewModel() {
       const result = await demandService.list({
         page: targetPage,
         limit: PAGE_SIZE,
-        ...(debouncedSearch && { busca: debouncedSearch }),
-        ...(status && { status }),
+        ...(debouncedSearch ? { busca: debouncedSearch } : status && { status }),
       });
       if (currentRequest !== requestId.current) return;
       setDemands((prev) => (targetPage === 1 ? result.data : [...prev, ...result.data]));
@@ -73,8 +86,15 @@ export function useDemandListViewModel() {
     fetchPage(page + 1);
   };
 
+  const searching = !!search.trim();
+
   const selectStatus = (value?: string) => {
-    if (value === status) return;
+    if (searching) {
+      setSearch('');
+      setDebouncedSearch('');
+    } else if (value === status) {
+      return;
+    }
     setLoading(true);
     setStatus(value);
   };
@@ -83,6 +103,8 @@ export function useDemandListViewModel() {
   const createDemand = () => router.push('/(app)/create-demand');
   const openAssistant = () => router.push('/(app)/assistant');
   const openProfile = () => router.push('/(app)/profile');
+  const openHelp = () => router.push('/(app)/help');
+  const openNotifications = () => router.push('/(app)/notifications');
 
   return {
     user,
@@ -90,6 +112,7 @@ export function useDemandListViewModel() {
     search,
     setSearch,
     status,
+    searching,
     selectStatus,
     loading,
     refreshing,
@@ -101,6 +124,8 @@ export function useDemandListViewModel() {
     createDemand,
     openAssistant,
     openProfile,
-    signOut,
+    openHelp,
+    openNotifications,
+    unreadCount,
   };
 }

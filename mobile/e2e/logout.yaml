@@ -3,7 +3,14 @@ appId: com.projetosv.fiscalize
 - runFlow: subflows/login.yaml
 
 - tapOn:
-    id: "logout-button"
+    id: "profile-button"
+- scrollUntilVisible:
+    element:
+      id: "profile-logout"
+- tapOn:
+    id: "profile-logout"
+- assertVisible: "Deseja encerrar a sessão?"
+- tapOn: "(?i)sair"
 - extendedWaitUntil:
     visible:
       id: "login-submit"

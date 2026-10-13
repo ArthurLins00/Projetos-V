@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Demand, DemandListParams, DemandListResponse, DemandPayload } from '../models/Demand';
+import { Demand, DemandListParams, DemandListResponse, DemandPayload, DemandPhoto } from '../models/Demand';
 
 export const demandService = {
   async list(params: DemandListParams = {}): Promise<DemandListResponse> {
@@ -22,9 +22,13 @@ export const demandService = {
     return response.data;
   },
 
-  async uploadPhoto(id: string, base64: string): Promise<{ photoUrl: string }> {
-    const response = await api.put<{ photoUrl: string }>(`/demands/${id}/photo`, { photo: base64 }, { timeout: 60000 });
+  async addPhoto(id: string, base64: string): Promise<DemandPhoto> {
+    const response = await api.post<DemandPhoto>(`/demands/${id}/photos`, { photo: base64 }, { timeout: 60000 });
     return response.data;
+  },
+
+  async removePhoto(id: string, photoId: string): Promise<void> {
+    await api.delete(`/demands/${id}/photos/${photoId}`);
   },
 
   async remove(id: string): Promise<void> {

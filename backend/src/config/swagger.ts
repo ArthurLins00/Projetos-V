@@ -34,6 +34,7 @@ export const openApiSpec = {
     { name: 'Health', description: 'Verificação de saúde do serviço' },
     { name: 'Auth', description: 'Registro, login, logout e sessão' },
     { name: 'Demands', description: 'Demandas urbanas (chamados) — cidadão e gestor' },
+    { name: 'Notifications', description: 'Notificações das atualizações dos chamados' },
     { name: 'Categories', description: 'Categorias de demandas' },
     { name: 'Users', description: 'Consulta de usuários (gestor)' },
     { name: 'Gestor', description: 'Painel do gestor: dashboard, equipe e fila de chamados' },
@@ -64,6 +65,8 @@ export const openApiSpec = {
           nome: { type: 'string', example: 'Maria Silva' },
           email: { type: 'string', format: 'email' },
           perfil: { $ref: '#/components/schemas/Perfil' },
+          fotourl: { type: 'string', nullable: true, example: '/uploads/avatar-<id>-1760000000000.jpg' },
+          termosversao: { type: 'integer', nullable: true, description: 'Última versão dos termos de uso aceita', example: 1 },
         },
       },
       Perfil: { type: 'string', enum: ['Cidadao', 'Gestor', 'Admin'], example: 'Cidadao' },
@@ -80,6 +83,13 @@ export const openApiSpec = {
           descricao: { type: 'string', nullable: true },
         },
       },
+      DemandPhoto: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          url: { type: 'string', example: '/uploads/<id>-1760000000000-ab12.jpg' },
+        },
+      },
       Demand: {
         type: 'object',
         properties: {
@@ -91,6 +101,17 @@ export const openApiSpec = {
           location: { type: 'string', example: 'Rua das Flores, 123' },
           latitude: { type: 'number', format: 'double', example: -23.55052 },
           longitude: { type: 'number', format: 'double', example: -46.633308 },
+          state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+          city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+          zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
+          photoUrl: { type: 'string', nullable: true, description: 'Primeira foto (capa)' },
+          slaHours: { type: 'integer', description: 'Prazo de atendimento (SLA) em horas, definido pela categoria/órgão', example: 48 },
+          slaDeadline: { type: 'string', format: 'date-time', description: 'Data limite estimada para o atendimento' },
+          photos: {
+            type: 'array',
+            description: 'Todas as fotos (apenas no detalhe)',
+            items: { $ref: '#/components/schemas/DemandPhoto' },
+          },
           category: { $ref: '#/components/schemas/Category' },
           creator: {
             type: 'object',
@@ -274,6 +295,70 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Solicitar código de recuperação de senha (enviado por e-mail, expira em 15 min)',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: { email: { type: 'string', format: 'email' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Resposta genérica, independente de o e-mail existir',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
+    '/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Redefinir senha com o código recebido por e-mail',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'codigo', 'novaSenha'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  codigo: { type: 'string', example: '123456' },
+                  novaSenha: { type: 'string', format: 'password', minLength: 6 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Senha redefinida',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
     '/auth/logout': {
       post: {
         tags: ['Auth'],
@@ -367,7 +452,190 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/me/terms': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registrar o aceite dos termos de uso',
+        description: 'Grava a versão aceita e a data. Enviar uma versão igual ou menor que a já aceita não altera nada.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['versao'],
+                properties: { versao: { type: 'integer', minimum: 1, example: 1 } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a `termosversao` aceita',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/auth/me/push-token': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registrar o token de push (Expo) do aparelho para receber atualizações dos chamados',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['token'],
+                properties: { token: { type: 'string', example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' } },
+              },
+            },
+          },
+        },
+        responses: {
+          204: { description: 'Token registrado' },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['Auth'],
+        summary: 'Remover o token de push do aparelho (ao sair da conta)',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { type: 'object', required: ['token'], properties: { token: { type: 'string' } } },
+            },
+          },
+        },
+        responses: {
+          204: { description: 'Token removido' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/auth/me/photo': {
+      put: {
+        tags: ['Auth'],
+        summary: 'Enviar/substituir a foto de perfil (JPEG ou PNG em base64)',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['photo'],
+                properties: { photo: { type: 'string', description: 'Imagem em base64 (aceita prefixo data:image/...;base64,)' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a nova `fotourl`',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['Auth'],
+        summary: 'Remover a foto de perfil',
+        security: BEARER,
+        responses: {
+          200: {
+            description: 'Usuário atualizado com `fotourl` nula',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
 
+    '/notifications': {
+      get: {
+        tags: ['Notifications'],
+        summary: 'Listar as notificações do usuário logado (mais recentes primeiro)',
+        security: BEARER,
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 50 } },
+          { name: 'unread', in: 'query', schema: { type: 'boolean' }, description: 'true = só as não lidas' },
+        ],
+        responses: {
+          200: {
+            description: 'Página de notificações e total de não lidas',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string', format: 'uuid' },
+                          title: { type: 'string', example: 'Status atualizado' },
+                          message: { type: 'string', example: 'Seu chamado agora está "Em Andamento".' },
+                          type: { type: 'string', example: 'status_atualizado' },
+                          read: { type: 'boolean' },
+                          demandId: { type: 'string', format: 'uuid', nullable: true },
+                          protocolo: { type: 'string', nullable: true },
+                          createdAt: { type: 'string', format: 'date-time' },
+                        },
+                      },
+                    },
+                    total: { type: 'integer' },
+                    unreadCount: { type: 'integer' },
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    totalPages: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/notifications/{id}/read': {
+      patch: {
+        tags: ['Notifications'],
+        summary: 'Marcar uma notificação como lida',
+        security: BEARER,
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          204: { description: 'Marcada como lida' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          404: { description: 'Notificação não encontrada (ou de outro usuário)' },
+        },
+      },
+    },
+    '/notifications/read-all': {
+      patch: {
+        tags: ['Notifications'],
+        summary: 'Marcar todas as notificações como lidas',
+        security: BEARER,
+        responses: {
+          200: {
+            description: 'Quantidade de notificações atualizadas',
+            content: { 'application/json': { schema: { type: 'object', properties: { updated: { type: 'integer' } } } } },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
     '/demands': {
       get: {
         tags: ['Demands'],
@@ -408,6 +676,9 @@ export const openApiSpec = {
                   location: { type: 'string', example: 'Rua das Flores, 123' },
                   latitude: { type: 'number', format: 'double' },
                   longitude: { type: 'number', format: 'double' },
+                  state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+                  city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+                  zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
                 },
               },
             },
@@ -466,6 +737,9 @@ export const openApiSpec = {
                   category_id: { type: 'integer' },
                   latitude: { type: 'number', format: 'double' },
                   longitude: { type: 'number', format: 'double' },
+                  state: { type: 'string', minLength: 2, maxLength: 2, nullable: true, example: 'PE', description: 'Sigla da UF' },
+                  city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
+                  zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
                 },
               },
             },
@@ -491,6 +765,53 @@ export const openApiSpec = {
           401: { $ref: '#/components/responses/Unauthorized' },
           403: { $ref: '#/components/responses/Forbidden' },
           404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+    '/demands/{id}/photos': {
+      post: {
+        tags: ['Demands'],
+        summary: 'Adicionar uma foto à demanda (JPEG ou PNG em base64, até 5 por demanda)',
+        security: BEARER,
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['photo'],
+                properties: { photo: { type: 'string', description: 'Imagem em base64 (aceita prefixo data:image/...;base64,)' } },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Foto adicionada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/DemandPhoto' } } },
+          },
+          400: { description: 'Imagem inválida ou limite de fotos atingido' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { description: 'Demanda de outra pessoa ou com status que não permite alteração' },
+          404: { description: 'Demanda não encontrada' },
+        },
+      },
+    },
+    '/demands/{id}/photos/{photoId}': {
+      delete: {
+        tags: ['Demands'],
+        summary: 'Remover uma foto da demanda',
+        security: BEARER,
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'photoId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          204: { description: 'Foto removida' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { description: 'Demanda de outra pessoa ou com status que não permite alteração' },
+          404: { description: 'Demanda ou foto não encontrada' },
         },
       },
     },

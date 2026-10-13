@@ -9,6 +9,8 @@ export interface ChamadoResumo {
   endereco: string;
   criado_em: string;
   atualizado_em: string;
+  sla_horas: number | null;
+  prazo_limite: string | null;
 }
 
 export interface FiltroChamados {
@@ -33,10 +35,10 @@ export const USUARIOS_DEMO = {
 };
 
 export const CHAMADOS_DEMO: ChamadoMock[] = [
-  { id: 'c1', donoId: 'cidadao-demo', protocolo: 'DEM-20260921-A7K2', titulo: 'Fiação exposta com risco elétrico', categoria: 'Iluminação Pública', status: 'Em Andamento', endereco: 'Av. Boa Viagem, 1200', criado_em: '2026-09-21T10:00:00Z', atualizado_em: '2026-10-01T14:30:00Z' },
-  { id: 'c2', donoId: 'cidadao-demo', protocolo: 'DEM-20261001-C4RR', titulo: 'Calçada danificada', categoria: 'Infraestrutura', status: 'Aberto', endereco: 'Rua dos Navegantes, 45', criado_em: '2026-10-01T08:15:00Z', atualizado_em: '2026-10-01T08:15:00Z' },
-  { id: 'c3', donoId: 'cidadao-demo', protocolo: 'DEM-20260815-B1TT', titulo: 'Poste apagado', categoria: 'Iluminação Pública', status: 'Resolvido', endereco: 'Rua Setúbal, 300', criado_em: '2026-08-15T19:40:00Z', atualizado_em: '2026-08-17T09:00:00Z' },
-  { id: 'c4', donoId: 'cidadao-vizinho', protocolo: 'DEM-20261003-E8SG', titulo: 'Esgoto a céu aberto', categoria: 'Água e Esgoto', status: 'Em Análise', endereco: 'Rua da Aurora, 80', criado_em: '2026-10-03T07:20:00Z', atualizado_em: '2026-10-04T11:00:00Z' },
+  { id: 'c1', donoId: 'cidadao-demo', protocolo: 'DEM-20260921-A7K2', titulo: 'Fiação exposta com risco elétrico', categoria: 'Iluminação Pública', status: 'Em Andamento', endereco: 'Av. Boa Viagem, 1200', criado_em: '2026-09-21T10:00:00Z', atualizado_em: '2026-10-01T14:30:00Z', sla_horas: 4, prazo_limite: '2026-09-21T14:00:00Z' },
+  { id: 'c2', donoId: 'cidadao-demo', protocolo: 'DEM-20261001-C4RR', titulo: 'Calçada danificada', categoria: 'Infraestrutura', status: 'Aberto', endereco: 'Rua dos Navegantes, 45', criado_em: '2026-10-01T08:15:00Z', atualizado_em: '2026-10-01T08:15:00Z', sla_horas: 720, prazo_limite: '2026-10-31T08:15:00Z' },
+  { id: 'c3', donoId: 'cidadao-demo', protocolo: 'DEM-20260815-B1TT', titulo: 'Poste apagado', categoria: 'Iluminação Pública', status: 'Resolvido', endereco: 'Rua Setúbal, 300', criado_em: '2026-08-15T19:40:00Z', atualizado_em: '2026-08-17T09:00:00Z', sla_horas: 48, prazo_limite: '2026-08-17T19:40:00Z' },
+  { id: 'c4', donoId: 'cidadao-vizinho', protocolo: 'DEM-20261003-E8SG', titulo: 'Esgoto a céu aberto', categoria: 'Água e Esgoto', status: 'Em Análise', endereco: 'Rua da Aurora, 80', criado_em: '2026-10-03T07:20:00Z', atualizado_em: '2026-10-04T11:00:00Z', sla_horas: 24, prazo_limite: '2026-10-04T07:20:00Z' },
 ];
 
 export class MockChamadosSource implements ChamadosSource {
@@ -70,6 +72,8 @@ interface DemandApi {
   category?: { nome?: string };
   createdAt: string;
   updatedAt: string;
+  slaHours?: number;
+  slaDeadline?: string;
 }
 
 export class BackendChamadosSource implements ChamadosSource {
@@ -102,6 +106,8 @@ export class BackendChamadosSource implements ChamadosSource {
       endereco: d.location,
       criado_em: d.createdAt,
       atualizado_em: d.updatedAt,
+      sla_horas: d.slaHours ?? null,
+      prazo_limite: d.slaDeadline ?? null,
     }));
   }
 }

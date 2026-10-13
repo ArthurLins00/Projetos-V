@@ -5,6 +5,8 @@ export interface User {
   nome: string;
   email: string;
   perfil: Perfil;
+  fotourl?: string | null;
+  termosversao?: number | null;
 }
 
 export interface LoginResponse extends User {

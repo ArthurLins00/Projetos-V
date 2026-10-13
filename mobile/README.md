@@ -51,9 +51,9 @@ Exemplo, o formulário de demanda:
 | Camada | Arquivo | Responsabilidade |
 |---|---|---|
 | Rota | [`app/(app)/create-demand.tsx`](app/(app)/create-demand.tsx) | Renderiza a View |
-| View | [`DemandFormView.tsx`](src/views/DemandFormView.tsx) | Campos, botões, prévia da foto |
-| ViewModel | [`useDemandFormViewModel.ts`](src/viewmodels/useDemandFormViewModel.ts) | Carrega categorias, GPS, câmera, validação e envio |
-| Service | [`demandService.ts`](src/services/demandService.ts) | `create`, `update`, `uploadPhoto` |
+| View | [`DemandFormView.tsx`](src/views/DemandFormView.tsx) | Campos, botões, miniaturas das fotos |
+| ViewModel | [`useDemandFormViewModel.ts`](src/viewmodels/useDemandFormViewModel.ts) | Carrega categorias, GPS, câmera e galeria (até 5 fotos), validação e envio |
+| Service | [`demandService.ts`](src/services/demandService.ts) | `create`, `update`, `addPhoto`, `removePhoto` |
 | Model | [`Demand.ts`](src/models/Demand.ts) | Tipos `Demand` e `DemandPayload`, regra `isDemandEditable` |
 
 O mesmo ViewModel atende a criação e a edição: sem `demandId`, cria; com `demandId`, carrega os dados e atualiza.
@@ -84,7 +84,7 @@ Se o app não alcançar o servidor, a mensagem de erro mostra a URL tentada.
 | Recurso | Rotas usadas |
 |---|---|
 | Autenticação | `POST /auth/login`, `POST /auth/register`, `POST /auth/logout` |
-| Demandas | `GET/POST /demands`, `GET/PUT/DELETE /demands/:id`, `PUT /demands/:id/photo` |
+| Demandas | `GET/POST /demands`, `GET/PUT/DELETE /demands/:id`, `POST /demands/:id/photos`, `DELETE /demands/:id/photos/:photoId` |
 | Categorias | `GET /categories` |
 | Fotos | `GET /uploads/<arquivo>` (exibidas com `<Image>`) |
 
@@ -166,7 +166,7 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 |---|---|
 | Login | `login-email`, `login-password`, `login-submit`, `login-go-register`, `login-dev` |
 | Cadastro | `register-name`, `register-email`, `register-password`, `register-submit`, `register-go-login` |
-| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `logout-button` |
+| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
 | Formulário | `form-title`, `form-category-<id>`, `form-address`, `form-description`, `form-photo`, `form-gps`, `form-submit` |
 | Câmera | `camera-shutter` |
 | Detalhe | `detail-title`, `detail-edit`, `detail-delete` |

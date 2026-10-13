@@ -103,6 +103,13 @@ completos estão no Swagger (`/docs`).
 | `POST` | `/auth/login` | Login (`email`, `senha`); retorna `{ id, nome, email, perfil, token }` |
 | `POST` | `/auth/logout` | Revoga o token atual |
 | `GET` | `/auth/me` | Dados do usuário logado |
+| `POST` | `/auth/me/push-token` | Registra o token de push (Expo) do aparelho (`token`) |
+| `DELETE` | `/auth/me/push-token` | Remove o token de push do aparelho (`token`), usado ao sair da conta |
+
+Quando um gestor aceita, transfere, muda o status ou encerra um chamado, o cidadão recebe a atualização
+por **e-mail** (via SMTP; sem `SMTP_HOST`, o e-mail aparece no log em desenvolvimento) e por **push** nos
+aparelhos registrados (via [Expo Push](https://docs.expo.dev/push-notifications/sending-notifications/)).
+A notificação também fica gravada na tabela `notificacao`.
 
 ### Ocorrências — `/demands`
 
@@ -110,9 +117,10 @@ completos estão no Swagger (`/docs`).
 |---|---|---|---|
 | `GET` | `/demands` | todos | Lista paginada. Filtros: `busca`, `status`, `categoria`, `regiao`, `page`, `limit` |
 | `POST` | `/demands` | Cidadão | Registra uma ocorrência |
-| `GET` | `/demands/:id` | todos | Detalhe com histórico (`logs`) |
-| `PUT` | `/demands/:id` | Cidadão (dono) | Edita título, descrição, categoria, endereço e coordenadas |
-| `PUT` | `/demands/:id/photo` | Cidadão (dono) | Envia a foto (`{ "photo": "<base64>" }`, JPEG ou PNG, até ~15 MB) |
+| `GET` | `/demands/:id` | todos | Detalhe com histórico (`logs`) e fotos (`photos`) |
+| `PUT` | `/demands/:id` | Cidadão (dono) | Edita título, descrição, categoria, endereço, coordenadas, estado, cidade e zona |
+| `POST` | `/demands/:id/photos` | Cidadão (dono) | Adiciona uma foto (`{ "photo": "<base64>" }`, JPEG ou PNG, até ~15 MB; máximo 5 por demanda) |
+| `DELETE` | `/demands/:id/photos/:photoId` | Cidadão (dono) | Remove uma foto |
 | `DELETE` | `/demands/:id` | Cidadão (dono) ou Gestor | Remove (soft delete: o status vira `Fechado`) |
 | `PATCH` | `/demands/:id/status` | Gestor | Altera o status (`status_id` com o valor do enum) |
 
@@ -306,6 +314,10 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | `ALLOWED_ORIGINS` | em produção | — | Origens liberadas no CORS, separadas por vírgula |
 | `FRONTEND_URL` | não | — | Origem extra liberada no CORS em desenvolvimento |
 | `REDIS_URL` | não | — | Redis para cache de métricas (sem ele, o cache fica desligado) |
+| `SMTP_HOST` | em produção | — | Servidor SMTP para os e-mails de recuperação de senha (sem ele, em desenvolvimento o código é exibido no log do servidor) |
+| `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
+| `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
+| `MAIL_FROM` | não | `Fiscalize <no-reply@fiscalize.gov.br>` | Remetente dos e-mails |
 | `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
 | `SEED_ADMIN_PASSWORD` | não | `Admin@123456` | Senha do admin criado pelo seed |

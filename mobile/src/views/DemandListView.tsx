@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TextInput, FlatList, Pressable, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, TextInput, FlatList, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandListViewModel } from '../viewmodels/useDemandListViewModel';
 import { DemandCard } from '../components/DemandCard';
-import { Avatar, Chip, EmptyState } from '../components/ui';
+import { EmergencyNotice } from '../components/EmergencyNotice';
+import { Avatar, Chip, EmptyState, ScrollableRow } from '../components/ui';
 import { STATUS_FILTERS } from '../models/Demand';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
@@ -28,7 +29,7 @@ export function DemandListView() {
               style={({ pressed }) => pressed && styles.pressed}
               onPress={vm.openProfile}
             >
-              <Avatar name={vm.user?.nome} size={44} />
+              <Avatar name={vm.user?.nome} photoUrl={vm.user?.fotourl} size={44} />
             </Pressable>
             <View style={styles.identityText}>
               {vm.user && <Text style={styles.greeting} numberOfLines={1}>Olá, {vm.user.nome}</Text>}
@@ -36,6 +37,15 @@ export function DemandListView() {
             </View>
           </View>
           <View style={styles.actions}>
+            <Pressable
+              testID="help-button"
+              accessibilityRole="button"
+              accessibilityLabel="Abrir ajuda e perguntas frequentes"
+              style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+              onPress={vm.openHelp}
+            >
+              <Ionicons name="help-circle-outline" size={22} color={colors.textMuted} />
+            </Pressable>
             <Pressable
               testID="assistant-button"
               accessibilityRole="button"
@@ -46,13 +56,18 @@ export function DemandListView() {
               <Ionicons name="sparkles" size={20} color={colors.primary} />
             </Pressable>
             <Pressable
-              testID="logout-button"
+              testID="notifications-button"
               accessibilityRole="button"
-              accessibilityLabel="Sair"
+              accessibilityLabel={vm.unreadCount > 0 ? `Notificações, ${vm.unreadCount} não lidas` : 'Notificações'}
               style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-              onPress={vm.signOut}
+              onPress={vm.openNotifications}
             >
-              <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+              <Ionicons name={vm.unreadCount > 0 ? 'notifications' : 'notifications-outline'} size={20} color={colors.textMuted} />
+              {vm.unreadCount > 0 && (
+                <View testID="notifications-badge" style={styles.badge}>
+                  <Text style={styles.badgeText}>{vm.unreadCount > 9 ? '9+' : vm.unreadCount}</Text>
+                </View>
+              )}
             </Pressable>
           </View>
         </View>
@@ -62,7 +77,7 @@ export function DemandListView() {
           <TextInput
             testID="demand-search"
             style={styles.searchInput}
-            placeholder="Buscar por título, endereço ou protocolo"
+            placeholder="Buscar por título, categoria, endereço ou protocolo"
             placeholderTextColor={colors.textSubtle}
             value={vm.search}
             onChangeText={vm.setSearch}
@@ -76,17 +91,18 @@ export function DemandListView() {
           )}
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        <ScrollableRow testID="status-filters" contentContainerStyle={styles.chips}>
           {STATUS_FILTERS.map((filter) => (
             <Chip
               key={filter.label}
               testID={`status-filter-${filter.value ?? 'todos'}`}
               label={filter.label}
-              selected={vm.status === filter.value}
+              selected={vm.searching ? filter.value === undefined : vm.status === filter.value}
               onPress={() => vm.selectStatus(filter.value)}
             />
           ))}
-        </ScrollView>
+        </ScrollableRow>
+        {vm.searching && <Text style={styles.searchHint}>Buscando em todos os status. Toque em um status para limpar a busca.</Text>}
       </View>
 
       {vm.loading ? (
@@ -101,6 +117,7 @@ export function DemandListView() {
           refreshControl={<RefreshControl refreshing={vm.refreshing} onRefresh={vm.refresh} tintColor={colors.primary} colors={[colors.primary]} />}
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
+          ListHeaderComponent={<EmergencyNotice compact style={styles.notice} />}
           ListEmptyComponent={
             <EmptyState
               icon={vm.error ? 'cloud-offline-outline' : filtering ? 'search-outline' : 'document-text-outline'}
@@ -129,6 +146,7 @@ export function DemandListView() {
 
 const useStyles = makeStyles((colors) => ({
   container: { flex: 1, backgroundColor: colors.background },
+  notice: { marginBottom: 12 },
   header: {
     backgroundColor: colors.surface,
     paddingHorizontal: 20,
@@ -144,6 +162,21 @@ const useStyles = makeStyles((colors) => ({
   actions: { flexDirection: 'row', gap: 8 },
   iconButton: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
   iconButtonPrimary: { backgroundColor: colors.primarySoft },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.danger,
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  badgeText: { color: colors.onPrimary, fontSize: 10, fontWeight: '800' },
   pressed: { opacity: 0.7 },
   search: {
     flexDirection: 'row',
@@ -156,6 +189,7 @@ const useStyles = makeStyles((colors) => ({
   },
   searchInput: { flex: 1, fontSize: 15, color: colors.text },
   chips: { paddingVertical: 14, gap: 8 },
+  searchHint: { fontSize: 12, color: colors.textSubtle, marginTop: -6, marginBottom: 12 },
   loader: { marginTop: 48 },
   list: { paddingHorizontal: 20, paddingTop: 18 },
   loadingMore: { marginVertical: 16 },

@@ -142,11 +142,12 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-28 | Cidadão edita ocorrência de outra pessoa | 403 |
 | U-29 | Edição de ocorrência em andamento | 403 |
 | U-30 | Edição válida | Campos atualizados; histórico com dados antigos e novos |
-| U-31 | Upload de JPEG válido | Arquivo salvo e caminho gravado em `fotourl` |
+| U-31 | Upload de JPEG válido | Arquivo salvo e foto registrada em `chamado_foto` |
 | U-32 | Upload com prefixo `data:image/jpeg;base64,` | Aceito |
 | U-33 | Upload de conteúdo que não é imagem | 400 (valida a assinatura do arquivo, não a extensão) |
-| U-34 | Substituição de foto | Arquivo anterior apagado |
+| U-34 | Remoção de foto | Registro e arquivo apagados |
 | U-35 | Upload em ocorrência de outra pessoa | 403 |
+| U-36 | Upload além do limite de 5 fotos | 400 |
 
 ### 3.2 API — `backend/src/tests/api` (33)
 
@@ -220,7 +221,7 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 | A-32 | Chamado inexistente | 404 |
 | A-33 | Chamado de outro órgão | 403 |
 
-### 3.3 E2E da API — `e2e/` (Playwright, 27)
+### 3.3 E2E da API — `e2e/` (Playwright, 33)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
 jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma ocorrência).
@@ -231,13 +232,13 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 |---|---|---|
 | E-01 | Cadastro e login | Perfil `Cidadao`; `/auth/me` retorna o usuário |
 | E-02 | Lista inicial | Vazia para um cidadão novo |
-| E-03 | Registrar ocorrência (categoria, endereço, GPS) | Protocolo `DEM-AAAAMMDD-XXXX`, status Aberto |
+| E-03 | Registrar ocorrência (categoria, endereço, região, GPS) | Protocolo `DEM-AAAAMMDD-XXXX`, status Aberto; estado (UF em maiúsculas), cidade e zona gravados |
 | E-04 | Listagem | Ocorrência com categoria e coordenadas corretas |
-| E-05 | Pesquisa por título, endereço e protocolo | Encontra a ocorrência; termo inexistente não retorna nada |
+| E-05 | Pesquisa por título, endereço, protocolo e categoria | Encontra a ocorrência; termo inexistente não retorna nada |
 | E-06 | Filtro por status | Aparece em Aberto e não em Resolvido |
-| E-07 | Detalhe | Dados e histórico |
+| E-07 | Detalhe | Dados, região, prazo (`slaHours`, `slaDeadline` depois da criação) e histórico |
 | E-08 | Edição (título, descrição, categoria) | Alterações salvas e registradas no histórico |
-| E-09 | Anexar foto | URL gravada, imagem servida como `image/jpeg` |
+| E-09 | Anexar duas fotos e remover uma | `photos` na ordem de envio, `photoUrl` = primeira foto, imagem servida como `image/jpeg`; após remover, a capa passa a ser a foto restante |
 | E-10 | Remover | Some da lista padrão e aparece em "Removidas" |
 | E-11 | Editar ocorrência removida | 403 |
 | E-12 | Logout | Token deixa de funcionar (401) |
@@ -251,8 +252,9 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-15 | Cidadão acessa rotas do gestor | 403 |
 | E-16 | Gestor muda para "Em Andamento" | 200 |
 | E-17 | Cidadão consulta a ocorrência | Novo status e registro no histórico |
+| E-17b | Notificação da mudança | Aparece em `/notifications` (não lida, com protocolo); marcar como lida zera o contador; outro usuário recebe 404 |
 | E-18 | Cidadão tenta editar e remover | 403 nos dois casos |
-| E-19 | Gestor conclui ("Resolvido") | Aparece em Resolvido para o cidadão |
+| E-19 | Gestor conclui ("Resolvido") | Aparece em Resolvido para o cidadão e gera a notificação "Chamado resolvido" |
 
 **`seguranca.spec.ts`: autenticação, isolamento e validação**
 
@@ -267,6 +269,16 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-26 | Ocorrência inválida | 400 sem campos obrigatórios e com categoria inexistente |
 | E-27 | Foto que não é imagem | 400 |
 
+**`conta.spec.ts`: termos, foto de perfil, notificações e recuperação de senha**
+
+| ID | Caso | Verifica |
+|---|---|---|
+| E-28 | Conta nova | `termosversao` nula em `/auth/me` |
+| E-29 | Aceite dos termos | Versão gravada; enviar uma versão menor não regride |
+| E-30 | Foto de perfil | Upload grava `fotourl` e a imagem é servida; remover zera `fotourl` e apaga o arquivo (404) |
+| E-31 | Token de push | Registrar (inclusive repetido) e remover retornam 204; token em formato inválido retorna 400 |
+| E-32 | Recuperação de senha | Mesma resposta para e-mail existente e inexistente; código errado retorna 400 e a senha antiga continua valendo |
+
 ### 3.4 E2E de telas — `mobile/e2e` (Maestro, 5 fluxos)
 
 | ID | Fluxo | Passos |
@@ -274,8 +286,10 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | M-01 | `login_invalid_password.yaml` | Senha errada → alerta "Falha no Login" / "Credenciais inválidas." → continua na tela de login |
 | M-02 | `register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação |
 | M-03 | `session_persistence.yaml` | Login → fechar e reabrir o app → continua logado |
-| M-04 | `logout.yaml` | Login → Sair → tela de login → reabrir o app → continua deslogado |
-| M-05 | `demand_crud.yaml` | Nova demanda (categoria, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista |
+| M-04 | `logout.yaml` | Login → Perfil → "Sair da conta" → confirmar → tela de login → reabrir o app → continua deslogado |
+| M-05 | `demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista |
+
+Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os termos de uso quando a tela aparece.
 
 ---
 
@@ -293,10 +307,16 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | Detalhe | — | A-18, A-19 | E-07 | M-05 |
 | Atualizar ocorrência | U-28 a U-30 | — | E-08, E-11, E-18 | M-05 |
 | Remover ocorrência | U-21 a U-27 | A-22, A-23 | E-10, E-18 | M-05 |
-| Câmera / foto | U-31 a U-35 | A-24 a A-26 | E-09, E-27 | M-05 |
+| Câmera / fotos (até 5) | U-31 a U-36 | A-24 a A-26 | E-09, E-27 | M-05 |
 | GPS (coordenadas) | — | — | E-03, E-04 | M-05 |
+| Região (estado, cidade, zona) | `demandService.test.ts` (create) | `demands.test.ts` (validação) | E-03, E-07 | M-05 |
+| Prazo (SLA) | — | — | E-07 | — |
 | Isolamento entre cidadãos | U-22, U-28, U-35 | A-19, A-23 | E-24 | — |
 | Atendimento pelo gestor | — | A-28 a A-33 | E-13 a E-19 | — |
+| Recuperação de senha | — | `passwordReset.test.ts` | E-32 | — |
+| Termos de uso | — | `terms.test.ts` | E-28, E-29 | M-01 a M-05 (aceite no login) |
+| Foto de perfil | — | `profilePhoto.test.ts` | E-30 | — |
+| Notificações (e-mail, push e tela) | `notificationService.test.ts` | `notifications.test.ts` | E-17b, E-19, E-31 | — |
 
 ---
 

@@ -49,7 +49,7 @@ test.describe('Isolamento entre cidadãos', () => {
       (await request.put(`/demands/${demand.id}`, { headers: intruso.headers, data: { title: 'Invadido' } })).status(),
     ).toBe(403);
     expect(
-      (await request.put(`/demands/${demand.id}/photo`, { headers: intruso.headers, data: { photo: JPEG_BASE64 } })).status(),
+      (await request.post(`/demands/${demand.id}/photos`, { headers: intruso.headers, data: { photo: JPEG_BASE64 } })).status(),
     ).toBe(403);
     expect((await request.delete(`/demands/${demand.id}`, { headers: intruso.headers })).status()).toBe(403);
 
@@ -86,7 +86,7 @@ test.describe('Validação de dados', () => {
     const session = await registerAndLogin(request, 'foto');
     const demand = await createDemand(request, session);
 
-    const response = await request.put(`/demands/${demand.id}/photo`, {
+    const response = await request.post(`/demands/${demand.id}/photos`, {
       headers: session.headers,
       data: { photo: Buffer.from('<script>alert(1)</script>').toString('base64') },
     });
