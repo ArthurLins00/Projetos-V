@@ -5,6 +5,7 @@ import { useDemandFormViewModel } from '../viewmodels/useDemandFormViewModel';
 import { CameraCapture } from '../components/CameraCapture';
 import { Button, Chip, SelectField, TextField } from '../components/ui';
 import { ZONES } from '../models/Region';
+import { MAX_DEMAND_PHOTOS } from '../models/Demand';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 interface Props {
@@ -156,7 +157,7 @@ export function DemandFormView({ demandId }: Props) {
         <Text style={styles.hint}>Dica: ao usar o GPS, o estado e a cidade são preenchidos automaticamente.</Text>
       </Section>
 
-      <Section title="Localização e foto" icon="location-outline">
+      <Section title="Localização" icon="location-outline">
         <View style={styles.tiles}>
           <ActionTile
             testID="form-gps"
@@ -167,26 +168,49 @@ export function DemandFormView({ demandId }: Props) {
             loading={vm.locating}
             onPress={vm.captureLocation}
           />
+        </View>
+      </Section>
+
+      <Section title={`Fotos (${vm.photos.length}/${MAX_DEMAND_PHOTOS})`} icon="images-outline">
+        <View style={styles.tiles}>
           <ActionTile
             testID="form-photo"
             icon="camera-outline"
-            title={vm.photoUri ? 'Refazer foto' : 'Tirar foto'}
-            subtitle={vm.photoUri ? 'Foto anexada' : 'Opcional'}
-            done={!!vm.photoUri}
+            title="Câmera"
+            subtitle="Tirar uma foto"
+            done={false}
             onPress={vm.openCamera}
+          />
+          <ActionTile
+            testID="form-gallery"
+            icon="images-outline"
+            title="Galeria"
+            subtitle="Escolher fotos"
+            done={false}
+            onPress={vm.pickFromGallery}
           />
         </View>
 
-        {vm.photoUri && (
-          <View style={styles.previewWrap}>
-            <Image source={{ uri: vm.photoUri }} style={styles.preview} />
-            {vm.hasNewPhoto && (
-              <Pressable accessibilityRole="button" style={styles.discard} onPress={vm.removePhoto}>
-                <Ionicons name="trash-outline" size={14} color={colors.onPrimary} />
-                <Text style={styles.discardText}>Descartar foto nova</Text>
-              </Pressable>
-            )}
+        {vm.photos.length > 0 ? (
+          <View style={styles.thumbs}>
+            {vm.photos.map((photo, index) => (
+              <View key={photo.key} testID={`form-photo-thumb-${index}`} style={styles.thumbWrap}>
+                <Image source={{ uri: photo.uri }} style={styles.thumb} />
+                <Pressable
+                  testID={`form-photo-remove-${index}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover foto ${index + 1}`}
+                  hitSlop={8}
+                  style={styles.thumbRemove}
+                  onPress={() => vm.removePhoto(photo.key)}
+                >
+                  <Ionicons name="close" size={14} color={colors.onPrimary} />
+                </Pressable>
+              </View>
+            ))}
           </View>
+        ) : (
+          <Text style={styles.hint}>Opcional. Você pode anexar até {MAX_DEMAND_PHOTOS} fotos.</Text>
         )}
       </Section>
 
@@ -231,20 +255,19 @@ const useStyles = makeStyles((colors) => ({
   tileTitleDone: { color: colors.success },
   tileSubtitle: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   pressed: { opacity: 0.8 },
-  previewWrap: { marginBottom: 14, borderRadius: radius.md, overflow: 'hidden' },
-  preview: { width: '100%', height: 200, backgroundColor: colors.surfaceMuted },
-  discard: {
+  thumbs: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  thumbWrap: { width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceMuted },
+  thumb: { width: '100%', height: '100%' },
+  thumbRemove: {
     position: 'absolute',
-    right: 10,
-    bottom: 10,
-    flexDirection: 'row',
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: radius.pill,
+    justifyContent: 'center',
     backgroundColor: colors.overlay,
   },
-  discardText: { color: colors.onPrimary, fontSize: 13, fontWeight: '600' },
   submit: { marginTop: 6 },
 }));

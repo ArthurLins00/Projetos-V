@@ -2,16 +2,27 @@ import { useState, useEffect, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
 import { demandService } from '../services/demandService';
 import { categoryService } from '../services/categoryService';
 import { cityService } from '../services/cityService';
 import { getApiErrorMessage, getPhotoUri } from '../services/api';
 import { Category } from '../models/Category';
-import { DemandPayload } from '../models/Demand';
+import { DemandPayload, MAX_DEMAND_PHOTOS } from '../models/Demand';
 import { BRAZIL_STATES, findStateUf, normalizeText, Zone } from '../models/Region';
 
 type Coords = { latitude: number; longitude: number };
+
+export interface FormPhoto {
+  key: string;
+  uri: string;
+  savedId?: string;
+  base64?: string;
+}
+
+let photoKeySeq = 0;
+const newPhoto = (uri: string, base64: string): FormPhoto => ({ key: `nova-${++photoKeySeq}`, uri, base64 });
 
 export function useDemandFormViewModel(demandId?: string) {
   const router = useRouter();
@@ -22,9 +33,8 @@ export function useDemandFormViewModel(demandId?: string) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [locationText, setLocationText] = useState('');
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
-  const [savedPhotoUri, setSavedPhotoUri] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<FormPhoto[]>([]);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
   const [stateUf, setStateUf] = useState<string | null>(null);
   const [city, setCity] = useState<string | null>(null);
   const [zone, setZone] = useState<Zone | null>(null);
@@ -59,9 +69,7 @@ export function useDemandFormViewModel(demandId?: string) {
           setStateUf(demand.state ?? null);
           setCity(demand.city ?? null);
           setZone(demand.zone ?? null);
-          const remotePhoto = getPhotoUri(demand.photoUrl);
-          setSavedPhotoUri(remotePhoto);
-          setPhotoUri(remotePhoto);
+          setPhotos((demand.photos ?? []).map((photo) => ({ key: photo.id, uri: getPhotoUri(photo.url)!, savedId: photo.id })));
         }
       } catch (error) {
         if (active) Alert.alert('Erro', getApiErrorMessage(error, 'Não foi possível carregar os dados.'));
@@ -110,7 +118,12 @@ export function useDemandFormViewModel(demandId?: string) {
     setCity(null);
   };
 
+  const remainingPhotos = MAX_DEMAND_PHOTOS - photos.length;
+
+  const warnPhotoLimit = () => Alert.alert('Limite de fotos', `Você pode anexar até ${MAX_DEMAND_PHOTOS} fotos por demanda.`);
+
   const openCamera = async () => {
+    if (remainingPhotos <= 0) return warnPhotoLimit();
     let granted = cameraPermission?.granted;
     if (!granted) {
       granted = (await requestCameraPermission()).granted;
@@ -120,16 +133,35 @@ export function useDemandFormViewModel(demandId?: string) {
   };
 
   const onPhotoTaken = (photo: { uri: string; base64: string }) => {
-    setPhotoUri(photo.uri);
-    setPhotoBase64(photo.base64);
+    setPhotos((current) => [...current, newPhoto(photo.uri, photo.base64)].slice(0, MAX_DEMAND_PHOTOS));
     setCameraVisible(false);
   };
 
   const closeCamera = () => setCameraVisible(false);
 
-  const removePhoto = () => {
-    setPhotoBase64(null);
-    setPhotoUri(savedPhotoUri);
+  const pickFromGallery = async () => {
+    if (remainingPhotos <= 0) return warnPhotoLimit();
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) return Alert.alert('Atenção', 'Precisamos da permissão para acessar suas fotos.');
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: remainingPhotos,
+      quality: 0.5,
+      base64: true,
+    });
+    if (result.canceled) return;
+
+    const picked = result.assets.filter((asset) => !!asset.base64).map((asset) => newPhoto(asset.uri, asset.base64!));
+    if (picked.length > remainingPhotos) warnPhotoLimit();
+    setPhotos((current) => [...current, ...picked].slice(0, MAX_DEMAND_PHOTOS));
+  };
+
+  const removePhoto = (key: string) => {
+    const photo = photos.find((p) => p.key === key);
+    if (photo?.savedId) setRemovedPhotoIds((ids) => [...ids, photo.savedId!]);
+    setPhotos((current) => current.filter((p) => p.key !== key));
   };
 
   const captureLocation = async () => {
@@ -190,19 +222,27 @@ export function useDemandFormViewModel(demandId?: string) {
         ? await demandService.update(demandId, payload)
         : await demandService.create(payload);
 
-      let photoFailed = false;
-      if (photoBase64) {
+      for (const photoId of removedPhotoIds) {
+        await demandService.removePhoto(saved.id, photoId).catch((error) => {
+          console.error('Erro ao remover foto:', error?.response?.data || error);
+        });
+      }
+
+      let failedPhotos = 0;
+      for (const photo of photos) {
+        if (!photo.base64) continue;
         try {
-          await demandService.uploadPhoto(saved.id, photoBase64);
+          await demandService.addPhoto(saved.id, photo.base64);
         } catch (error) {
           console.error('Erro ao enviar foto:', (error as any)?.response?.data || error);
-          photoFailed = true;
+          failedPhotos++;
         }
       }
 
       const message = isEditing ? 'Demanda atualizada com sucesso!' : 'Demanda registrada com sucesso!';
-      if (photoFailed) {
-        Alert.alert('Atenção', `${message}\nMas não foi possível enviar a foto. Tente novamente pela edição.`);
+      if (failedPhotos) {
+        const which = failedPhotos === 1 ? '1 foto' : `${failedPhotos} fotos`;
+        Alert.alert('Atenção', `${message}\nMas não foi possível enviar ${which}. Tente novamente pela edição.`);
       } else {
         Alert.alert('Sucesso', message);
       }
@@ -236,8 +276,8 @@ export function useDemandFormViewModel(demandId?: string) {
     citiesFailed,
     zone,
     setZone,
-    photoUri,
-    hasNewPhoto: !!photoBase64,
+    photos,
+    remainingPhotos,
     categories,
     loadingData,
     locating,
@@ -246,6 +286,7 @@ export function useDemandFormViewModel(demandId?: string) {
     openCamera,
     closeCamera,
     onPhotoTaken,
+    pickFromGallery,
     removePhoto,
     captureLocation,
     submit,

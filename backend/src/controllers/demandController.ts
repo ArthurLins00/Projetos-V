@@ -139,7 +139,7 @@ async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
   }
 },
 
-async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
+async addPhoto(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
 
@@ -153,9 +153,25 @@ async uploadPhoto(req: AuthRequest, res: Response, next: NextFunction) {
       throw new AppError(400, 'Campo obrigatório: photo (imagem em base64)');
     }
 
-    const result = await demandService.uploadPhoto(id, req.user!.id, photo);
+    const result = await demandService.addPhoto(id, req.user!.id, photo);
 
-    res.status(200).json(result);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+},
+
+async removePhoto(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id, photoId } = req.params;
+
+    if (!id || Array.isArray(id) || !photoId || Array.isArray(photoId)) {
+      throw new AppError(400, 'ID inválido');
+    }
+
+    await demandService.removePhoto(id, req.user!.id, photoId);
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

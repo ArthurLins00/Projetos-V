@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, ScrollView, Image, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandDetailViewModel } from '../viewmodels/useDemandDetailViewModel';
 import { getPhotoUri } from '../services/api';
+import { PhotoCarousel } from '../components/PhotoCarousel';
 import { Button, EmptyState, StatusBadge } from '../components/ui';
 import { LocationMapModal } from '../components/LocationMapModal';
 import { formatRegion } from '../models/Region';
@@ -50,12 +51,12 @@ export function DemandDetailView({ demandId }: Props) {
   }
 
   const { demand } = vm;
-  const photoUri = getPhotoUri(demand.photoUrl);
+  const photoUris = (demand.photos ?? []).map((photo) => getPhotoUri(photo.url)!);
   const region = formatRegion(demand.city, demand.state, demand.zone);
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-      {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
+      {photoUris.length > 0 && <PhotoCarousel uris={photoUris} />}
 
       <View style={styles.card}>
         <View style={styles.headerRow}>
@@ -150,7 +151,6 @@ const useStyles = makeStyles((colors) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   container: { padding: 16, paddingBottom: 40 },
-  photo: { width: '100%', height: 220, borderRadius: radius.lg, marginBottom: 14, backgroundColor: colors.surfaceMuted },
   card: { backgroundColor: colors.surface, padding: 18, borderRadius: radius.lg, marginBottom: 14, ...shadow(1) },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   protocol: { fontSize: 12, fontWeight: '600', color: colors.textSubtle, fontVariant: ['tabular-nums'] },

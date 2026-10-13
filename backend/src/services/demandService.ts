@@ -47,6 +47,40 @@ interface ListDemandsInput {
 
 const BLOCKED_STATUSES = ['Em_Andamento', 'Resolvido', 'Fechado'] as const;
 
+export const MAX_PHOTOS = 5;
+
+async function loadEditableChamado(chamadoId: string, userId: string) {
+  const chamado = await prisma.chamado.findUnique({ where: { id: chamadoId } });
+  if (!chamado) throw new AppError(404, 'Demanda não encontrada.');
+
+  if (chamado.cidadaoid !== userId) {
+    throw new AppError(403, 'Você não tem permissão para alterar esta demanda.');
+  }
+  if ((BLOCKED_STATUSES as readonly string[]).includes(chamado.status)) {
+    throw new AppError(403, `Não é possível alterar uma demanda com status '${displayStatus(chamado.status)}'.`);
+  }
+
+  return chamado;
+}
+
+async function savePhotoFile(chamadoId: string, base64: string) {
+  const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+  const extension = detectImageExtension(buffer);
+  if (!extension) throw new AppError(400, 'Formato de imagem inválido. Envie JPEG ou PNG.');
+
+  const fileName = `${chamadoId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${extension}`;
+  await fs.mkdir(UPLOADS_DIR, { recursive: true });
+  await fs.writeFile(path.join(UPLOADS_DIR, fileName), buffer);
+
+  return `${UPLOADS_ROUTE}/${fileName}`;
+}
+
+async function deleteUploadedFile(url: string | null) {
+  if (url?.startsWith(`${UPLOADS_ROUTE}/`)) {
+    await fs.unlink(path.join(UPLOADS_DIR, path.basename(url))).catch(() => undefined);
+  }
+}
+
 interface CreateDemandInput {
   title: string;
   description: string;
@@ -105,6 +139,7 @@ export const demandService = {
       cidadao: {
         include: { usuario: { select: { id: true, nome: true, email: true } } },
       },
+      chamado_foto: { orderBy: { criadoem: 'asc' as const }, take: 1, select: { url: true } },
     };
 
     const [chamados, total] = await Promise.all([
@@ -133,7 +168,7 @@ export const demandService = {
         zone: c.zona,
         category: c.categoria,
         creator: c.cidadao.usuario,
-        photoUrl: c.fotourl,
+        photoUrl: c.chamado_foto?.[0]?.url ?? null,
         createdAt: c.criadoem,
         updatedAt: c.atualizadoem,
       })),
@@ -155,6 +190,10 @@ export const demandService = {
         timeline_event: {
           orderBy: { timestamp: 'asc' },
           select: { tipo: true, titulo: true, descricao: true, autor: true, timestamp: true },
+        },
+        chamado_foto: {
+          orderBy: { criadoem: 'asc' },
+          select: { id: true, url: true },
         },
       },
     });
@@ -179,7 +218,8 @@ export const demandService = {
       zone: chamado.zona,
       category: chamado.categoria,
       creator: chamado.cidadao.usuario,
-      photoUrl: chamado.fotourl,
+      photoUrl: chamado.chamado_foto?.[0]?.url ?? null,
+      photos: chamado.chamado_foto ?? [],
       createdAt: chamado.criadoem,
       updatedAt: chamado.atualizadoem,
       logs: chamado.timeline_event,
@@ -256,7 +296,10 @@ export const demandService = {
           slahoras,
           atualizadoem: new Date(),
         },
-        include: { categoria: { select: { id: true, nome: true } } },
+        include: {
+          categoria: { select: { id: true, nome: true } },
+          chamado_foto: { orderBy: { criadoem: 'asc' }, take: 1, select: { url: true } },
+        },
       });
 
       const usuario = await tx.usuario.findUnique({
@@ -312,7 +355,7 @@ export const demandService = {
       city: updated.cidade,
       zone: updated.zona,
       status: displayStatus(updated.status),
-      photoUrl: updated.fotourl,
+      photoUrl: updated.chamado_foto?.[0]?.url ?? null,
       createdAt: updated.criadoem,
       updatedAt: updated.atualizadoem,
     };
@@ -418,42 +461,34 @@ export const demandService = {
       city: chamado.cidade,
       zone: chamado.zona,
       status: displayStatus(chamado.status),
-      photoUrl: chamado.fotourl,
+      photoUrl: null,
       createdAt: chamado.criadoem,
     };
   },
 
-  async uploadPhoto(chamadoId: string, userId: string, base64: string) {
-    const chamado = await prisma.chamado.findUnique({ where: { id: chamadoId } });
-    if (!chamado) throw new AppError(404, 'Demanda não encontrada.');
+  async addPhoto(chamadoId: string, userId: string, base64: string) {
+    await loadEditableChamado(chamadoId, userId);
 
-    if (chamado.cidadaoid !== userId) {
-      throw new AppError(403, 'Você não tem permissão para alterar esta demanda.');
-    }
-    if ((BLOCKED_STATUSES as readonly string[]).includes(chamado.status)) {
-      throw new AppError(403, `Não é possível alterar uma demanda com status '${displayStatus(chamado.status)}'.`);
+    const total = await prisma.chamado_foto.count({ where: { chamadoid: chamadoId } });
+    if (total >= MAX_PHOTOS) {
+      throw new AppError(400, `Limite de ${MAX_PHOTOS} fotos por demanda atingido.`);
     }
 
-    const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-    const extension = detectImageExtension(buffer);
-    if (!extension) throw new AppError(400, 'Formato de imagem inválido. Envie JPEG ou PNG.');
-
-    const fileName = `${chamadoId}-${Date.now()}.${extension}`;
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
-    await fs.writeFile(path.join(UPLOADS_DIR, fileName), buffer);
-
-    const photoUrl = `${UPLOADS_ROUTE}/${fileName}`;
-    await prisma.chamado.update({
-      where: { id: chamadoId },
-      data: { fotourl: photoUrl, atualizadoem: new Date() },
+    const url = await savePhotoFile(chamadoId, base64);
+    return prisma.chamado_foto.create({
+      data: { chamadoid: chamadoId, url },
+      select: { id: true, url: true },
     });
+  },
 
-    if (chamado.fotourl?.startsWith(`${UPLOADS_ROUTE}/`)) {
-      const oldFile = path.join(UPLOADS_DIR, path.basename(chamado.fotourl));
-      await fs.unlink(oldFile).catch(() => undefined);
-    }
+  async removePhoto(chamadoId: string, userId: string, photoId: string) {
+    await loadEditableChamado(chamadoId, userId);
 
-    return { photoUrl };
+    const foto = await prisma.chamado_foto.findFirst({ where: { id: photoId, chamadoid: chamadoId } });
+    if (!foto) throw new AppError(404, 'Foto não encontrada.');
+
+    await prisma.chamado_foto.delete({ where: { id: foto.id } });
+    await deleteUploadedFile(foto.url);
   },
 
   async updateStatus(chamadoId: string, userId: string, newStatus: any) {

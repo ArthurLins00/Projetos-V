@@ -68,6 +68,9 @@ appId: com.projetosv.fiscalize
     visible: "GPS OK"
     timeout: 15000
 
+- scrollUntilVisible:
+    element:
+      id: "form-photo"
 - tapOn:
     id: "form-photo"
 - extendedWaitUntil:
@@ -77,7 +80,8 @@ appId: com.projetosv.fiscalize
 - tapOn:
     id: "camera-shutter"
 - extendedWaitUntil:
-    visible: "Descartar foto nova"
+    visible:
+      id: "form-photo-thumb-0"
     timeout: 15000
 
 - scrollUntilVisible:

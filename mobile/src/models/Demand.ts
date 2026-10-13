@@ -9,6 +9,13 @@ export interface DemandLog {
   timestamp: string;
 }
 
+export const MAX_DEMAND_PHOTOS = 5;
+
+export interface DemandPhoto {
+  id: string;
+  url: string;
+}
+
 export interface Demand {
   id: string;
   protocolo: string;
@@ -23,6 +30,7 @@ export interface Demand {
   zone?: Zone | null;
   category: Pick<Category, 'id' | 'nome'>;
   photoUrl?: string | null;
+  photos?: DemandPhoto[];
   createdAt: string;
   updatedAt: string;
   logs?: DemandLog[];

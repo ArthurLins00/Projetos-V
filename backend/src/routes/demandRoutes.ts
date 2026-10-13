@@ -10,7 +10,8 @@ router.post('/', authenticate, requireRole(['Cidadao']), demandController.create
 router.get('/:id', authenticate, demandController.getById);
 router.put('/:id', authenticate, requireRole(['Cidadao']), demandController.update);
 
-router.put('/:id/photo', authenticate, requireRole(['Cidadao']), demandController.uploadPhoto);
+router.post('/:id/photos', authenticate, requireRole(['Cidadao']), demandController.addPhoto);
+router.delete('/:id/photos/:photoId', authenticate, requireRole(['Cidadao']), demandController.removePhoto);
 
 router.patch(
   '/:id/status',
