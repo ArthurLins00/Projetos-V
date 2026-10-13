@@ -12,7 +12,9 @@ function welcomeMessage(perfil?: string): ChatMessage {
   return {
     id: 'welcome',
     role: 'assistant',
-    text: `Olá! Sou o assistente do Fiscalize. Posso consultar o status ${escopo}. Pergunte, por exemplo, por um ou mais protocolos (DEM-...).`,
+    text:
+      `Olá! Sou o assistente do Fiscalize. Posso informar o **status e o prazo** ${escopo} ` +
+      'e explicar **como usar o app**, como registrar um chamado ou anexar fotos. Em emergências, ligue 190, 192 ou 193.',
   };
 }
 

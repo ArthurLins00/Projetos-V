@@ -104,6 +104,8 @@ export const openApiSpec = {
           city: { type: 'string', maxLength: 100, nullable: true, example: 'Recife' },
           zone: { type: 'string', enum: ['Urbana', 'Rural'], nullable: true },
           photoUrl: { type: 'string', nullable: true, description: 'Primeira foto (capa)' },
+          slaHours: { type: 'integer', description: 'Prazo de atendimento (SLA) em horas, definido pela categoria/órgão', example: 48 },
+          slaDeadline: { type: 'string', format: 'date-time', description: 'Data limite estimada para o atendimento' },
           photos: {
             type: 'array',
             description: 'Todas as fotos (apenas no detalhe)',

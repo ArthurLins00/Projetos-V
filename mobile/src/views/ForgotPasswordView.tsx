@@ -10,7 +10,7 @@ export function ForgotPasswordView() {
   const vm = useForgotPasswordViewModel();
 
   return (
-    <AuthLayout title="Recuperar Senha" subtitle="Enviaremos um código para o seu e-mail" icon="key">
+    <AuthLayout title="Recuperar Senha" subtitle="Enviaremos um código para o seu e-mail" icon="key" onBack={vm.goBack} backLabel="Login">
       {vm.step === 'email' ? (
         <>
           <Text style={styles.caption}>Informe o e-mail cadastrado na sua conta.</Text>

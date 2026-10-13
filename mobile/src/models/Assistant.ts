@@ -21,6 +21,7 @@ export interface ChatMessage {
 
 export const ASSISTANT_SUGGESTIONS = [
   'Como estão os meus chamados?',
-  'Quais chamados estão em andamento?',
-  'Quais já foram resolvidos?',
+  'Algum chamado está atrasado?',
+  'Como registro um chamado?',
+  'Como anexo fotos da galeria?',
 ];

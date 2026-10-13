@@ -8,14 +8,40 @@ export interface ConsultarArgs {
   status?: string;
 }
 
+export type SituacaoPrazo = 'no_prazo' | 'vencido' | 'encerrado' | 'sem_prazo';
+
+export interface ChamadoConsultado extends ChamadoResumo {
+  situacao_prazo: SituacaoPrazo;
+  horas_para_o_prazo: number | null;
+}
+
 export interface ConsultaResultado {
+  consultado_em: string;
   total: number;
   resumo_por_status: Record<string, number>;
-  chamados: ChamadoResumo[];
+  chamados: ChamadoConsultado[];
   nao_encontrados: string[];
 }
 
-export async function consultarStatusChamados(args: ConsultarArgs, fonte: ChamadosSource): Promise<ConsultaResultado> {
+const STATUS_ENCERRADOS = ['Resolvido', 'Fechado'];
+
+function comPrazo(chamado: ChamadoResumo, agora: Date): ChamadoConsultado {
+  if (STATUS_ENCERRADOS.includes(chamado.status)) {
+    return { ...chamado, situacao_prazo: 'encerrado', horas_para_o_prazo: null };
+  }
+  const limite = chamado.prazo_limite ? new Date(chamado.prazo_limite).getTime() : NaN;
+  if (Number.isNaN(limite)) {
+    return { ...chamado, situacao_prazo: 'sem_prazo', horas_para_o_prazo: null };
+  }
+  const horas = Math.round((limite - agora.getTime()) / 3_600_000);
+  return { ...chamado, situacao_prazo: horas < 0 ? 'vencido' : 'no_prazo', horas_para_o_prazo: horas };
+}
+
+export async function consultarStatusChamados(
+  args: ConsultarArgs,
+  fonte: ChamadosSource,
+  agora: Date = new Date(),
+): Promise<ConsultaResultado> {
   const status = args.status ? String(args.status) : undefined;
   if (status && !(STATUS_EXIBICAO as readonly string[]).includes(status)) {
     throw new Error(`Status inválido: ${status}. Use um de: ${STATUS_EXIBICAO.join(', ')}.`);
@@ -44,5 +70,11 @@ export async function consultarStatusChamados(args: ConsultarArgs, fonte: Chamad
   const resumo: Record<string, number> = {};
   for (const c of chamados) resumo[c.status] = (resumo[c.status] ?? 0) + 1;
 
-  return { total: chamados.length, resumo_por_status: resumo, chamados, nao_encontrados: naoEncontrados };
+  return {
+    consultado_em: agora.toISOString(),
+    total: chamados.length,
+    resumo_por_status: resumo,
+    chamados: chamados.map((c) => comPrazo(c, agora)),
+    nao_encontrados: naoEncontrados,
+  };
 }

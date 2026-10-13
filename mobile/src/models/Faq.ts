@@ -29,8 +29,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'O que o assistente (botão de estrelinhas) faz?',
         answer:
-          'É um assistente com inteligência artificial. Você descreve o problema com suas palavras e ele ajuda a classificar o chamado ' +
-          'e a encontrar ocorrências parecidas. Ele também informa o andamento dos seus chamados pelo protocolo.',
+          'É um assistente com inteligência artificial. Ele informa o status e o prazo estimado dos seus chamados, avisa quando ' +
+          'algum está atrasado e explica como usar o app, por exemplo como registrar um chamado ou anexar fotos. ' +
+          'Ele não registra nem altera chamados por você.',
       },
     ],
   },
