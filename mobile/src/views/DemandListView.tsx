@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useDemandListViewModel } from '../viewmodels/useDemandListViewModel';
 import { DemandCard } from '../components/DemandCard';
+import { EmergencyNotice } from '../components/EmergencyNotice';
 import { Avatar, Chip, EmptyState } from '../components/ui';
 import { STATUS_FILTERS } from '../models/Demand';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
@@ -101,6 +102,7 @@ export function DemandListView() {
           refreshControl={<RefreshControl refreshing={vm.refreshing} onRefresh={vm.refresh} tintColor={colors.primary} colors={[colors.primary]} />}
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
+          ListHeaderComponent={<EmergencyNotice compact style={styles.notice} />}
           ListEmptyComponent={
             <EmptyState
               icon={vm.error ? 'cloud-offline-outline' : filtering ? 'search-outline' : 'document-text-outline'}
@@ -129,6 +131,7 @@ export function DemandListView() {
 
 const useStyles = makeStyles((colors) => ({
   container: { flex: 1, backgroundColor: colors.background },
+  notice: { marginBottom: 12 },
   header: {
     backgroundColor: colors.surface,
     paddingHorizontal: 20,
