@@ -21,11 +21,6 @@ export interface ClassificacaoResultado {
   observacao?: string;
 }
 
-/**
- * Tool 1 — RF-01, RF-02, RF-03, RF-04, RF-07, RN-01, RN-03.
- * Classifica a descrição em uma categoria ATIVA, aplica a regra de competência
- * (órgão + SLA) e define a prioridade (Crítica quando há gatilho de emergência).
- */
 export function classificarERotearOcorrencia(args: ClassificarArgs): ClassificacaoResultado {
   const descricao = String(args.descricao ?? '').trim();
   if (descricao.length < 5) {
@@ -39,7 +34,7 @@ export function classificarERotearOcorrencia(args: ClassificarArgs): Classificac
   let regra = REGRA_PADRAO;
   let termos: string[] = [];
   for (const candidata of REGRAS) {
-    if (!ativas.has(candidata.categoriaId)) continue; // RN-01: só categorias ativas
+    if (!ativas.has(candidata.categoriaId)) continue;
     const encontrados = candidata.palavrasChave.filter((p) => texto.includes(p));
     if (encontrados.length > 0) {
       regra = candidata;

@@ -2,13 +2,11 @@ import { APIRequestContext, expect, request as playwrightRequest } from '@playwr
 
 export const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
 
-// Credenciais criadas pelo seed do backend (backend/prisma/seed.ts)
 export const SEED = {
   cidadao: { email: 'cidadao@fiscalize.gov.br', senha: 'Cidadao@123456' },
   gestorCompesa: { email: 'gestor.compesa@fiscalize.gov.br', senha: 'Gestor@123456' },
 };
 
-// JPEG mínimo (assinatura FF D8 FF) usado como "foto" da ocorrência
 export const JPEG_BASE64 = Buffer.from([
   0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0xff, 0xd9,
 ]).toString('base64');
@@ -19,7 +17,6 @@ export function uniqueSuffix() {
 
 export type Session = { token: string; headers: Record<string, string>; user: { id: string; perfil: string } };
 
-// Cria um cidadão novo (dados isolados por teste) e já faz login
 export async function registerAndLogin(request: APIRequestContext, prefix = 'e2e'): Promise<Session & { email: string; senha: string }> {
   const email = `${prefix}.${uniqueSuffix()}@teste.fiscalize`;
   const senha = 'SenhaE2E@123';
@@ -30,9 +27,6 @@ export async function registerAndLogin(request: APIRequestContext, prefix = 'e2e
   return { ...(await login(request, email, senha)), email, senha };
 }
 
-// O login também devolve o token em cookie, e o backend dá prioridade ao cookie sobre o header.
-// Por isso o login roda num contexto isolado: cada sessão usa só o header Authorization (como o app),
-// e testes com mais de um usuário não se misturam.
 export async function login(_request: APIRequestContext, email: string, senha: string): Promise<Session> {
   const context = await playwrightRequest.newContext({ baseURL: API_URL });
   try {

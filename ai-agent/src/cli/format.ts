@@ -7,7 +7,6 @@ export const amarelo = cor(33);
 export const ciano = cor(36);
 export const negrito = cor(1);
 
-/** Linha de rastro exibida a cada execução de ferramenta. */
 export function formatarChamadaFerramenta(call: ToolCallRecord): string {
   const resultado = 'error' in call.outcome ? `ERRO: ${call.outcome.error}` : JSON.stringify(call.outcome.output);
   return [

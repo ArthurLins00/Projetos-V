@@ -8,24 +8,22 @@ export interface DemandLog {
   timestamp: string;
 }
 
-// Ocorrência, no formato retornado pelo backend (GET /demands e GET /demands/:id)
 export interface Demand {
   id: string;
   protocolo: string;
   title: string;
   description: string;
-  status: string; // texto de exibição: "Aberto", "Em Análise", ...
+  status: string;
   location: string;
   latitude: number;
   longitude: number;
   category: Pick<Category, 'id' | 'nome'>;
-  photoUrl?: string | null; // caminho relativo no backend (ex.: /uploads/xxx.jpg)
+  photoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   logs?: DemandLog[];
 }
 
-// Corpo aceito por POST /demands e PUT /demands/:id
 export interface DemandPayload {
   title: string;
   description: string;
@@ -50,7 +48,6 @@ export interface DemandListResponse {
   totalPages: number;
 }
 
-// Filtros de status: `value` é o valor do enum aceito pela API
 export const STATUS_FILTERS: { label: string; value?: string }[] = [
   { label: 'Todos' },
   { label: 'Aberto', value: 'Aberto' },
@@ -61,7 +58,6 @@ export const STATUS_FILTERS: { label: string; value?: string }[] = [
   { label: 'Removidas', value: 'Fechado' },
 ];
 
-// O backend bloqueia edição/remoção pelo cidadão nesses status
 const LOCKED_STATUSES = ['Em Andamento', 'Resolvido', 'Fechado'];
 
 export function isDemandEditable(demand: Demand) {
@@ -69,10 +65,19 @@ export function isDemandEditable(demand: Demand) {
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-  Aberto: '#E6A23C',
-  'Em Análise': '#409EFF',
-  Aguardando: '#909399',
-  'Em Andamento': '#007BFF',
-  Resolvido: '#28A745',
-  Fechado: '#DC3545',
+  Aberto: '#D97706',
+  'Em Análise': '#7C3AED',
+  Aguardando: '#64748B',
+  'Em Andamento': '#2563EB',
+  Resolvido: '#16A34A',
+  Fechado: '#DC2626',
+};
+
+export const STATUS_COLORS_DARK: Record<string, string> = {
+  Aberto: '#FBBF24',
+  'Em Análise': '#A78BFA',
+  Aguardando: '#94A3B8',
+  'Em Andamento': '#60A5FA',
+  Resolvido: '#4ADE80',
+  Fechado: '#F87171',
 };

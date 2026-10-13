@@ -41,11 +41,9 @@ test.describe('Isolamento entre cidadãos', () => {
     const intruso = await registerAndLogin(request, 'intruso');
     const demand = await createDemand(request, dono);
 
-    // A ocorrência não aparece na lista do intruso
     const lista = await (await request.get('/demands', { headers: intruso.headers })).json();
     expect(lista.data.map((d: { id: string }) => d.id)).not.toContain(demand.id);
 
-    // Acesso direto pelo id é bloqueado em todas as operações
     expect((await request.get(`/demands/${demand.id}`, { headers: intruso.headers })).status()).toBe(403);
     expect(
       (await request.put(`/demands/${demand.id}`, { headers: intruso.headers, data: { title: 'Invadido' } })).status(),
@@ -55,7 +53,6 @@ test.describe('Isolamento entre cidadãos', () => {
     ).toBe(403);
     expect((await request.delete(`/demands/${demand.id}`, { headers: intruso.headers })).status()).toBe(403);
 
-    // E a ocorrência do dono continua intacta
     const detail = await (await request.get(`/demands/${demand.id}`, { headers: dono.headers })).json();
     expect(detail).toMatchObject({ title: demand.title, status: 'Aberto' });
   });

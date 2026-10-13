@@ -48,8 +48,8 @@ JWT_SECRET="troque-por-uma-chave-secreta"
 
 Opcional, para o chat do assistente de IA (rota `POST /ai/chat`, servico em `ai-agent/`):
 ```env
-AI_AGENT_URL="http://127.0.0.1:3333"   # padrao; endereco do `npm run serve` do ai-agent
-AI_AGENT_SECRET=""                      # se definido, use o mesmo valor no ai-agent/.env
+AI_AGENT_URL="http://127.0.0.1:3333"
+AI_AGENT_SECRET=""
 ```
 
 > Sem o servico do agente rodando, o restante da API funciona normalmente; so `/ai/chat` responde 503.

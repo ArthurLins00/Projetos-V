@@ -6,10 +6,6 @@ const TENTATIVAS = 5;
 const ESPERA_MAXIMA_MS = 65_000;
 const JANELA_MS = 60_000;
 
-/**
- * Limitador de requisições por minuto (janela deslizante), compartilhado por todos os clientes
- * do processo. Evita estourar a cota do plano gratuito em vez de só reagir ao erro 429.
- */
 class LimitadorRpm {
   private readonly envios: number[] = [];
   private fila: Promise<void> = Promise.resolve();
@@ -37,13 +33,11 @@ class LimitadorRpm {
 
 const limitadores = new Map<string, LimitadorRpm>();
 
-/** Adaptador do Google Gen AI SDK (Gemini API) para a interface ModelClient. */
 export class GeminiClient implements ModelClient {
   private readonly ai: GoogleGenAI;
 
   private readonly limitador: LimitadorRpm;
 
-  /** `rpm`: máximo de requisições por minuto ao modelo (cota do plano da chave). */
   constructor(apiKey: string, private readonly model: string, rpm = 15) {
     this.ai = new GoogleGenAI({ apiKey });
     const chave = `${model}:${rpm}`;
@@ -59,14 +53,13 @@ export class GeminiClient implements ModelClient {
         contents: history,
         config: {
           systemInstruction: perfil.systemPrompt,
-          temperature: 0, // respostas o mais determinísticas possível
+          temperature: 0,
           tools: [{ functionDeclarations: perfil.declarations }],
           toolConfig: { functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO } },
         },
       });
     });
 
-    // Devolvemos o content original do modelo (inclui thought signatures do Gemini 2.5).
     const content: Content = response.candidates?.[0]?.content ?? { role: 'model', parts: [] };
     content.role = 'model';
     const text = (content.parts ?? [])
@@ -79,10 +72,6 @@ export class GeminiClient implements ModelClient {
   }
 }
 
-/**
- * Repete em erros transitórios (429 / 5xx). No 429 o Gemini informa quanto esperar
- * ("Please retry in 27.9s"): respeitamos esse tempo (o plano gratuito limita requisições por minuto).
- */
 async function comRetentativa<T>(fn: () => Promise<T>): Promise<T> {
   for (let tentativa = 1; ; tentativa++) {
     try {
@@ -91,7 +80,6 @@ async function comRetentativa<T>(fn: () => Promise<T>): Promise<T> {
       const status = (err as { status?: number }).status ?? 0;
       const transitorio = status === 429 || status >= 500;
       if (!transitorio || tentativa >= TENTATIVAS) throw err;
-      // Cota DIÁRIA esgotada: esperar alguns segundos não resolve, então falha logo com uma explicação
       if (status === 429 && /PerDay/i.test(String((err as Error).message))) {
         throw new Error(
           'Cota diária gratuita do Gemini esgotada para este modelo. Tente amanhã, use outra chave ' +

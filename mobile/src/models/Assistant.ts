@@ -1,4 +1,3 @@
-// Chamado citado pelo assistente (atalho para abrir o detalhe)
 export interface AssistantDemandRef {
   id: string;
   protocolo: string;
@@ -6,7 +5,6 @@ export interface AssistantDemandRef {
   status: string;
 }
 
-// Resposta de POST /ai/chat
 export interface AssistantResponse {
   sessionId: string;
   reply: string;

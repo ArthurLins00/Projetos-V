@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# ============================================================================
-# Script de Setup do Backend — Fiscalize
-# ============================================================================
-
 set -e
 
 RED='\033[0;31m'
@@ -16,9 +12,6 @@ echo -e "${BLUE}═════════════════════�
 echo -e "${BLUE}  Setup do Backend — Fiscalize${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
 
-# ============================================================================
-# 1. Verificar Node.js e npm
-# ============================================================================
 echo -e "${YELLOW}[1/6] Verificando dependências do sistema...${NC}"
 
 if ! command -v node &> /dev/null; then
@@ -40,9 +33,6 @@ echo -e "${GREEN}✓ Node.js $(node --version)${NC}"
 echo -e "${GREEN}✓ npm $(npm --version)${NC}"
 echo -e "${GREEN}✓ psql $(psql --version | awk '{print $3}')${NC}\n"
 
-# ============================================================================
-# 2. Instalar dependências npm
-# ============================================================================
 echo -e "${YELLOW}[2/6] Instalando dependências npm...${NC}"
 
 if [ -f "node_modules/.package-lock.json" ]; then
@@ -52,9 +42,6 @@ else
     echo -e "${GREEN}✓ Dependências instaladas${NC}\n"
 fi
 
-# ============================================================================
-# 3. Configurar .env
-# ============================================================================
 echo -e "${YELLOW}[3/6] Configurando arquivo .env...${NC}"
 
 if [ -f ".env" ]; then
@@ -75,14 +62,12 @@ else
     fi
 fi
 
-# Ler DATABASE_URL do .env
 DB_URL=$(grep "^DATABASE_URL=" .env | cut -d '=' -f2- | tr -d '"')
 if [ -z "$DB_URL" ]; then
     echo -e "${RED}✗ DATABASE_URL não definida em .env${NC}"
     exit 1
 fi
 
-# Extrair host, porta, usuário e nome do banco da URL
 DB_USER=$(echo "$DB_URL" | sed -E 's|.*://([^:]+):.*|\1|')
 DB_HOST=$(echo "$DB_URL" | sed -E 's|.*@([^:/]+).*|\1|')
 DB_PORT=$(echo "$DB_URL" | sed -E 's|.*:([0-9]+)/.*|\1|')
@@ -90,12 +75,8 @@ DB_NAME=$(echo "$DB_URL" | sed -E 's|.*/([^?]+).*|\1|')
 
 echo -e "${GREEN}✓ Banco configurado: ${DB_NAME} em ${DB_HOST}:${DB_PORT}${NC}\n"
 
-# ============================================================================
-# 4. Criar banco e instalar extensão uuid-ossp
-# ============================================================================
 echo -e "${YELLOW}[4/6] Preparando banco de dados...${NC}"
 
-# Criar banco se não existir
 psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -tc \
     "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" \
     | grep -q 1 || {
@@ -104,22 +85,15 @@ psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -tc \
         echo -e "${GREEN}✓ Banco '${DB_NAME}' criado${NC}"
 }
 
-# Instalar extensão uuid-ossp (necessária para gerar UUIDs no banco)
 psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d "$DB_NAME" \
     -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";' > /dev/null 2>&1
 echo -e "${GREEN}✓ Extensão uuid-ossp instalada${NC}\n"
 
-# ============================================================================
-# 5. Executar migrações
-# ============================================================================
 echo -e "${YELLOW}[5/6] Executando migrações...${NC}"
 
 npx prisma migrate deploy
 echo -e "${GREEN}✓ Migrações aplicadas${NC}\n"
 
-# ============================================================================
-# 6. Seed (categorias + admin)
-# ============================================================================
 echo -e "${YELLOW}[6/6] Populando banco com dados iniciais...${NC}"
 npm install uuid
 npm install -D @types/uuid
@@ -127,9 +101,6 @@ npx prisma generate
 npx prisma db seed
 echo -e "${GREEN}✓ Seed executado (categorias e usuário admin criados)${NC}\n"
 
-# ============================================================================
-# Resumo
-# ============================================================================
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}✓ Setup concluído com sucesso!${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"

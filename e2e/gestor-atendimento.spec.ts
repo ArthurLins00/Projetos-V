@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { SEED, categoryIdByName, createDemand, login, registerAndLogin } from './helpers';
 
-// Jornada entre perfis: o cidadão registra, o gestor do órgão responsável atende,
-// e o cidadão acompanha a mudança de status no app.
 test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => {
   let cidadao: Awaited<ReturnType<typeof registerAndLogin>>;
   let gestor: Awaited<ReturnType<typeof login>>;

@@ -7,14 +7,12 @@ const router = Router();
 
 router.use(authenticate);
 
-// Listar usuários
 router.get(
   '/',
   requireRole(['Gestor']),
   userController.listarUsuarios
 );
 
-// Buscar usuário por ID
 router.get(
   '/:id',
   requireRole(['Gestor']),

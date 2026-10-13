@@ -46,8 +46,8 @@ ferramenta de E2E para apps mobile, usando os `testID` dos componentes como sele
 ### Preparação (uma vez)
 
 ```bash
-npm install                    # na raiz: instala o Playwright
-npm install --prefix backend   # dependências do backend (Jest, Supertest)
+npm install
+npm install --prefix backend
 ```
 
 Para os E2E, o banco precisa estar criado e populado:

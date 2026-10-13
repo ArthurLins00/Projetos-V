@@ -1,7 +1,3 @@
-/**
- * Sobe o agente como serviço HTTP para o app (integração com o backend do Fiscalize).
- * Uso: npm run serve
- */
 import { AI_AGENT_HOST, AI_AGENT_PORT, AI_AGENT_SECRET, FISCALIZE_API_URL, GEMINI_MODEL, GEMINI_RPM, requireApiKey } from './config';
 import { GeminiClient } from './llm/geminiClient';
 import { createAgentServer } from './server';

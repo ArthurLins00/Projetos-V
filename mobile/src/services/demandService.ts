@@ -1,7 +1,6 @@
 import { api } from './api';
 import { Demand, DemandListParams, DemandListResponse, DemandPayload } from '../models/Demand';
 
-// CRUD de ocorrências (rotas /demands do backend)
 export const demandService = {
   async list(params: DemandListParams = {}): Promise<DemandListResponse> {
     const response = await api.get<DemandListResponse>('/demands', { params });
@@ -23,7 +22,6 @@ export const demandService = {
     return response.data;
   },
 
-  // Foto em base64 (JPEG/PNG), enviada depois que a demanda existe
   async uploadPhoto(id: string, base64: string): Promise<{ photoUrl: string }> {
     const response = await api.put<{ photoUrl: string }>(`/demands/${id}/photo`, { photo: base64 }, { timeout: 60000 });
     return response.data;

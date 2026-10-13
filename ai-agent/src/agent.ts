@@ -3,14 +3,12 @@ import type { AgentProfile, ToolContext } from './perfis/types';
 import { PERFIL_TRIAGEM } from './perfis/triagem';
 import { executarFerramenta, type ToolOutcome } from './tools';
 
-/** Resposta de UM passo do modelo (pode ser texto final ou pedidos de função). */
 export interface ModelTurn {
   content: Content;
   functionCalls: FunctionCall[];
   text: string;
 }
 
-/** Abstração do LLM: o Gemini real em produção, um cliente roteirizado nos testes. */
 export interface ModelClient {
   generate(history: Content[], perfil: AgentProfile): Promise<ModelTurn>;
 }
@@ -27,21 +25,12 @@ export interface AgentReply {
 }
 
 export interface AgentOptions {
-  /** Instrução de sistema + ferramentas. Padrão: triagem (entrega da AV2). */
   perfil?: AgentProfile;
-  /** Dependências das ferramentas (ex.: fonte de chamados do usuário). */
   contexto?: ToolContext;
-  /** Limite de idas e voltas modelo ↔ ferramentas por mensagem do usuário. */
   maxSteps?: number;
-  /** Chamado a cada ferramenta executada (a CLI usa para mostrar o rastro). */
   onToolCall?: (call: ToolCallRecord) => void;
 }
 
-/**
- * Loop de Function Calling:
- * usuário → modelo → (functionCall → executa ferramenta → functionResponse → modelo)* → texto final.
- * Mantém o histórico para permitir conversa com várias mensagens.
- */
 export class FiscalizeAgent {
   private history: Content[] = [];
   private readonly maxSteps: number;
@@ -52,7 +41,6 @@ export class FiscalizeAgent {
     this.perfil = options.perfil ?? PERFIL_TRIAGEM;
   }
 
-  /** `contexto` sobrescreve o do construtor nesta mensagem (ex.: token renovado do usuário). */
   async send(message: string, contexto: ToolContext = this.options.contexto ?? {}): Promise<AgentReply> {
     this.history.push({ role: 'user', parts: [{ text: message }] });
     const toolCalls: ToolCallRecord[] = [];

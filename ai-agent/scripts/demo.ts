@@ -1,7 +1,3 @@
-/**
- * Executa os 3 casos de teste contra o Gemini real, em sequência, sem interação.
- * Uso: npm run demo
- */
 import { FiscalizeAgent } from '../src/agent';
 import { CASOS_DE_TESTE } from '../src/casos';
 import { GEMINI_MODEL, GEMINI_RPM, requireApiKey } from '../src/config';
@@ -11,7 +7,6 @@ import { ciano, formatarChamadaFerramenta, negrito, verde } from '../src/cli/for
 const client = new GeminiClient(requireApiKey(), GEMINI_MODEL, GEMINI_RPM);
 
 for (const caso of CASOS_DE_TESTE) {
-  // Um agente novo por caso: conversas independentes.
   const agent = new FiscalizeAgent(client, { onToolCall: (c) => console.log(formatarChamadaFerramenta(c)) });
   console.log(negrito(`\n═══ ${caso.id} — ${caso.titulo} ═══`));
   console.log(`${ciano('Você ›')} ${caso.prompt}`);

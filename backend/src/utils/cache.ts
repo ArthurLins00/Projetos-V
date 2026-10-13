@@ -22,7 +22,6 @@ export async function setCache(key: string, value: unknown, ttl: number): Promis
   try {
     await redis.set(key, JSON.stringify(value), 'EX', ttl);
   } catch {
-    // Graceful fallback — caller proceeds without cache
   }
 }
 
@@ -33,7 +32,6 @@ export async function deleteCache(key: string): Promise<void> {
   try {
     await redis.del(key);
   } catch {
-    // Graceful fallback
   }
 }
 

@@ -5,7 +5,6 @@ import { demandService } from '../services/demandService';
 import { getApiErrorMessage } from '../services/api';
 import { Demand, isDemandEditable } from '../models/Demand';
 
-// Detalhe + remoção (D do CRUD)
 export function useDemandDetailViewModel(demandId: string) {
   const router = useRouter();
   const [demand, setDemand] = useState<Demand | null>(null);
@@ -13,7 +12,6 @@ export function useDemandDetailViewModel(demandId: string) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Recarrega ao voltar da tela de edição
   useFocusEffect(
     useCallback(() => {
       let active = true;

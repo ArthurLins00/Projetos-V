@@ -64,8 +64,8 @@ cp .env.example .env
 
 ```dotenv
 GEMINI_API_KEY=sua_chave_aqui
-GEMINI_MODEL=gemini-3.1-flash-lite   # opcional
-GEMINI_RPM=15                   # opcional: requisições/minuto da sua cota
+GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_RPM=15
 ```
 
 > **Cota do plano gratuito:** o agente limita sozinho as requisições por minuto (`GEMINI_RPM`) e,

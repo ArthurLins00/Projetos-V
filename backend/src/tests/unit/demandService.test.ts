@@ -2,7 +2,6 @@ import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
 
-// Fotos vão para uma pasta temporária durante os testes
 const TMP_UPLOADS = path.join(os.tmpdir(), `fiscalize-uploads-${process.pid}`);
 jest.mock('../../config/uploads', () => ({
   UPLOADS_DIR: TMP_UPLOADS,
@@ -39,7 +38,6 @@ function makeChamado(overrides: Record<string, unknown> = {}) {
   } as any;
 }
 
-// JPEG mínimo válido (assinatura FF D8 FF)
 const JPEG_BASE64 = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]).toString('base64');
 
 describe('demandService (unitário)', () => {
@@ -51,9 +49,6 @@ describe('demandService (unitário)', () => {
     await fs.rm(TMP_UPLOADS, { recursive: true, force: true });
   });
 
-  // ---------------------------------------------------------------
-  // Listagem e pesquisa
-  // ---------------------------------------------------------------
   describe('list', () => {
     beforeEach(() => {
       prisma.chamado.findMany.mockResolvedValue([makeChamado()]);
@@ -109,9 +104,6 @@ describe('demandService (unitário)', () => {
     });
   });
 
-  // ---------------------------------------------------------------
-  // Remoção (soft delete)
-  // ---------------------------------------------------------------
   describe('deleteDemand', () => {
     it('cidadão dono remove a demanda aberta: status vira Fechado e o histórico é registrado', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());
@@ -164,9 +156,6 @@ describe('demandService (unitário)', () => {
     });
   });
 
-  // ---------------------------------------------------------------
-  // Edição
-  // ---------------------------------------------------------------
   describe('update', () => {
     it('cidadão não pode editar demanda de outra pessoa (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID }));
@@ -206,9 +195,6 @@ describe('demandService (unitário)', () => {
     });
   });
 
-  // ---------------------------------------------------------------
-  // Foto da ocorrência
-  // ---------------------------------------------------------------
   describe('uploadPhoto', () => {
     it('salva um JPEG válido no disco e grava o caminho em fotourl', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());

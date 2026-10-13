@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { JPEG_BASE64, categoryIdByName, createDemand, registerAndLogin, uniqueSuffix } from './helpers';
 
-// Jornada completa do cidadão, na ordem em que acontece no app:
-// cadastro → login → registrar ocorrência (GPS) → listar → pesquisar → detalhar
-// → editar → anexar foto → remover → logout
 test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', () => {
   let session: Awaited<ReturnType<typeof registerAndLogin>>;
   let demand: { id: string; protocolo: string; title: string };

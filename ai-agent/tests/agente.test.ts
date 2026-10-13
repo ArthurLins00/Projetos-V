@@ -1,8 +1,3 @@
-/**
- * Testes OFFLINE (não precisam de GEMINI_API_KEY): os 3 casos de teste da entrega.
- * O LLM é substituído por um roteiro fixo; as ferramentas e o loop do agente são os REAIS.
- *   npm test
- */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { FiscalizeAgent } from '../src/agent';
@@ -44,7 +39,6 @@ describe('CT-01 — fiação exposta na Av. Boa Viagem', () => {
     assert.equal(reply.toolCalls[1].args.categoria_id, 3, 'segunda tool recebe o categoria_id da primeira');
     assert.deepEqual(busca.chamados.map((c: any) => c.protocolo), ['DEM-20260921-A7K2', 'DEM-20260930-Q3MZ']);
     assert.deepEqual(busca.chamados.map((c: any) => c.distancia_aproximada_metros), [80, 150]);
-    // RN-04: só protocolo, distância e status — nada de nome/CPF/telefone/descrição de terceiros
     for (const c of busca.chamados) assert.deepEqual(Object.keys(c).sort(), CAMPOS_PUBLICOS);
     assert.doesNotMatch(JSON.stringify(busca), /Maria|João|cpf|telefone|solicitante/i);
 

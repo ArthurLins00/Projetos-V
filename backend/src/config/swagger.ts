@@ -1,21 +1,7 @@
-/**
- * Documentação OpenAPI 3.0 (Swagger) — gerada a partir da análise de todo o backend.
- *
- * Expõe duas rotas (registradas em src/server.ts):
- *   - GET /docs        → interface Swagger UI (carregada via CDN externo)
- *   - GET /docs.json   → especificação OpenAPI crua (consumível por ferramentas externas)
- *
- * "Link externo": a interface Swagger UI é servida a partir do CDN público
- * https://unpkg.com/swagger-ui-dist, portanto não há dependência npm adicional.
- * A especificação /docs.json também pode ser colada/importada no editor externo
- * https://editor.swagger.io para visualizar e exportar a documentação.
- */
-
 import { PORT } from './env';
 
 const BEARER = [{ cookieAuth: [] as string[] }, { bearerAuth: [] as string[] }];
 
-/** Resposta de erro padronizada (errorMiddleware.ts). */
 const errorResponse = (description: string) => ({
   description,
   content: {
@@ -186,7 +172,6 @@ export const openApiSpec = {
   },
 
   paths: {
-    /* ===================== HEALTH ===================== */
     '/health': {
       get: {
         tags: ['Health'],
@@ -216,7 +201,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== AUTH ===================== */
     '/auth/register': {
       post: {
         tags: ['Auth'],
@@ -336,9 +320,54 @@ export const openApiSpec = {
           401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
+      put: {
+        tags: ['Auth'],
+        summary: 'Atualizar dados do usuário autenticado (nome, e-mail e/ou senha)',
+        description: 'Alterar e-mail ou senha exige `senhaAtual`. O nome pode ser alterado sem ela.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  nome: { type: 'string', maxLength: 150, example: 'Maria da Silva' },
+                  email: { type: 'string', format: 'email', maxLength: 100, example: 'maria@email.com' },
+                  senhaAtual: { type: 'string', example: 'Cidadao@123456' },
+                  novaSenha: { type: 'string', minLength: 6, example: 'NovaSenha@123' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/AuthUser' },
+                    {
+                      type: 'object',
+                      properties: {
+                        status: { type: 'string', enum: ['Ativo', 'Inativo'] },
+                        criadoem: { type: 'string', format: 'date-time' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { description: 'Não autenticado ou senha atual incorreta' },
+          409: { $ref: '#/components/responses/Conflict' },
+        },
+      },
     },
 
-    /* ===================== DEMANDS ===================== */
     '/demands': {
       get: {
         tags: ['Demands'],
@@ -499,7 +528,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== CATEGORIES ===================== */
     '/categories': {
       get: {
         tags: ['Categories'],
@@ -536,7 +564,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== AI ===================== */
     '/ai/chat': {
       post: {
         tags: ['AI'],
@@ -596,7 +623,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== USERS ===================== */
     '/users': {
       get: {
         tags: ['Users'],
@@ -654,7 +680,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== GESTOR ===================== */
     '/gestor/dashboard': {
       get: {
         tags: ['Gestor'],
@@ -820,7 +845,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== METRICS ===================== */
     '/metrics/total-demands': {
       get: {
         tags: ['Metrics'],
@@ -858,7 +882,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — ORGÃOS ===================== */
     '/admin/organs': {
       get: {
         tags: ['Admin'],
@@ -989,7 +1012,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — USUÁRIOS ===================== */
     '/admin/users': {
       get: {
         tags: ['Admin'],
@@ -1091,7 +1113,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — REGRAS DE COMPETÊNCIA ===================== */
     '/admin/routing-rules': {
       get: {
         tags: ['Admin'],
@@ -1197,7 +1218,6 @@ export const openApiSpec = {
       },
     },
 
-    /* ===================== ADMIN — AUDITORIA ===================== */
     '/admin/audit-logs': {
       get: {
         tags: ['Admin'],
@@ -1232,10 +1252,6 @@ export const openApiSpec = {
   },
 } as const;
 
-/**
- * HTML da interface Swagger UI. Os assets (JS/CSS) são carregados de um CDN
- * externo (unpkg) — daí o "link externo". A especificação é buscada em /docs.json.
- */
 export const swaggerHtml = `<!DOCTYPE html>
 <html lang="pt-br">
   <head>

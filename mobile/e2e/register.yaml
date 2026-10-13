@@ -1,4 +1,3 @@
-# Cadastro de um novo cidadão pela tela de registro e primeiro login com a conta criada
 appId: com.projetosv.fiscalize
 ---
 - evalScript: ${output.email = 'maestro.' + Date.now() + '@teste.fiscalize'}
@@ -14,7 +13,7 @@ appId: com.projetosv.fiscalize
 
 - tapOn:
     id: "register-name"
-- inputText: "Maestro Teste"  # sem acento: o inputText do Maestro no Android não digita acentos de forma confiável
+- inputText: "Maestro Teste"
 - tapOn:
     id: "register-email"
 - inputText: ${output.email}
@@ -30,7 +29,6 @@ appId: com.projetosv.fiscalize
     timeout: 10000
 - tapOn: "OK"
 
-# Volta para o login e entra com a conta nova
 - runFlow:
     file: subflows/login.yaml
     env:

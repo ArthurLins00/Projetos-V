@@ -17,13 +17,11 @@ function displayStatus(s: status_chamado): string {
   return STATUS_DISPLAY[s] ?? s;
 }
 
-// A API recebe o texto de exibição ("Em Análise"); o banco usa a chave do enum ("Em_An_lise")
 const STATUS_FROM_DISPLAY = Object.fromEntries(
   Object.entries(STATUS_DISPLAY).map(([key, label]) => [label, key]),
 ) as Record<string, status_chamado>;
 
 export const gestorController = {
-  // GET /gestor/dashboard - Estatísticas do gestor
   async dashboard(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -71,7 +69,6 @@ export const gestorController = {
     }
   },
 
-  // GET /gestor/chamados - Fila de chamados do órgão do gestor
   async listarChamados(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -139,7 +136,6 @@ export const gestorController = {
     }
   },
 
-  // GET /gestor/chamados/:id - Detalhes de um chamado
   async detalharChamado(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -179,7 +175,6 @@ export const gestorController = {
 
       if (!c) throw new AppError(404, 'Chamado não encontrado.');
 
-      // Gestor só pode ver chamados do seu próprio órgão
       const usuarioGestor = await prisma.usuario.findUnique({ where: { id: gestorId } });
       if (usuarioGestor?.perfil === 'Gestor' && c.orgaoid !== gestor.orgaoid) {
         throw new AppError(403, 'Você não tem permissão para visualizar este chamado.');
@@ -215,7 +210,6 @@ export const gestorController = {
     }
   },
 
-  // PUT /gestor/chamados/:id/status - Atualizar status de um chamado
   async atualizarStatusChamado(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -284,7 +278,6 @@ export const gestorController = {
     }
   },
 
-  // PUT /gestor/chamados/:id/aceitar - Assumir ou atribuir chamado a um gestor
   async aceitarChamado(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -342,7 +335,6 @@ export const gestorController = {
     }
   },
 
-  // PUT /gestor/chamados/:id/transferir - Transferir chamado para outro órgão
   async transferirChamado(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;
@@ -392,7 +384,6 @@ export const gestorController = {
     }
   },
 
-  // GET /gestor/equipe - Lista gestores do mesmo órgão
   async listarEquipe(req: Request, res: Response, next: NextFunction) {
     try {
       const gestorId = req.user?.id;

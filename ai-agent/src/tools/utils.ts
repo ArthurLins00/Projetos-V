@@ -1,4 +1,3 @@
-/** Remove acentos e coloca em minúsculas para casar palavras-chave. */
 export function normalizar(texto: string): string {
   return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
@@ -15,7 +14,6 @@ export function validarCoordenadas(lat: unknown, lon: unknown): { latitude: numb
   return { latitude, longitude };
 }
 
-/** Distância em metros entre dois pontos (fórmula de Haversine). */
 export function distanciaMetros(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6_371_000;
   const rad = (g: number) => (g * Math.PI) / 180;

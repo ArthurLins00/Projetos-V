@@ -8,18 +8,15 @@ export const authController = {
     try {
       const { nome, email, senha } = req.body;
       
-      // Validação de campos obrigatórios
       if (!nome || !email || !senha) {
         throw new AppError(400, 'Campos obrigatórios: nome, email, senha');
       }
       
-      // Validação de formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         throw new AppError(400, 'E-mail inválido');
       }
       
-      // Validação de força de senha (mínimo 6 caracteres)
       if (senha.length < 6) {
         throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
       }
@@ -36,19 +33,17 @@ export const authController = {
     try {
       const { email, senha } = req.body;
       
-      // Validação de campos obrigatórios
       if (!email || !senha) {
         throw new AppError(400, 'Campos obrigatórios: email, senha');
       }
       
       const { usuario, token } = await authService.login(email, senha);
 
-      // Seta o cookie com o token gerado (importante para manter a sessão na web)
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 86400000 // 1 dia
+        maxAge: 86400000
       });
 
       res.status(200).json({
@@ -85,14 +80,12 @@ export const authController = {
 
   async me(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // Obtém o ID do usuário autenticado do token
       const usuarioId = req.user?.id;
 
       if (!usuarioId) {
         throw new AppError(401, 'Usuário não identificado.');
       }
 
-      // Busca os dados completos do usuário do banco
       const usuario = await authService.getUserById(usuarioId);
 
       res.status(200).json({ 
@@ -106,6 +99,45 @@ export const authController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  async updateMe(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { nome, email, senhaAtual, novaSenha } = req.body ?? {};
+
+      if (nome === undefined && email === undefined && novaSenha === undefined) {
+        throw new AppError(400, 'Informe ao menos um campo: nome, email ou novaSenha');
+      }
+
+      if (nome !== undefined && (typeof nome !== 'string' || !nome.trim() || nome.trim().length > 150)) {
+        throw new AppError(400, 'Nome deve ter entre 1 e 150 caracteres');
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (email !== undefined && (typeof email !== 'string' || !emailRegex.test(email.trim()) || email.trim().length > 100)) {
+        throw new AppError(400, 'E-mail inválido');
+      }
+
+      if (novaSenha !== undefined && (typeof novaSenha !== 'string' || novaSenha.length < 6)) {
+        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      }
+
+      const usuario = await authService.updateProfile(usuarioId, {
+        ...(nome !== undefined && { nome: nome.trim() }),
+        ...(email !== undefined && { email: email.trim() }),
+        ...(senhaAtual !== undefined && { senhaAtual }),
+        ...(novaSenha !== undefined && { novaSenha }),
+      });
+
+      res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
   }
-  
 };

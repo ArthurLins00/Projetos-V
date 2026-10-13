@@ -16,7 +16,6 @@ function welcomeMessage(perfil?: string): ChatMessage {
   };
 }
 
-// Chat com o assistente de IA: consulta de status dos chamados do usuário logado
 export function useAssistantViewModel() {
   const router = useRouter();
   const { user } = useAuth();
@@ -24,7 +23,6 @@ export function useAssistantViewModel() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => [welcomeMessage(user?.perfil)]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  // Mantém o contexto da conversa no backend; um novo id começa uma conversa nova
   const sessionId = useRef(newId());
 
   const send = async (text: string = input) => {
@@ -70,7 +68,6 @@ export function useAssistantViewModel() {
     send,
     clear,
     openDemand,
-    // Sugestões só aparecem antes da primeira pergunta
     suggestions: messages.length === 1 ? ASSISTANT_SUGGESTIONS : [],
   };
 }

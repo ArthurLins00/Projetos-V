@@ -84,7 +84,6 @@ export const organRepository = {
     },
 
     async listarOrgaos(status?: 'ativo' | 'inativo') {
-        // Mapeia o filtro da query (?status=ativo) para o enum do banco (Ativo/Inativo)
         const statusFiltro = status
             ? status === 'ativo' ? 'Ativo' : 'Inativo'
             : undefined;

@@ -1,4 +1,3 @@
-# Logout encerra a sessão e, ao reabrir o app, o usuário continua deslogado
 appId: com.projetosv.fiscalize
 ---
 - runFlow: subflows/login.yaml
@@ -10,7 +9,6 @@ appId: com.projetosv.fiscalize
       id: "login-submit"
     timeout: 10000
 
-# A sessão não é restaurada ao reabrir o app (SecureStore foi limpo)
 - stopApp
 - launchApp
 - extendedWaitUntil:

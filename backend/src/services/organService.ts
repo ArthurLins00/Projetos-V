@@ -57,10 +57,8 @@ export const organService = {
     },
 
     async criarOrgao(dados: CriarOrgaoDTO, adminId: string) {
-        // Validar campos obrigatórios
         this.validarCamposObrigatorios(dados);
 
-        // Validar se sigla e id já existe
         const siglaExiste = await organRepository.verificarSiglaExistente(dados.sigla);
         const idExiste = await organRepository.verificarIdExistente(dados.id);
         if (siglaExiste || idExiste) {
@@ -69,7 +67,6 @@ export const organService = {
             throw erro;
         }
 
-        // Validar se nome já existe
         const nomeExiste = await organRepository.verificarNomeExistente(dados.nome);
         if (nomeExiste) {
             const erro = new Error(`O nome '${dados.nome}' já existe no sistema`) as Error & { statusCode?: number };
@@ -77,11 +74,9 @@ export const organService = {
             throw erro;
         }
 
-        // Definir tipo padrão se não informado
         const tipo = dados.tipo || 'Municipal';
 
         try {
-            // Criar órgão
             const dadosOrgao = {
                 id: dados.id,
                 nome: dados.nome,
@@ -98,10 +93,8 @@ export const organService = {
 
             const orgao = await organRepository.criarOrgao(dadosOrgao);
 
-            // Adicionar categorias
             await organRepository.adicionarCategorias(orgao.id, dados.categorias);
 
-            // Retornar órgão com categorias
             const orgaoComCategorias = await organRepository.obterOrgaoPorId(orgao.id);
 
             await auditLogService.log(
@@ -135,7 +128,6 @@ export const organService = {
     },
 
     async editarOrgao(id: string, dados: EditarOrgaoDTO, adminId: string) {
-        // Verifica se o órgão existe
         const orgaoExistente = await organRepository.obterOrgaoPorId(id);
         if (!orgaoExistente) {
             const erro = new Error(`Órgão '${id}' não encontrado`) as Error & { statusCode?: number };
@@ -143,7 +135,6 @@ export const organService = {
             throw erro;
         }
 
-        // Verifica conflito de nome com OUTRO órgão (exclui o próprio)
         if (dados.nome !== undefined) {
             const nomeExiste = await organRepository.verificarNomeExistente(dados.nome, id);
             if (nomeExiste) {
@@ -153,7 +144,6 @@ export const organService = {
             }
         }
 
-        // Atualiza campos escalares
         const dadosAtualizados: any = {};
         if (dados.nome !== undefined) dadosAtualizados.nome = dados.nome;
         if (dados.tipo !== undefined) dadosAtualizados.tipo = dados.tipo;
@@ -164,7 +154,6 @@ export const organService = {
 
         await organRepository.atualizarOrgao(id, dadosAtualizados);
 
-        // Substitui categorias se enviadas
         if (dados.categorias !== undefined) {
             await organRepository.substituirCategorias(id, dados.categorias);
         }
@@ -216,11 +205,6 @@ export const organService = {
         return orgao?.status;
     },
 
-    /**
-   * Retorna as categorias vinculadas a um órgão.
-   * Usado para popular o select de categorias no modal de regras
-   * após o usuário selecionar um órgão principal.
-   */
     async listarCategoriasPorOrgao(orgaoId: string) {
         const orgao = await organRepository.obterOrgaoPorId(orgaoId);
 

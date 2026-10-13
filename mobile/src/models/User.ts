@@ -7,7 +7,18 @@ export interface User {
   perfil: Perfil;
 }
 
-// Resposta de POST /auth/login
 export interface LoginResponse extends User {
   token: string;
+}
+
+export interface UserProfile extends User {
+  status: string;
+  criadoem: string;
+}
+
+export interface UpdateProfilePayload {
+  nome?: string;
+  email?: string;
+  senhaAtual?: string;
+  novaSenha?: string;
 }

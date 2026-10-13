@@ -3,7 +3,6 @@ import { STATUS_EXIBICAO } from '../data/chamadosSource';
 import { consultarStatusChamados, type ConsultarArgs } from '../tools/consultarStatusChamados';
 import type { AgentProfile } from './types';
 
-/** Perfil do chat do app: o usuário logado consulta o andamento dos chamados que pode ver. */
 export const SYSTEM_PROMPT_ACOMPANHAMENTO = `
 Você é o **Assistente Fiscalize** dentro do app. Sua única função é informar o andamento (status)
 de chamados de demandas urbanas que o usuário logado tem permissão para ver.

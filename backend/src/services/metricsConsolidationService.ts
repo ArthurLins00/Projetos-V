@@ -100,7 +100,6 @@ export async function runMetricsConsolidation(): Promise<ConsolidationResult> {
         },
       });
     } catch {
-      // Do not crash if error logging to DB also fails
     }
 
     return { success: false, scopesProcessed: 0, timestamp, error: message };

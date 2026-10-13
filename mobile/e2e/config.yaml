@@ -1,4 +1,2 @@
-# `maestro test mobile/e2e` executa só os fluxos desta pasta;
-# os de subflows/ são reaproveitados via runFlow e não rodam sozinhos.
 flows:
   - "*"

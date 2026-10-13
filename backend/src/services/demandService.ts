@@ -43,7 +43,6 @@ interface ListDemandsInput {
 
 const BLOCKED_STATUSES = ['Em_Andamento', 'Resolvido', 'Fechado'] as const;
 
-// Confere a assinatura do arquivo em vez de confiar no que o cliente declara
 function detectImageExtension(buffer: Buffer): 'jpg' | 'png' | null {
   if (buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'jpg';
   if (buffer.length > 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
@@ -88,7 +87,6 @@ export const demandService = {
 
     if (perfil === 'Cidadao') where['cidadaoid'] = userId;
     if (status) where['status'] = status;
-    // Demandas removidas pelo cidadão (soft delete → Fechado) somem da listagem padrão dele
     else if (perfil === 'Cidadao') where['status'] = { not: 'Fechado' };
     if (categoria) where['categoriaid'] = categoria;
     if (regiao) where['endereco'] = { contains: regiao, mode: 'insensitive' };
@@ -184,24 +182,20 @@ export const demandService = {
   async update(input: UpdateDemandInput) {
     const { id, userId, title, description, location, categoryId, latitude, longitude } = input;
 
-    // 1. Find demand
     const chamado = await prisma.chamado.findUnique({
       where: { id },
       include: { categoria: { select: { id: true, nome: true } } },
     });
     if (!chamado) throw new AppError(404, 'Demanda não encontrada.');
 
-    // 2. Ownership check
     if (chamado.cidadaoid !== userId) {
       throw new AppError(403, 'Você não tem permissão para editar esta demanda.');
     }
 
-    // 3. Status check
     if ((BLOCKED_STATUSES as readonly string[]).includes(chamado.status)) {
       throw new AppError(403, `Não é possível editar uma demanda com status '${displayStatus(chamado.status)}'.`);
     }
 
-    // 4. If category_id provided, validate and re-resolve org/prioridade/slahoras
     let orgaoid = chamado.orgaoid;
     let prioridade = chamado.prioridade;
     let slahoras = chamado.slahoras;
@@ -237,7 +231,6 @@ export const demandService = {
       }
     }
 
-    // 5. Update chamado + log timeline_event atomically
     const updated = await prisma.$transaction(async (tx) => {
       const result = await tx.chamado.update({
         where: { id },
@@ -309,24 +302,20 @@ export const demandService = {
   async create(input: CreateDemandInput) {
     const { title, description, categoryId, location, latitude, longitude, userId } = input;
 
-    // 1. Validate category exists and is active
     const categoria = await prisma.categoria.findUnique({ where: { id: categoryId } });
     if (!categoria || !categoria.ativo) {
       throw new AppError(400, `Categoria inválida: categoria ${categoryId} não encontrada ou inativa.`);
     }
 
-    // 2. Verify user has a cidadao profile
     const cidadao = await prisma.cidadao.findUnique({ where: { id: userId } });
     if (!cidadao) {
       throw new AppError(403, 'Usuário não possui perfil de cidadão para registrar demandas.');
     }
 
-    // 3. Resolve orgaoid, prioridade, slahoras via regra_competencia → orgao_categoria fallback
     let orgaoid: string | null = null;
     let prioridade: 'Baixa' | 'Media' | 'Alta' | 'Critica' = 'Media';
     let slahoras = 48;
 
-    // Exact subcategoria match first, then any rule for this category
     const regra = await prisma.regra_competencia.findFirst({
       where: { categoriaid: categoryId, subcategoria: title },
     }) ?? await prisma.regra_competencia.findFirst({
@@ -338,7 +327,6 @@ export const demandService = {
       prioridade = regra.prioridade as typeof prioridade;
       slahoras = regra.slahoras;
     } else {
-      // No routing rule — fall back to orgao_categoria
       const oc = await prisma.orgao_categoria.findFirst({
         where: { categoriaid: categoryId },
         include: { orgao: { select: { id: true, slahoras: true } } },
@@ -354,7 +342,6 @@ export const demandService = {
     const protocolo = generateProtocolo();
     const sladeadline = new Date(Date.now() + slahoras * 60 * 60 * 1000);
 
-    // 4. Create chamado + timeline_event atomically
     const chamado = await prisma.$transaction(async (tx) => {
       const created = await tx.chamado.create({
         data: {
@@ -436,7 +423,6 @@ export const demandService = {
       data: { fotourl: photoUrl, atualizadoem: new Date() },
     });
 
-    // Remove a foto anterior (só arquivos locais gerenciados por esta rota)
     if (chamado.fotourl?.startsWith(`${UPLOADS_ROUTE}/`)) {
       const oldFile = path.join(UPLOADS_DIR, path.basename(chamado.fotourl));
       await fs.unlink(oldFile).catch(() => undefined);

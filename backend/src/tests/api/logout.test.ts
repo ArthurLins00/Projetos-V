@@ -21,7 +21,6 @@ describe('AUT-10 | Realizar logout e revogar o token | RF04 (API)', () => {
   let token: string;
 
   beforeEach(async () => {
-    // O mesmo mock atende o login e a verificação do usuário no middleware de autenticação
     prisma.usuario.findUnique.mockResolvedValue(usuario as any);
 
     const login = await request(app).post('/auth/login').send({ email: usuario.email, senha });

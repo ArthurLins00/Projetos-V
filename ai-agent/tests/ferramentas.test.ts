@@ -1,4 +1,3 @@
-/** Testes unitários das regras de negócio das ferramentas (offline). */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { classificarERotearOcorrencia } from '../src/tools/classificarERotearOcorrencia';

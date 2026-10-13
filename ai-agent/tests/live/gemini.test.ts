@@ -1,8 +1,3 @@
-/**
- * Testes AO VIVO contra a API do Gemini (exigem GEMINI_API_KEY no .env).
- * Validam que o modelo real escolhe as ferramentas certas para cada caso de teste.
- *   npm run test:live
- */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { FiscalizeAgent, type AgentReply } from '../../src/agent';

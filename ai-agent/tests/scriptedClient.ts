@@ -1,11 +1,6 @@
 import type { Content, FunctionCall } from '@google/genai';
 import type { ModelClient, ModelTurn } from '../src/agent';
 
-/**
- * Dublê do Gemini para testes offline e determinísticos.
- * Cada passo recebe o histórico (inclusive os functionResponse produzidos pelas ferramentas REAIS)
- * e devolve o que o modelo "responderia". Assim validamos o loop de function calling sem rede.
- */
 export type Passo = (history: Content[]) => ModelTurn;
 
 export class ScriptedModelClient implements ModelClient {
@@ -33,7 +28,6 @@ export function responder(gerarTexto: (history: Content[]) => string): Passo {
   };
 }
 
-/** Saída (`output`) da última resposta de ferramenta com esse nome presente no histórico. */
 export function ultimaSaida<T = any>(history: Content[], nome: string): T {
   for (let i = history.length - 1; i >= 0; i--) {
     for (const part of history[i].parts ?? []) {
@@ -43,7 +37,6 @@ export function ultimaSaida<T = any>(history: Content[], nome: string): T {
   throw new Error(`Nenhuma resposta da ferramenta ${nome} no histórico`);
 }
 
-/** Atalho: o "modelo" encadeia as 2 ferramentas — a segunda usa o categoria_id vindo da primeira. */
 export function roteiroCompleto(descricao: string, latitude: number, longitude: number): Passo[] {
   return [
     chamarFerramenta('classificar_e_rotear_ocorrencia', { descricao, latitude, longitude }),
