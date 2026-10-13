@@ -146,6 +146,7 @@ export function ProfileView() {
           />
         </Card>
 
+        <Button testID="profile-help" variant="secondary" icon="help-circle-outline" title="Ajuda e termos de uso" onPress={vm.openHelp} style={styles.helpButton} />
         <Button testID="profile-logout" variant="danger" icon="log-out-outline" title="Sair da conta" onPress={vm.confirmSignOut} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -180,6 +181,7 @@ const useStyles = makeStyles((colors) => ({
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
   cardTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
   cardButton: { marginTop: 2 },
+  helpButton: { marginBottom: 12 },
   segmented: { flexDirection: 'row', gap: 8, padding: 4, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
   segment: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: radius.sm },
   segmentSelected: { backgroundColor: colors.surface, ...shadow(1) },

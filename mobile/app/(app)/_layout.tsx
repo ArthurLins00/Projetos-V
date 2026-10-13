@@ -25,6 +25,7 @@ export default function AppLayout() {
         <Stack.Screen name="demand/[id]/edit" options={{ title: 'Editar Demanda' }} />
         <Stack.Screen name="assistant" options={{ title: 'Assistente Fiscalize' }} />
         <Stack.Screen name="profile" options={{ title: 'Meu Perfil' }} />
+        <Stack.Screen name="help" options={{ title: 'Ajuda' }} />
       </Stack>
       <TermsGate />
     </>

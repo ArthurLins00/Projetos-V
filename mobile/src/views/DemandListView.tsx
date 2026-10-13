@@ -38,6 +38,15 @@ export function DemandListView() {
           </View>
           <View style={styles.actions}>
             <Pressable
+              testID="help-button"
+              accessibilityRole="button"
+              accessibilityLabel="Abrir ajuda e perguntas frequentes"
+              style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+              onPress={vm.openHelp}
+            >
+              <Ionicons name="help-circle-outline" size={22} color={colors.textMuted} />
+            </Pressable>
+            <Pressable
               testID="assistant-button"
               accessibilityRole="button"
               accessibilityLabel="Abrir assistente de chamados"
