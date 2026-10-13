@@ -1,9 +1,11 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image } from 'react-native';
 import { makeStyles } from '../../theme';
+import { getPhotoUri } from '../../services/api';
 
 interface Props {
   name?: string | null;
+  photoUrl?: string | null;
   size?: number;
 }
 
@@ -15,17 +17,25 @@ export function getInitials(name?: string | null) {
   return (first + last).toUpperCase();
 }
 
-export function Avatar({ name, size = 44 }: Props) {
+export function Avatar({ name, photoUrl, size = 44 }: Props) {
   const styles = useStyles();
+  const uri = getPhotoUri(photoUrl);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => setFailed(false), [uri]);
 
   return (
     <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={[styles.text, { fontSize: size * 0.38 }]}>{getInitials(name)}</Text>
+      {uri && !failed ? (
+        <Image testID="avatar-photo" source={{ uri }} style={{ width: size, height: size }} onError={() => setFailed(true)} />
+      ) : (
+        <Text style={[styles.text, { fontSize: size * 0.38 }]}>{getInitials(name)}</Text>
+      )}
     </View>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  avatar: { backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  avatar: { backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   text: { color: colors.onPrimary, fontWeight: '800' },
 }));

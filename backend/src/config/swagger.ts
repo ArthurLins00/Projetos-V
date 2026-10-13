@@ -64,6 +64,8 @@ export const openApiSpec = {
           nome: { type: 'string', example: 'Maria Silva' },
           email: { type: 'string', format: 'email' },
           perfil: { $ref: '#/components/schemas/Perfil' },
+          fotourl: { type: 'string', nullable: true, example: '/uploads/avatar-<id>-1760000000000.jpg' },
+          termosversao: { type: 'integer', nullable: true, description: 'Última versão dos termos de uso aceita', example: 1 },
         },
       },
       Perfil: { type: 'string', enum: ['Cidadao', 'Gestor', 'Admin'], example: 'Cidadao' },
@@ -274,6 +276,70 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Solicitar código de recuperação de senha (enviado por e-mail, expira em 15 min)',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: { email: { type: 'string', format: 'email' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Resposta genérica, independente de o e-mail existir',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
+    '/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Redefinir senha com o código recebido por e-mail',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'codigo', 'novaSenha'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  codigo: { type: 'string', example: '123456' },
+                  novaSenha: { type: 'string', format: 'password', minLength: 6 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Senha redefinida',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
     '/auth/logout': {
       post: {
         tags: ['Auth'],
@@ -364,6 +430,73 @@ export const openApiSpec = {
           400: { $ref: '#/components/responses/BadRequest' },
           401: { description: 'Não autenticado ou senha atual incorreta' },
           409: { $ref: '#/components/responses/Conflict' },
+        },
+      },
+    },
+    '/auth/me/terms': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registrar o aceite dos termos de uso',
+        description: 'Grava a versão aceita e a data. Enviar uma versão igual ou menor que a já aceita não altera nada.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['versao'],
+                properties: { versao: { type: 'integer', minimum: 1, example: 1 } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a `termosversao` aceita',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/auth/me/photo': {
+      put: {
+        tags: ['Auth'],
+        summary: 'Enviar/substituir a foto de perfil (JPEG ou PNG em base64)',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['photo'],
+                properties: { photo: { type: 'string', description: 'Imagem em base64 (aceita prefixo data:image/...;base64,)' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a nova `fotourl`',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      delete: {
+        tags: ['Auth'],
+        summary: 'Remover a foto de perfil',
+        security: BEARER,
+        responses: {
+          200: {
+            description: 'Usuário atualizado com `fotourl` nula',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },

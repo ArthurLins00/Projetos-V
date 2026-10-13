@@ -34,6 +34,13 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Fiscalize acessa suas fotos para você escolher uma foto de perfil.",
+          "cameraPermission": "O Fiscalize usa a câmera para fotografar as ocorrências e a sua foto de perfil."
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "O Fiscalize usa sua localização para registrar onde a ocorrência aconteceu."

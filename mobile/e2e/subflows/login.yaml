@@ -21,6 +21,18 @@ env:
 - tapOn:
     id: "login-submit"
 - extendedWaitUntil:
+    visible:
+      id: "terms-accept"
+    timeout: 5000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: "terms-accept"
+    commands:
+      - tapOn:
+          id: "terms-accept"
+- extendedWaitUntil:
     visible: "Minhas Demandas"
     timeout: 15000
 - extendedWaitUntil:

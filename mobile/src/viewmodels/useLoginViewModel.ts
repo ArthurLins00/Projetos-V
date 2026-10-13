@@ -26,6 +26,7 @@ export function useLoginViewModel() {
   };
 
   const goToRegister = () => router.push('/(auth)/register');
+  const goToForgotPassword = () => router.push('/(auth)/forgot-password');
 
-  return { email, setEmail, password, setPassword, isSubmitting, login, goToRegister };
+  return { email, setEmail, password, setPassword, isSubmitting, login, goToRegister, goToForgotPassword };
 }
