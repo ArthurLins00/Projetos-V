@@ -34,6 +34,7 @@ export const openApiSpec = {
     { name: 'Health', description: 'Verificação de saúde do serviço' },
     { name: 'Auth', description: 'Registro, login, logout e sessão' },
     { name: 'Demands', description: 'Demandas urbanas (chamados) — cidadão e gestor' },
+    { name: 'Notifications', description: 'Notificações das atualizações dos chamados' },
     { name: 'Categories', description: 'Categorias de demandas' },
     { name: 'Users', description: 'Consulta de usuários (gestor)' },
     { name: 'Gestor', description: 'Painel do gestor: dashboard, equipe e fila de chamados' },
@@ -560,6 +561,81 @@ export const openApiSpec = {
       },
     },
 
+    '/notifications': {
+      get: {
+        tags: ['Notifications'],
+        summary: 'Listar as notificações do usuário logado (mais recentes primeiro)',
+        security: BEARER,
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 50 } },
+          { name: 'unread', in: 'query', schema: { type: 'boolean' }, description: 'true = só as não lidas' },
+        ],
+        responses: {
+          200: {
+            description: 'Página de notificações e total de não lidas',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string', format: 'uuid' },
+                          title: { type: 'string', example: 'Status atualizado' },
+                          message: { type: 'string', example: 'Seu chamado agora está "Em Andamento".' },
+                          type: { type: 'string', example: 'status_atualizado' },
+                          read: { type: 'boolean' },
+                          demandId: { type: 'string', format: 'uuid', nullable: true },
+                          protocolo: { type: 'string', nullable: true },
+                          createdAt: { type: 'string', format: 'date-time' },
+                        },
+                      },
+                    },
+                    total: { type: 'integer' },
+                    unreadCount: { type: 'integer' },
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    totalPages: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/notifications/{id}/read': {
+      patch: {
+        tags: ['Notifications'],
+        summary: 'Marcar uma notificação como lida',
+        security: BEARER,
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          204: { description: 'Marcada como lida' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          404: { description: 'Notificação não encontrada (ou de outro usuário)' },
+        },
+      },
+    },
+    '/notifications/read-all': {
+      patch: {
+        tags: ['Notifications'],
+        summary: 'Marcar todas as notificações como lidas',
+        security: BEARER,
+        responses: {
+          200: {
+            description: 'Quantidade de notificações atualizadas',
+            content: { 'application/json': { schema: { type: 'object', properties: { updated: { type: 'integer' } } } } },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
     '/demands': {
       get: {
         tags: ['Demands'],

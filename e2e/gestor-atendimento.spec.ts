@@ -47,6 +47,28 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     expect(detail.logs.map((l: { titulo: string }) => l.titulo)).toContain('Status atualizado');
   });
 
+  test('cidadão recebe a notificação da mudança e pode marcá-la como lida', async ({ request }) => {
+    const lista = await (await request.get('/notifications', { headers: cidadao.headers })).json();
+
+    expect(lista.unreadCount).toBe(1);
+    expect(lista.data[0]).toMatchObject({
+      title: 'Status atualizado',
+      type: 'status_atualizado',
+      read: false,
+      demandId: demand.id,
+      protocolo: demand.protocolo,
+    });
+    expect(lista.data[0].message).toContain('Em Andamento');
+
+    const lida = await request.patch(`/notifications/${lista.data[0].id}/read`, { headers: cidadao.headers });
+    expect(lida.status()).toBe(204);
+    const depois = await (await request.get('/notifications', { headers: cidadao.headers })).json();
+    expect(depois.unreadCount).toBe(0);
+
+    const deOutro = await request.patch(`/notifications/${lista.data[0].id}/read`, { headers: gestor.headers });
+    expect(deOutro.status()).toBe(404);
+  });
+
   test('com a ocorrência em andamento, o cidadão não pode mais editar nem remover', async ({ request }) => {
     const update = await request.put(`/demands/${demand.id}`, { headers: cidadao.headers, data: { title: 'Mudança' } });
     expect(update.status()).toBe(403);
@@ -66,5 +88,8 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
       await request.get('/demands', { headers: cidadao.headers, params: { status: 'Resolvido' } })
     ).json();
     expect(resolvidas.data.map((d: { id: string }) => d.id)).toContain(demand.id);
+
+    const notificacoes = await (await request.get('/notifications', { headers: cidadao.headers })).json();
+    expect(notificacoes.data[0]).toMatchObject({ title: 'Chamado resolvido', type: 'chamado_concluido', read: false });
   });
 });

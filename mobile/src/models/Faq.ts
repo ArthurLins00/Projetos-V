@@ -81,7 +81,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         question: 'Vou ser avisado quando meu chamado mudar?',
         answer:
           'Sim. Quando a equipe aceita, transfere, muda o status ou conclui o chamado, você recebe um e-mail e, se permitir, ' +
-          'uma notificação no celular. Tocar na notificação abre o chamado.',
+          'uma notificação no celular. Todos os avisos também ficam na tela Notificações, no sino do topo da tela inicial.',
       },
       {
         question: 'Como encontro um chamado específico?',

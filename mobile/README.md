@@ -166,7 +166,7 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 |---|---|
 | Login | `login-email`, `login-password`, `login-submit`, `login-go-register`, `login-dev` |
 | Cadastro | `register-name`, `register-email`, `register-password`, `register-submit`, `register-go-login` |
-| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `logout-button` |
+| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
 | Formulário | `form-title`, `form-category-<id>`, `form-address`, `form-description`, `form-photo`, `form-gps`, `form-submit` |
 | Câmera | `camera-shutter` |
 | Detalhe | `detail-title`, `detail-edit`, `detail-delete` |

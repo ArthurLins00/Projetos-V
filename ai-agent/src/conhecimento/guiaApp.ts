@@ -5,7 +5,7 @@
 export const GUIA_DO_APP = `
 Tela inicial ("Minhas Demandas")
 - Mostra os chamados do usuário, do mais recente para o mais antigo. Puxar a lista para baixo atualiza.
-- No topo: a foto ou as iniciais do usuário (abre o Perfil), o botão "?" (abre a Ajuda), o botão de estrelinhas (abre este assistente) e o botão de sair.
+- No topo: a foto ou as iniciais do usuário (abre o Perfil), o botão "?" (abre a Ajuda), o botão de estrelinhas (abre este assistente) e o sino (abre as Notificações; um número vermelho mostra quantas não foram lidas). Para sair da conta, use o Perfil.
 - Busca: procura por título, categoria, endereço ou protocolo, em todos os status. Enquanto há texto na busca, o filtro de status fica em "Todos"; tocar em um status limpa a busca.
 - Filtros de status logo abaixo da busca: Todos, Aberto, Em Análise, Aguardando, Em Andamento, Resolvido e Removidas. Há setas nas laterais para ver os filtros escondidos.
 - Botão "Nova demanda", no canto inferior direito, para registrar um chamado.
@@ -36,6 +36,7 @@ Prazos
 
 Avisos
 - Quando a equipe aceita, transfere, muda o status, conclui ou encerra um chamado, o usuário recebe um e-mail e, se tiver permitido, uma notificação no celular. Tocar na notificação abre o chamado.
+- Todos os avisos ficam guardados na tela "Notificações" (sino no topo da tela inicial). Os não lidos aparecem destacados; tocar em um aviso marca como lido e abre o chamado. Há a opção "Marcar todas como lidas".
 - Se as notificações não chegam, verifique se elas estão permitidas para o app nas configurações do celular.
 
 Perfil (tocar na foto ou nas iniciais, no topo da tela inicial)

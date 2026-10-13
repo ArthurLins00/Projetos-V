@@ -221,7 +221,7 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 | A-32 | Chamado inexistente | 404 |
 | A-33 | Chamado de outro órgão | 403 |
 
-### 3.3 E2E da API — `e2e/` (Playwright, 32)
+### 3.3 E2E da API — `e2e/` (Playwright, 33)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
 jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma ocorrência).
@@ -252,8 +252,9 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-15 | Cidadão acessa rotas do gestor | 403 |
 | E-16 | Gestor muda para "Em Andamento" | 200 |
 | E-17 | Cidadão consulta a ocorrência | Novo status e registro no histórico |
+| E-17b | Notificação da mudança | Aparece em `/notifications` (não lida, com protocolo); marcar como lida zera o contador; outro usuário recebe 404 |
 | E-18 | Cidadão tenta editar e remover | 403 nos dois casos |
-| E-19 | Gestor conclui ("Resolvido") | Aparece em Resolvido para o cidadão |
+| E-19 | Gestor conclui ("Resolvido") | Aparece em Resolvido para o cidadão e gera a notificação "Chamado resolvido" |
 
 **`seguranca.spec.ts`: autenticação, isolamento e validação**
 
@@ -285,7 +286,7 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | M-01 | `login_invalid_password.yaml` | Senha errada → alerta "Falha no Login" / "Credenciais inválidas." → continua na tela de login |
 | M-02 | `register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação |
 | M-03 | `session_persistence.yaml` | Login → fechar e reabrir o app → continua logado |
-| M-04 | `logout.yaml` | Login → Sair → tela de login → reabrir o app → continua deslogado |
+| M-04 | `logout.yaml` | Login → Perfil → "Sair da conta" → confirmar → tela de login → reabrir o app → continua deslogado |
 | M-05 | `demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista |
 
 Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os termos de uso quando a tela aparece.
@@ -315,7 +316,7 @@ Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os 
 | Recuperação de senha | — | `passwordReset.test.ts` | E-32 | — |
 | Termos de uso | — | `terms.test.ts` | E-28, E-29 | M-01 a M-05 (aceite no login) |
 | Foto de perfil | — | `profilePhoto.test.ts` | E-30 | — |
-| Notificações (e-mail e push) | `notificationService.test.ts` | — | E-31 | — |
+| Notificações (e-mail, push e tela) | `notificationService.test.ts` | `notifications.test.ts` | E-17b, E-19, E-31 | — |
 
 ---
 

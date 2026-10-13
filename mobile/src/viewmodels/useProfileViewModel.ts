@@ -153,7 +153,7 @@ export function useProfileViewModel() {
     ]);
 
   const confirmSignOut = () =>
-    Alert.alert('Sair', 'Deseja encerrar a sessão?', [
+    Alert.alert('Sair da conta', 'Deseja encerrar a sessão?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Sair', style: 'destructive', onPress: signOut },
     ]);
