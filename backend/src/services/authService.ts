@@ -20,6 +20,7 @@ const PROFILE_SELECT = {
   perfil: true,
   status: true,
   fotourl: true,
+  termosversao: true,
   criadoem: true,
 } as const;
 
@@ -189,6 +190,24 @@ export const authService = {
     await deleteUploadedFile(usuario.fotourl);
 
     return atualizado;
+  },
+
+  async acceptTerms(userId: string, versao: number) {
+    const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
+
+    if (!usuario) {
+      throw new AppError(404, 'Usuário não encontrado.');
+    }
+
+    if (usuario.termosversao !== null && usuario.termosversao >= versao) {
+      return prisma.usuario.findUnique({ where: { id: userId }, select: PROFILE_SELECT });
+    }
+
+    return prisma.usuario.update({
+      where: { id: userId },
+      data: { termosversao: versao, termosaceitoem: new Date() },
+      select: PROFILE_SELECT,
+    });
   },
 
   async removePhoto(userId: string) {

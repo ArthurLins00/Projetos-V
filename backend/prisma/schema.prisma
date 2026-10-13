@@ -234,6 +234,8 @@ model usuario {
   perfil        perfil
   status        status_enum     @default(Ativo)
   fotourl       String?         @db.VarChar(500)
+  termosversao   Int?
+  termosaceitoem DateTime?       @db.Timestamp(6)
   criadoem      DateTime        @default(now()) @db.Timestamp(6)
   atualizadoem  DateTime        @default(now()) @db.Timestamp(6)
   atualizadopor String?         @db.Uuid

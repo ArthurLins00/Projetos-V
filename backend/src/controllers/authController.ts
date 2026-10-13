@@ -52,6 +52,7 @@ export const authController = {
         email: usuario.email,
         perfil: usuario.perfil,
         fotourl: usuario.fotourl,
+        termosversao: usuario.termosversao,
         token,
       });
     } catch (error) {
@@ -139,6 +140,7 @@ export const authController = {
         perfil: usuario.perfil,
         status: usuario.status,
         fotourl: usuario.fotourl,
+        termosversao: usuario.termosversao,
         criadoem: usuario.criadoem
       });
     } catch (error) {
@@ -161,6 +163,28 @@ export const authController = {
       }
 
       const usuario = await authService.updatePhoto(usuarioId, photo);
+
+      res.status(200).json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async acceptTerms(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { versao } = req.body ?? {};
+
+      if (!Number.isInteger(versao) || versao < 1) {
+        throw new AppError(400, 'Campo obrigatório: versao (inteiro positivo)');
+      }
+
+      const usuario = await authService.acceptTerms(usuarioId, versao);
 
       res.status(200).json(usuario);
     } catch (error) {

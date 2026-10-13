@@ -37,6 +37,11 @@ export const authService = {
     return response.data;
   },
 
+  async acceptTerms(versao: number): Promise<UserProfile> {
+    const response = await api.post<UserProfile>('/auth/me/terms', { versao });
+    return response.data;
+  },
+
   async removePhoto(): Promise<UserProfile> {
     const response = await api.delete<UserProfile>('/auth/me/photo');
     return response.data;

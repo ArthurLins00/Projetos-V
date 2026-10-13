@@ -65,6 +65,7 @@ export const openApiSpec = {
           email: { type: 'string', format: 'email' },
           perfil: { $ref: '#/components/schemas/Perfil' },
           fotourl: { type: 'string', nullable: true, example: '/uploads/avatar-<id>-1760000000000.jpg' },
+          termosversao: { type: 'integer', nullable: true, description: 'Última versão dos termos de uso aceita', example: 1 },
         },
       },
       Perfil: { type: 'string', enum: ['Cidadao', 'Gestor', 'Admin'], example: 'Cidadao' },
@@ -429,6 +430,34 @@ export const openApiSpec = {
           400: { $ref: '#/components/responses/BadRequest' },
           401: { description: 'Não autenticado ou senha atual incorreta' },
           409: { $ref: '#/components/responses/Conflict' },
+        },
+      },
+    },
+    '/auth/me/terms': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registrar o aceite dos termos de uso',
+        description: 'Grava a versão aceita e a data. Enviar uma versão igual ou menor que a já aceita não altera nada.',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['versao'],
+                properties: { versao: { type: 'integer', minimum: 1, example: 1 } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com a `termosversao` aceita',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
