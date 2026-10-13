@@ -29,8 +29,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'O que o assistente (botão de estrelinhas) faz?',
         answer:
-          'É um assistente com inteligência artificial. Você descreve o problema com suas palavras e ele ajuda a classificar o chamado ' +
-          'e a encontrar ocorrências parecidas. Ele também informa o andamento dos seus chamados pelo protocolo.',
+          'É um assistente com inteligência artificial. Ele informa o status e o prazo estimado dos seus chamados, avisa quando ' +
+          'algum está atrasado e explica como usar o app, por exemplo como registrar um chamado ou anexar fotos. ' +
+          'Ele não registra nem altera chamados por você.',
       },
     ],
   },
@@ -80,7 +81,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         question: 'Vou ser avisado quando meu chamado mudar?',
         answer:
           'Sim. Quando a equipe aceita, transfere, muda o status ou conclui o chamado, você recebe um e-mail e, se permitir, ' +
-          'uma notificação no celular. Tocar na notificação abre o chamado.',
+          'uma notificação no celular. Todos os avisos também ficam na tela Notificações, no sino do topo da tela inicial.',
       },
       {
         question: 'Como encontro um chamado específico?',

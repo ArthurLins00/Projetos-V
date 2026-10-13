@@ -90,6 +90,65 @@ export const notificationService = {
     }
   },
 
+  async list(usuarioId: string, { page, limit, unreadOnly }: { page: number; limit: number; unreadOnly: boolean }) {
+    const where = { usuarioid: usuarioId, ...(unreadOnly && { lida: false }) };
+
+    const [notificacoes, total, unreadCount] = await Promise.all([
+      prisma.notificacao.findMany({
+        where,
+        orderBy: { criadoem: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          titulo: true,
+          mensagem: true,
+          tipo: true,
+          lida: true,
+          criadoem: true,
+          chamadoid: true,
+          chamado: { select: { protocolo: true } },
+        },
+      }),
+      prisma.notificacao.count({ where }),
+      prisma.notificacao.count({ where: { usuarioid: usuarioId, lida: false } }),
+    ]);
+
+    return {
+      data: notificacoes.map((n) => ({
+        id: n.id,
+        title: n.titulo,
+        message: n.mensagem,
+        type: n.tipo,
+        read: n.lida,
+        demandId: n.chamadoid,
+        protocolo: n.chamado?.protocolo ?? null,
+        createdAt: n.criadoem,
+      })),
+      total,
+      unreadCount,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+
+  async markAsRead(usuarioId: string, notificacaoId: string) {
+    const { count } = await prisma.notificacao.updateMany({
+      where: { id: notificacaoId, usuarioid: usuarioId },
+      data: { lida: true, lida_em: new Date() },
+    });
+    if (count === 0) throw new AppError(404, 'Notificação não encontrada.');
+  },
+
+  async markAllAsRead(usuarioId: string) {
+    const { count } = await prisma.notificacao.updateMany({
+      where: { usuarioid: usuarioId, lida: false },
+      data: { lida: true, lida_em: new Date() },
+    });
+    return { updated: count };
+  },
+
   async registerPushToken(usuarioId: string, token: string) {
     if (!EXPO_TOKEN_REGEX.test(token)) {
       throw new AppError(400, 'Token de push inválido.');

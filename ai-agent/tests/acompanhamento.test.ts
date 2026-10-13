@@ -49,6 +49,39 @@ describe('consultar_status_chamados — regra de acesso', () => {
   });
 });
 
+describe('consultar_status_chamados — prazos', () => {
+  const agora = new Date('2026-10-13T08:15:00Z');
+
+  it('calcula a situação do prazo de cada chamado', async () => {
+    const r = await consultarStatusChamados({}, cidadao, agora);
+    const porProtocolo = Object.fromEntries(r.chamados.map((c) => [c.protocolo, c]));
+
+    assert.equal(r.consultado_em, agora.toISOString());
+    assert.equal(porProtocolo['DEM-20261001-C4RR']?.situacao_prazo, 'no_prazo');
+    assert.equal(porProtocolo['DEM-20261001-C4RR']?.horas_para_o_prazo, 18 * 24);
+    assert.equal(porProtocolo['DEM-20260921-A7K2']?.situacao_prazo, 'vencido');
+    assert.ok((porProtocolo['DEM-20260921-A7K2']?.horas_para_o_prazo ?? 0) < 0);
+  });
+
+  it('chamado resolvido não tem prazo em aberto', async () => {
+    const r = await consultarStatusChamados({ protocolos: ['DEM-20260815-B1TT'] }, cidadao, agora);
+    assert.equal(r.chamados[0]?.situacao_prazo, 'encerrado');
+    assert.equal(r.chamados[0]?.horas_para_o_prazo, null);
+  });
+
+  it('chamado sem data limite fica como sem_prazo', async () => {
+    const semPrazo = { listar: async () => [{ ...CHAMADO_BASE, prazo_limite: null }] };
+    const r = await consultarStatusChamados({}, semPrazo, agora);
+    assert.equal(r.chamados[0]?.situacao_prazo, 'sem_prazo');
+  });
+});
+
+const CHAMADO_BASE: ChamadoResumo = {
+  id: 'x', protocolo: 'DEM-20261010-ZZZZ', titulo: 'Teste', categoria: 'Infraestrutura', status: 'Aberto',
+  endereco: 'Rua Y, 1', criado_em: '2026-10-10T00:00:00Z', atualizado_em: '2026-10-10T00:00:00Z',
+  sla_horas: null, prazo_limite: null,
+};
+
 describe('BackendChamadosSource — consulta GET /demands com o JWT do usuário', () => {
   let backend: Server;
   let url: string;
@@ -68,6 +101,7 @@ describe('BackendChamadosSource — consulta GET /demands com o JWT do usuário'
           location: 'Rua X, 10', category: { id: 3, nome: 'Iluminação Pública' },
           creator: { id: 'u1', nome: 'Fulano', email: 'fulano@x.com' },
           createdAt: '2026-10-05T10:00:00Z', updatedAt: '2026-10-06T10:00:00Z',
+          slaHours: 48, slaDeadline: '2026-10-07T10:00:00Z',
         }],
       }));
     });
@@ -86,6 +120,7 @@ describe('BackendChamadosSource — consulta GET /demands com o JWT do usuário'
     assert.deepEqual(lista[0], {
       id: 'uuid-1', protocolo: 'DEM-20261005-ABCD', titulo: 'Poste apagado', categoria: 'Iluminação Pública',
       status: 'Em Andamento', endereco: 'Rua X, 10', criado_em: '2026-10-05T10:00:00Z', atualizado_em: '2026-10-06T10:00:00Z',
+      sla_horas: 48, prazo_limite: '2026-10-07T10:00:00Z',
     } satisfies ChamadoResumo);
     assert.doesNotMatch(JSON.stringify(lista), /Fulano|fulano@x\.com/);
   });

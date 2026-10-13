@@ -122,6 +122,7 @@ ai-agent/
 │   ├── perfis/
 │   │   ├── triagem.ts               System instruction + FunctionDeclarations da entrega AV2
 │   │   └── acompanhamento.ts        System instruction + FunctionDeclaration do chat do app
+│   ├── conhecimento/guiaApp.ts      Guia de uso do app incluído no prompt do chat
 │   ├── tools/
 │   │   ├── index.ts                 Dispatcher executarFerramenta (erros viram { error })
 │   │   ├── classificarERotearOcorrencia.ts
@@ -162,8 +163,18 @@ previsíveis e executáveis sem chave nem internet.
 ## Integração com o app Fiscalize
 
 Além da entrega isolada, o agente também está ligado ao projeto completo. Na tela inicial do app
-(**Minhas Demandas**), o balão 💬 no canto inferior esquerdo abre o **Assistente Fiscalize**, que
-responde perguntas sobre o **status de um ou mais chamados**.
+(**Minhas Demandas**), o botão de estrelinhas no topo abre o **Assistente Fiscalize**, que:
+
+- informa o **status e o prazo estimado** dos chamados e avisa quando o prazo já passou;
+- explica **como usar o app** (registrar chamado, anexar fotos, editar, notificações, perfil, senha),
+  com base no guia em [`src/conhecimento/guiaApp.ts`](src/conhecimento/guiaApp.ts), e indica a tela
+  de **Ajuda** quando a dúvida não está no guia;
+- tira **dúvidas gerais** sobre o atendimento (significado dos status, como funcionam os prazos);
+- em relatos de **emergência**, orienta primeiro a ligar para 190, 192 ou 193;
+- recusa com educação assuntos sem relação com o Fiscalize.
+
+O guia do app é texto fixo dentro do prompt. Ao mudar uma tela do app, atualize também
+`guiaApp.ts` e a FAQ do app (`mobile/src/models/Faq.ts`).
 
 ```
 App (balão 💬) ──POST /ai/chat + JWT──▶ Backend (Express) ──POST /chat + JWT──▶ ai-agent (npm run serve)
@@ -175,7 +186,7 @@ O agente usa o perfil **acompanhamento** e uma única ferramenta:
 
 | Ferramenta | Parâmetros | O que retorna |
 |---|---|---|
-| `consultar_status_chamados` | `protocolos?: string[]` (até 10), `status?` | protocolo, título, categoria, status, endereço e datas de cada chamado; `nao_encontrados` |
+| `consultar_status_chamados` | `protocolos?: string[]` (até 10), `status?` | protocolo, título, categoria, status, endereço, datas e prazo de cada chamado (`prazo_limite`, `situacao_prazo`: `no_prazo`, `vencido`, `encerrado` ou `sem_prazo`, e `horas_para_o_prazo`); `nao_encontrados` |
 
 **Quem vê o quê.** O agente nunca acessa o banco diretamente: ele consulta `GET /demands`
 com o **JWT do próprio usuário**, então quem aplica a regra é o backend.

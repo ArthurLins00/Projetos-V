@@ -32,3 +32,8 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
       - run: npm run typecheck
+      - name: Valida o app.json e os plugins nativos
+        run: npx expo config --type public > /dev/null
+      - name: Compatibilidade das dependências com o SDK do Expo (aviso)
+        continue-on-error: true
+        run: npx expo install --check

@@ -56,13 +56,18 @@ export function DemandListView() {
               <Ionicons name="sparkles" size={20} color={colors.primary} />
             </Pressable>
             <Pressable
-              testID="logout-button"
+              testID="notifications-button"
               accessibilityRole="button"
-              accessibilityLabel="Sair"
+              accessibilityLabel={vm.unreadCount > 0 ? `Notificações, ${vm.unreadCount} não lidas` : 'Notificações'}
               style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-              onPress={vm.signOut}
+              onPress={vm.openNotifications}
             >
-              <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+              <Ionicons name={vm.unreadCount > 0 ? 'notifications' : 'notifications-outline'} size={20} color={colors.textMuted} />
+              {vm.unreadCount > 0 && (
+                <View testID="notifications-badge" style={styles.badge}>
+                  <Text style={styles.badgeText}>{vm.unreadCount > 9 ? '9+' : vm.unreadCount}</Text>
+                </View>
+              )}
             </Pressable>
           </View>
         </View>
@@ -157,6 +162,21 @@ const useStyles = makeStyles((colors) => ({
   actions: { flexDirection: 'row', gap: 8 },
   iconButton: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
   iconButtonPrimary: { backgroundColor: colors.primarySoft },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.danger,
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  badgeText: { color: colors.onPrimary, fontSize: 10, fontWeight: '800' },
   pressed: { opacity: 0.7 },
   search: {
     flexDirection: 'row',
