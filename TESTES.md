@@ -78,7 +78,7 @@ e `npm run test:api`.
   `http://localhost:3000/health`. Se o backend já estiver rodando, ele é reaproveitado.
 - Para testar outro servidor: `E2E_API_URL=http://host:3000 npm run test:e2e`.
 - Cada teste cria **cidadãos novos** (e-mails `*@teste.fiscalize`), então os testes não dependem de dados
-  existentes e podem rodar em paralelo. Os únicos dados do seed usados são as categorias e o gestor da COMPESA.
+  existentes e podem rodar em paralelo. Os únicos dados do seed usados são as categorias e o gestor (`gestor@fiscalize.gov.br`).
 - O relatório HTML fica em `e2e-report/` e os artefatos em `test-results/` (ambos fora do git).
 
 ### Detalhes do E2E de telas (Maestro)
@@ -219,7 +219,7 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 | A-30 | "Em Análise" | Gravado no banco como `Em_An_lise` |
 | A-31 | "Em Andamento" | Gravado no banco como `Em_Andamento` |
 | A-32 | Chamado inexistente | 404 |
-| A-33 | Chamado de outro órgão | 403 |
+| A-33 | Chamado de qualquer órgão | 200 (gestor não é vinculado a órgão) |
 
 ### 3.3 E2E da API — `e2e/` (Playwright, 33)
 
@@ -248,7 +248,7 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | ID | Passo | Verifica |
 |---|---|---|
 | E-13 | Cidadão registra vazamento (Água e Esgoto) | Ocorrência criada |
-| E-14 | Fila do gestor da COMPESA | A ocorrência foi encaminhada ao órgão certo |
+| E-14 | Fila de gestão de chamados | A ocorrência aparece para o gestor |
 | E-15 | Cidadão acessa rotas do gestor | 403 |
 | E-16 | Gestor muda para "Em Andamento" | 200 |
 | E-17 | Cidadão consulta a ocorrência | Novo status e registro no histórico |

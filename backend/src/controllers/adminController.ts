@@ -22,11 +22,17 @@ export const adminController = {
           ? req.query.status
           : undefined;
 
+      const busca =
+        typeof req.query.busca === 'string' && req.query.busca.trim()
+          ? req.query.busca.trim()
+          : undefined;
+
       const result = await adminService.listUsers(
         page,
         limit,
         role,
-        status
+        status,
+        busca
       );
 
       return res.status(200).json(result);

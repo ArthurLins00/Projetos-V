@@ -28,6 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+          // O perfil pode ter sido alterado por um admin desde o último login
+          authService.me().then(updateUser).catch(() => undefined);
         }
       } catch (error) {
         console.error('Erro ao recuperar dados:', error);

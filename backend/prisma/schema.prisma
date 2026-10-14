@@ -104,12 +104,12 @@ model cidadao {
 
 model gestor {
   id              String           @id @db.Uuid
-  orgaoid         String           @db.VarChar(10)
+  orgaoid         String?          @db.VarChar(10)
   departamento    String?          @db.VarChar(100)
   telefone        String?          @db.VarChar(20)
   chamado         chamado[]
   usuario         usuario          @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  orgao           orgao            @relation(fields: [orgaoid], references: [id], onUpdate: NoAction)
+  orgao           orgao?           @relation(fields: [orgaoid], references: [id], onUpdate: NoAction)
   manager_profile manager_profile?
 
   @@index([orgaoid], map: "idx_gestor_orgao")

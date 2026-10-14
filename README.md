@@ -27,8 +27,8 @@ cidadão acompanha o andamento pelo app até a resolução.
 - **Assistente de IA** (balão 💬 na tela inicial): responde em linguagem natural sobre o status de
   um ou mais chamados, usando Gemini com function calling. O cidadão consulta só os próprios
   chamados; gestor e admin, todos. Detalhes em [`ai-agent/README.md`](ai-agent/README.md#integração-com-o-app-fiscalize).
-- **Perfis:** Cidadão, Gestor e Admin, com permissões hierárquicas. O gestor vê a fila do seu órgão
-  e atualiza o status das ocorrências.
+- **Perfis:** Cidadão, Gestor e Admin, com permissões hierárquicas. Gestor e Admin veem a fila de todos os chamados
+  e dão seguimento às ocorrências; o Admin também gerencia os perfis dos usuários.
 
 ## Requisitos do projeto
 
@@ -123,7 +123,7 @@ Para usar outro servidor, defina `EXPO_PUBLIC_API_URL` em `mobile/.env`.
 | Perfil | E-mail | Senha |
 |---|---|---|
 | Cidadão | `cidadao@fiscalize.gov.br` | `Cidadao@123456` |
-| Gestor (COMPESA) | `gestor.compesa@fiscalize.gov.br` | `Gestor@123456` |
+| Gestor | `gestor@fiscalize.gov.br` | `Gestor@123456` |
 
 Em modo de desenvolvimento, a tela de login também tem o botão **"Entrar como Cidadão (Teste)"**.
 

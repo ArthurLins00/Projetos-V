@@ -3,9 +3,9 @@ import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, Acti
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileViewModel } from '../viewmodels/useProfileViewModel';
 import { Avatar, Button, TextField } from '../components/ui';
+import { PERFIL_LABELS } from '../models/User';
 import { makeStyles, radius, shadow, ThemePreference, useTheme } from '../theme';
 
-const PERFIL_LABELS: Record<string, string> = { Cidadao: 'Cidadão', Gestor: 'Gestor', Admin: 'Administrador' };
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { value: 'light', label: 'Claro', icon: 'sunny-outline' },
@@ -63,7 +63,7 @@ export function ProfileView() {
           <View style={styles.tags}>
             <View style={styles.tag}>
               <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
-              <Text style={styles.tagText}>{PERFIL_LABELS[vm.user?.perfil ?? ''] ?? vm.user?.perfil}</Text>
+              <Text style={styles.tagText}>{vm.user ? PERFIL_LABELS[vm.user.perfil] ?? vm.user.perfil : ''}</Text>
             </View>
             {memberSince && (
               <View style={styles.tag}>
