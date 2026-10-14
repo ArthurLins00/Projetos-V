@@ -213,11 +213,11 @@ configurável em `CRON_METRICS_SCHEDULE`). Para rodar manualmente: `npm run etl`
 | `PUT` | `/admin/organs/:id` | Edita órgão |
 | `PUT` | `/admin/organs/:id/:status` | Ativa ou inativa órgão |
 | `GET` | `/admin/organs/:id/categories` | Categorias atendidas pelo órgão |
-| `GET` | `/admin/users` | Lista usuários |
+| `GET` | `/admin/users` | Lista usuários. Filtros: `busca` (nome ou e-mail), `role`, `status`, `page`, `limit` |
 | `POST` | `/admin/users` | Cria usuário Cidadão ou Gestor (`name`, `email`, `password`, `role`) |
 | `PATCH` | `/admin/users/:id/activate` | Ativa usuário |
 | `PATCH` | `/admin/users/:id/deactivate` | Desativa usuário |
-| `PATCH` | `/admin/users/:id/role` | Altera o perfil |
+| `PATCH` | `/admin/users/:id/role` | Altera o perfil para `Cidadao` ou `Gestor` (não altera admins nem o próprio perfil). Vale na próxima requisição, sem novo login |
 | `GET` | `/admin/routing-rules` | Lista regras de encaminhamento |
 | `POST` | `/admin/routing-rules` | Cria regra |
 | `PATCH` | `/admin/routing-rules/:id` | Edita regra |

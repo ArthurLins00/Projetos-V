@@ -68,10 +68,11 @@ export const authenticate = async (
       });
     }
 
+    // O perfil vem do banco para que mudanças feitas pelo admin valham sem novo login
     req.user = {
       id: decoded.id,
       email: decoded.email,
-      perfil: decoded.perfil,
+      perfil: user.perfil,
     };
 
     next();
@@ -92,4 +93,4 @@ export const authenticate = async (
       error: 'Erro na autenticação.',
     });
   }
-};
+};

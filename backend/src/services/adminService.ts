@@ -2,8 +2,27 @@ import { prisma } from '../config/prisma';
 import { AppError } from '../middlewares/errorMiddleware';
 import { routingRuleRepository } from '../repositories/routingRuleRepository';
 import bcrypt from 'bcrypt';
-import { perfil, prioridade as prioridadeEnum } from '@prisma/client';
+import { Prisma, perfil, prioridade as prioridadeEnum } from '@prisma/client';
 import { auditLogService, AuditActions } from './auditLogService';
+
+const USER_SELECT = {
+  id: true,
+  nome: true,
+  email: true,
+  perfil: true,
+  status: true,
+  criadoem: true,
+} as const;
+
+// Cidadãos registram chamados (tabela cidadao) e gestores podem ser responsáveis por eles (tabela gestor).
+// Os registros antigos são mantidos para preservar o histórico dos chamados já vinculados.
+async function ensurePerfilRecord(tx: Prisma.TransactionClient, userId: string, role: perfil) {
+  if (role === perfil.Cidadao) {
+    await tx.cidadao.upsert({ where: { id: userId }, update: {}, create: { id: userId } });
+  } else if (role === perfil.Gestor) {
+    await tx.gestor.upsert({ where: { id: userId }, update: {}, create: { id: userId } });
+  }
+}
 
 export const adminService = {
   async activateUser(userId: string, adminId: string) {
@@ -88,13 +107,19 @@ export const adminService = {
     return updated;
   },
 
-  async listUsers(page: number, limit: number, role?: string, status?: string) {
+  async listUsers(page: number, limit: number, role?: string, status?: string, busca?: string) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
 
     if (role) where.perfil = role;
     if (status) where.status = status;
+    if (busca) {
+      where.OR = [
+        { nome: { contains: busca, mode: 'insensitive' } },
+        { email: { contains: busca, mode: 'insensitive' } },
+      ];
+    }
 
     const [usuarios, total] = await Promise.all([
       prisma.usuario.findMany({
@@ -138,21 +163,22 @@ export const adminService = {
       throw new AppError(403, 'Você não pode alterar seu próprio perfil.');
     }
 
+    if (usuario.perfil === perfil.Admin) {
+      throw new AppError(403, 'Não é permitido alterar o perfil de um admin.');
+    }
+
     if (usuario.perfil === role) {
       throw new AppError(409, 'Usuário já possui esse perfil.');
     }
 
-    const atualizado = await prisma.usuario.update({
-      where: { id: userId },
-      data: { perfil: role },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        perfil: true,
-        status: true,
-        criadoem: true,
-      },
+    const atualizado = await prisma.$transaction(async (tx) => {
+      const result = await tx.usuario.update({
+        where: { id: userId },
+        data: { perfil: role, atualizadopor: adminId, atualizadoem: new Date() },
+        select: USER_SELECT,
+      });
+      await ensurePerfilRecord(tx, userId, role);
+      return result;
     });
 
     await auditLogService.log(
@@ -190,26 +216,21 @@ export const adminService = {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.usuario.create({
-      data: {
-        nome: name,
-        email,
-        senha: hashedPassword,
-        perfil: role,
-        status: 'Ativo',
-        atualizadopor: adminId,
-      },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        perfil: true,
-        status: true,
-        criadoem: true,
-      },
+    return prisma.$transaction(async (tx) => {
+      const user = await tx.usuario.create({
+        data: {
+          nome: name,
+          email,
+          senha: hashedPassword,
+          perfil: role,
+          status: 'Ativo',
+          atualizadopor: adminId,
+        },
+        select: USER_SELECT,
+      });
+      await ensurePerfilRecord(tx, user.id, role);
+      return user;
     });
-
-    return user;
   },
 
   async createRoutingRule(
