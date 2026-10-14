@@ -1,5 +1,11 @@
 export type Perfil = 'Cidadao' | 'Gestor' | 'Admin';
 
+export const PERFIL_LABELS: Record<Perfil, string> = { Cidadao: 'Cidadão', Gestor: 'Gestor', Admin: 'Administrador' };
+
+export function isStaff(perfil?: Perfil | null) {
+  return perfil === 'Gestor' || perfil === 'Admin';
+}
+
 export interface User {
   id: string;
   nome: string;

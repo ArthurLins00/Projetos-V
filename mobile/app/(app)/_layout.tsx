@@ -27,6 +27,7 @@ export default function AppLayout() {
         <Stack.Screen name="profile" options={{ title: 'Meu Perfil' }} />
         <Stack.Screen name="help" options={{ title: 'Ajuda' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notificações' }} />
+        <Stack.Screen name="manage/[id]" options={{ title: 'Gerenciar Chamado' }} />
       </Stack>
       <TermsGate />
     </>
