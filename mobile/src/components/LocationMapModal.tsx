@@ -15,6 +15,9 @@ interface Props {
   onClose: () => void;
 }
 
+// Os tiles do OpenStreetMap só são servidos com Referer; sem uma origem, a WebView não envia o cabeçalho
+const MAP_BASE_URL = 'https://fiscalize.projetosv.com.br/';
+
 function mapHtml(latitude: number, longitude: number, dark: boolean) {
   return `<!doctype html>
 <html>
@@ -22,16 +25,19 @@ function mapHtml(latitude: number, longitude: number, dark: boolean) {
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>html, body, #map { height: 100%; margin: 0; background: ${dark ? '#0B1220' : '#F4F6FB'}; }</style>
+<style>
+  html, body, #map { height: 100%; margin: 0; background: ${dark ? '#0B1220' : '#F4F6FB'}; }
+  ${dark ? '.leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }' : ''}
+</style>
 </head>
 <body>
 <div id="map"></div>
 <script>
   var map = L.map('map', { zoomControl: true }).setView([${latitude}, ${longitude}], 17);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'rastertiles/voyager'}/{z}/{x}/{y}{r}.png', {
-    maxZoom: 20,
-    subdomains: 'abcd',
-    attribution: '&copy; OpenStreetMap &copy; CARTO'
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   L.marker([${latitude}, ${longitude}]).addTo(map);
 </script>
@@ -65,7 +71,7 @@ export function LocationMapModal({ visible, latitude, longitude, address, onClos
           </Pressable>
         </View>
 
-        <WebView testID="map-webview" style={styles.map} originWhitelist={['*']} source={{ html: mapHtml(latitude, longitude, isDark) }} />
+        <WebView testID="map-webview" style={styles.map} originWhitelist={['*']} source={{ html: mapHtml(latitude, longitude, isDark), baseUrl: MAP_BASE_URL }} />
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.addressRow}>
