@@ -16,8 +16,8 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     });
   });
 
-  test('a ocorrência chega à fila do gestor do órgão responsável', async ({ request }) => {
-    gestor = await login(request, SEED.gestorCompesa.email, SEED.gestorCompesa.senha);
+  test('a ocorrência chega à fila de gestão de chamados', async ({ request }) => {
+    gestor = await login(request, SEED.gestor.email, SEED.gestor.senha);
 
     const fila = await request.get('/gestor/chamados', { headers: gestor.headers, params: { limit: '100' } });
     expect(fila.status()).toBe(200);

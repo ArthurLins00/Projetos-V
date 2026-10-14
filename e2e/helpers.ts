@@ -4,7 +4,7 @@ export const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
 
 export const SEED = {
   cidadao: { email: 'cidadao@fiscalize.gov.br', senha: 'Cidadao@123456' },
-  gestorCompesa: { email: 'gestor.compesa@fiscalize.gov.br', senha: 'Gestor@123456' },
+  gestor: { email: 'gestor@fiscalize.gov.br', senha: 'Gestor@123456' },
 };
 
 export const JPEG_BASE64 = Buffer.from([

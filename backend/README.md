@@ -53,7 +53,7 @@ Passo a passo mais detalhado, com solução de problemas: [`COMO_RODAR_O_BACK.md
 |---|---|---|
 | Admin | `admin@fiscalize.gov.br` | `Admin@123456` (configurável via `SEED_ADMIN_*`) |
 | Cidadão | `cidadao@fiscalize.gov.br` | `Cidadao@123456` |
-| Gestor | `gestor.compesa@fiscalize.gov.br` (e um por órgão) | `Gestor@123456` |
+| Gestor | `gestor@fiscalize.gov.br` | `Gestor@123456` |
 
 O seed também cria as 6 categorias (Infraestrutura, Água e Esgoto, Iluminação Pública, Saneamento
 Básico, Sinalização e Outros Problemas), os órgãos de Recife/PE (EMLURB, COMPESA, CELPE, CTTU, SINFRA
@@ -74,7 +74,7 @@ Cidadão → rotas de Cidadão
 - O **cadastro público** (`/auth/register`) sempre cria um **Cidadão**. Qualquer campo `perfil` enviado
   é ignorado; apenas o Admin pode mudar o perfil de um usuário.
 - O **cidadão** só vê, edita e remove as **próprias** ocorrências.
-- O **gestor** só atende ocorrências do **seu órgão**.
+- **Gestor** e **Admin** atendem todas as ocorrências (o gestor não é vinculado a um órgão).
 - Usuários **inativos** são bloqueados em todas as rotas autenticadas.
 
 ### Autenticação
@@ -173,15 +173,16 @@ As respostas usam o texto de exibição. O filtro `status` de `GET /demands` usa
 | `GET` | `/categories` | Categorias ativas |
 | `GET` | `/categories/:id` | Detalhe de uma categoria |
 
-### Gestor — `/gestor` (perfil Gestor)
+### Gestão de chamados — `/gestor` (perfis Gestor e Admin)
 
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/gestor/dashboard` | Totais de chamados do órgão (abertos, em andamento, encerrados) |
-| `GET` | `/gestor/equipe` | Gestores do mesmo órgão |
-| `GET` | `/gestor/chamados` | Fila do órgão. Filtros: `status`, `limit` (padrão 100), `offset` |
-| `GET` | `/gestor/chamados/:id` | Detalhe de um chamado do órgão |
-| `PUT` | `/gestor/chamados/:id/aceitar` | Assume o chamado (ou atribui a outro gestor do órgão) |
+| `GET` | `/gestor/dashboard` | Totais de chamados por status, atrasados e os atribuídos ao usuário |
+| `GET` | `/gestor/equipe` | Gestores e admins ativos (possíveis responsáveis) |
+| `GET` | `/gestor/chamados` | Fila de todos os chamados. Filtros: `status` (ou `Atrasados`), `busca`, `responsavel` (`meus` / `sem`), `limit` (padrão 20), `offset` |
+| `GET` | `/gestor/chamados/:id` | Detalhe completo de um chamado (fotos, responsável, histórico) |
+| `PUT` | `/gestor/chamados/:id/aceitar` | Assume o chamado (ou atribui a outro gestor/admin com `gestorDestinoId`) |
+| `POST` | `/gestor/chamados/:id/comentarios` | Registra uma atualização (`mensagem`) no histórico e notifica o cidadão |
 | `PUT` | `/gestor/chamados/:id/transferir` | Transfere o chamado para outro órgão (`orgaoId` e `justificativa` obrigatórios) |
 | `PUT` | `/gestor/chamados/:id/status` | Atualiza o status (`status` no texto de exibição, ex.: `"Em Andamento"`; `justificativa` e `resolutionNote` são opcionais) |
 
@@ -256,7 +257,7 @@ O esquema completo está em [`prisma/schema.prisma`](prisma/schema.prisma) e as 
 | Tabela | Conteúdo |
 |---|---|
 | `usuario` | Dados de login, perfil (`Cidadao`, `Gestor`, `Admin`) e status (`Ativo`, `Inativo`) |
-| `cidadao`, `gestor`, `admin` | Dados específicos de cada perfil (o gestor pertence a um órgão) |
+| `cidadao`, `gestor`, `admin` | Dados específicos de cada perfil (o gestor não é vinculado a órgão) |
 | `chamado` | A ocorrência: protocolo, descrição, categoria, endereço, coordenadas, status, prioridade, SLA e foto |
 | `timeline_event` | Histórico de cada chamado (criação, edição, status, remoção) |
 | `categoria` | Categorias de problema |

@@ -20,6 +20,8 @@ router.put('/chamados/:id/aceitar', gestorController.aceitarChamado);
 
 router.put('/chamados/:id/transferir', gestorController.transferirChamado);
 
+router.post('/chamados/:id/comentarios', gestorController.comentarChamado);
+
 router.put('/chamados/:id/status', gestorController.atualizarStatusChamado);
 
 export default router;
