@@ -74,6 +74,17 @@ export function ManagementDashboardView() {
             </View>
           </View>
           <View style={styles.actions}>
+            {vm.isAdmin && (
+              <Pressable
+                testID="admin-users-button"
+                accessibilityRole="button"
+                accessibilityLabel="Gerenciar usuários"
+                style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+                onPress={vm.openUsers}
+              >
+                <Ionicons name="people-outline" size={21} color={colors.textMuted} />
+              </Pressable>
+            )}
             <Pressable
               testID="assistant-button"
               accessibilityRole="button"

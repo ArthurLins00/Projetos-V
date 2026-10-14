@@ -88,6 +88,7 @@ export function useManagementDashboardViewModel() {
 
   return {
     user,
+    isAdmin: user?.perfil === 'Admin',
     dashboard,
     tickets,
     total,
@@ -104,5 +105,6 @@ export function useManagementDashboardViewModel() {
     openTicket: (id: string) => router.push(`/(app)/manage/${id}`),
     openProfile: () => router.push('/(app)/profile'),
     openAssistant: () => router.push('/(app)/assistant'),
+    openUsers: () => router.push('/(app)/admin/users'),
   };
 }
