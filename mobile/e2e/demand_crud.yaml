@@ -35,21 +35,40 @@ appId: com.projetosv.fiscalize
 - inputText: "Pernambuco"
 - tapOn:
     id: "form-state-option-PE"
-- tapOn:
-    id: "form-city"
-- extendedWaitUntil:
-    visible:
-      id: "form-city-search"
-    timeout: 10000
-- tapOn:
-    id: "form-city-search"
-- inputText: "Recife"
-- extendedWaitUntil:
-    visible:
-      id: "form-city-option-Recife"
-    timeout: 15000
-- tapOn:
-    id: "form-city-option-Recife"
+# A lista de cidades vem do IBGE; se a requisição falhar o form mostra um campo de texto
+- scrollUntilVisible:
+    element:
+      id: "form-city(-text)?"
+    centerElement: true
+- runFlow:
+    when:
+      visible:
+        id: "form-city-text"
+    commands:
+      - tapOn:
+          id: "form-city-text"
+      - inputText: "Recife"
+      - hideKeyboard
+- runFlow:
+    when:
+      visible:
+        id: "form-city"
+    commands:
+      - tapOn:
+          id: "form-city"
+      - extendedWaitUntil:
+          visible:
+            id: "form-city-search"
+          timeout: 10000
+      - tapOn:
+          id: "form-city-search"
+      - inputText: "Recife"
+      - extendedWaitUntil:
+          visible:
+            id: "form-city-option-Recife"
+          timeout: 15000
+      - tapOn:
+          id: "form-city-option-Recife"
 - scrollUntilVisible:
     element:
       id: "form-zone-Urbana"

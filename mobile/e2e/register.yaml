@@ -41,5 +41,6 @@ appId: com.projetosv.fiscalize
     env:
       EMAIL: ${output.email}
       PASSWORD: "SenhaMaestro@123"
-- assertVisible: "Olá, Maestro Teste"
+# A saudação tem numberOfLines={1} e pode aparecer truncada no header
+- assertVisible: "Olá, Maestro.*"
 - assertVisible: "Nenhuma demanda registrada ainda."
