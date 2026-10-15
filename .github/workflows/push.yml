@@ -1,0 +1,24 @@
+name: Testes (push)
+
+on:
+  push:
+    branches-ignore: [main, dev]
+
+concurrency:
+  group: push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    uses: ./.github/workflows/backend.yml
+    with:
+      e2e: none
+      build: false
+    secrets: inherit
+
+  ai-agent:
+    name: Agente de IA
+    uses: ./.github/workflows/ai-agent.yml
+    with:
+      live: false

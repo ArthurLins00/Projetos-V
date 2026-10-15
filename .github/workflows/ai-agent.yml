@@ -1,16 +1,21 @@
 name: Agente de IA
 
 on:
-  push:
-    branches-ignore: [main, dev]
-    paths:
-      - 'ai-agent/**'
-      - '.github/workflows/ai-agent.yml'
-  workflow_dispatch:
   workflow_call:
+    inputs:
+      live:
+        description: 'Roda também os testes ao vivo contra o Gemini'
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Roda também os testes ao vivo contra o Gemini'
+        type: boolean
+        default: true
 
 concurrency:
-  group: ai-agent-${{ github.ref }}
+  group: ai-agent-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -35,7 +40,7 @@ jobs:
       - name: Testes (cliente roteirizado, sem rede)
         run: npm test
       - name: Testes ao vivo contra o Gemini
-        if: github.event_name != 'pull_request'
+        if: inputs.live
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}

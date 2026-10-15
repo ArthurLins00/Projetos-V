@@ -1,14 +1,21 @@
 name: E2E Mobile (Maestro)
 
-# Lento (build nativo + emulador): roda só no horário agendado ou manualmente, nunca em push ou PR
 on:
-  schedule:
-    # Cron do GitHub é em UTC: 20:00 UTC = 17:00 em Brasília (UTC-3)
-    - cron: '0 20 * * *'
+  workflow_call:
+    inputs:
+      flows:
+        description: 'Fluxos do Maestro a executar (pasta ou arquivos separados por espaço)'
+        type: string
+        default: mobile/e2e
   workflow_dispatch:
+    inputs:
+      flows:
+        description: 'Fluxos do Maestro a executar (pasta ou arquivos separados por espaço)'
+        type: string
+        default: mobile/e2e
 
 concurrency:
-  group: mobile-e2e
+  group: mobile-e2e-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -64,7 +71,6 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Backend real com seed: os fluxos fazem login com o cidadão do seed
       - name: Backend (dependências, migrações, seed e build)
         working-directory: backend
         run: |
@@ -83,7 +89,6 @@ jobs:
           done
           echo "Backend não respondeu em /health"; cat backend.log; exit 1
 
-      # Build de debug só para x86_64 (a ABI do emulador), o que corta boa parte do tempo de compilação
       - name: Build do app Android (debug)
         working-directory: mobile
         run: |
@@ -92,7 +97,6 @@ jobs:
           cd android
           ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
 
-      # O app de debug carrega o JavaScript do Metro em 10.0.2.2:8081 (o host visto de dentro do emulador)
       - name: Sobe o Metro
         working-directory: mobile
         env:
@@ -126,7 +130,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
-          script: bash .github/scripts/run-maestro.sh
+          script: bash .github/scripts/run-maestro.sh ${{ inputs.flows }}
 
       - name: Relatório do Maestro
         if: ${{ !cancelled() }}

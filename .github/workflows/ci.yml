@@ -1,9 +1,9 @@
 name: CI/CD
 
 on:
-  push:
-    branches: [main, dev]
   pull_request:
+    branches: [main, dev]
+  push:
     branches: [main, dev]
   workflow_dispatch:
 
@@ -15,6 +15,9 @@ jobs:
   backend:
     name: Backend
     uses: ./.github/workflows/backend.yml
+    with:
+      e2e: full
+      build: true
     secrets: inherit
 
   mobile:
@@ -24,14 +27,20 @@ jobs:
   ai-agent:
     name: Agente de IA
     uses: ./.github/workflows/ai-agent.yml
+    with:
+      live: false
+
+  maestro-smoke:
+    name: E2E Mobile smoke (Maestro)
+    uses: ./.github/workflows/mobile-e2e.yml
+    with:
+      flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/register.yaml mobile/e2e/session_persistence.yaml
     secrets: inherit
 
-  # Único check a marcar como obrigatório na proteção da branch: falha se qualquer job acima falhar
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-latest
-    needs: [backend, mobile, ai-agent]
-    # Roda mesmo com falha nos jobs anteriores; um check pulado contaria como aprovado
+    needs: [backend, mobile, ai-agent, maestro-smoke]
     if: always()
     steps:
       - name: Falha se algum job falhou ou foi cancelado
