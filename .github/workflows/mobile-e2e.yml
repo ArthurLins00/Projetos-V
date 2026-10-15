@@ -112,7 +112,7 @@ jobs:
           done
           # Gera o bundle antes do emulador pedir, para o primeiro launch não esperar a compilação inteira
           curl -sf --max-time 900 -o /dev/null \
-            "http://localhost:8081/.expo/.virtual-metro-entry.bundle?platform=android&dev=true&minify=false" \
+            "http://localhost:8081/.expo/.virtual-metro-entry.bundle?platform=android&dev=true&lazy=true&minify=false" \
             || echo "::warning::Pré-geração do bundle falhou; o app vai compilar no primeiro launch"
 
       - name: Instala o Maestro

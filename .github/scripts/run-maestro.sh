@@ -11,4 +11,4 @@ maestro test .github/scripts/maestro-warmup.yaml --debug-output maestro-debug/wa
 maestro test "$@" \
   --format junit \
   --output maestro-report.xml \
-  --debug-output maestro-debug
+  --debug-output maestro-debug/flows
