@@ -38,7 +38,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     expect(response.body.error).toMatch(/Token inválido/i);
   });
 
-  it('deve retornar 401 quando o token estiver expirado', async () => {
+  it('deve retornar 401 com o código token_expired quando o token estiver expirado', async () => {
     const tokenExpirado = jwt.sign(
       { id: mockUsuarioBase.id, email: mockUsuarioBase.email, perfil: mockUsuarioBase.perfil },
       JWT_SECRET,
@@ -52,6 +52,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty('error');
     expect(response.body.error).toMatch(/Token expirado/i);
+    expect(response.body.code).toBe('token_expired');
   });
 
   it('deve permitir acesso (200) com token válido e usuário ativo', async () => {

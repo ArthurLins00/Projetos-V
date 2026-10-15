@@ -144,9 +144,14 @@ export const authService = {
       throw invalido;
     }
 
-    // Um refresh já trocado sendo usado de novo indica cópia do token: derruba todas as sessões do usuário
-    if (registro.revogadoem) {
+    // Um refresh já trocado sendo usado de novo indica cópia do token: derruba todas as sessões do usuário.
+    // Token revogado por logout não entra aqui, senão sair de um aparelho derrubaria os outros.
+    if (registro.substituidoem) {
       await this.revokeAllRefreshTokens(registro.usuarioid);
+      throw invalido;
+    }
+
+    if (registro.revogadoem) {
       throw invalido;
     }
 
@@ -162,7 +167,7 @@ export const authService = {
       // A condição em revogadoem impede que duas renovações simultâneas usem o mesmo token
       const { count } = await tx.refresh_token.updateMany({
         where: { id: registro.id, revogadoem: null },
-        data: { revogadoem: new Date() },
+        data: { revogadoem: new Date(), substituidoem: new Date() },
       });
 
       if (count === 0) {
