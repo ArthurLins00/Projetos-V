@@ -89,6 +89,11 @@ Deixe no ar o emulador com o app de debug instalado (`npx expo run:android` em `
 - **CLI:** instale o Maestro (https://maestro.mobile.dev) e rode `npm run test:e2e:mobile`;
 - **Maestro Studio:** abra a pasta `mobile/e2e` e execute cada fluxo.
 
+No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobile-e2e.yml`) roda todos os fluxos
+todos os dias às 17h (horário de Brasília) ou manualmente pela aba Actions. Ele compila o app de debug, sobe o
+backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as capturas como artefato
+`maestro-report`. Não roda em push nem em PR, porque leva dezenas de minutos.
+
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
 (configurado em `mobile/e2e/config.yaml`).
 
@@ -466,4 +471,4 @@ Os testes revelaram defeitos que foram corrigidos no código:
 - **Dados de teste:** os E2E deixam cidadãos `*@teste.fiscalize` e suas ocorrências no banco. Para limpar,
   recrie o banco (`npx prisma migrate reset`, que apaga tudo) e rode o seed de novo.
 - **Maestro:** os fluxos precisam do app de debug instalado e de um emulador ou aparelho conectado;
-  por isso eles ficam fora do `npm test`.
+  por isso eles ficam fora do `npm test` e, no CI, só rodam no workflow agendado `mobile-e2e.yml`.
