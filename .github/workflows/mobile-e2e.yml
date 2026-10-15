@@ -1,0 +1,145 @@
+name: E2E Mobile (Maestro)
+
+on:
+  workflow_call:
+    inputs:
+      flows:
+        description: 'Fluxos do Maestro a executar (pasta ou arquivos separados por espaço)'
+        type: string
+        default: mobile/e2e
+  workflow_dispatch:
+    inputs:
+      flows:
+        description: 'Fluxos do Maestro a executar (pasta ou arquivos separados por espaço)'
+        type: string
+        default: mobile/e2e
+
+concurrency:
+  group: mobile-e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+  JAVA_VERSION: '17'
+  ANDROID_API_LEVEL: '34'
+
+jobs:
+  maestro:
+    name: Fluxos de tela (Maestro)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fiscalize
+          POSTGRES_PASSWORD: fiscalize
+          POSTGRES_DB: fiscalize_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fiscalize"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://fiscalize:fiscalize@localhost:5432/fiscalize_e2e
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'Admin@123456' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Backend (dependências, migrações, seed e build)
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run seed
+          npm run build
+
+      - name: Sobe o backend
+        run: |
+          nohup node backend/dist/server.js > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health > /dev/null && exit 0
+            sleep 2
+          done
+          echo "Backend não respondeu em /health"; cat backend.log; exit 1
+
+      - name: Build do app Android (debug)
+        working-directory: mobile
+        run: |
+          npm ci
+          npx expo prebuild --platform android --no-install
+          cd android
+          ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
+
+      - name: Sobe o Metro
+        working-directory: mobile
+        env:
+          CI: 'true'
+          EXPO_PUBLIC_API_URL: http://10.0.2.2:3000
+        run: |
+          nohup npx expo start --port 8081 > ../metro.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8081/status | grep -q running && exit 0
+            sleep 2
+          done
+          echo "Metro não subiu"; cat ../metro.log; exit 1
+
+      - name: Instala o Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Habilita KVM para o emulador
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Executa os fluxos no emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
+          script: bash .github/scripts/run-maestro.sh ${{ inputs.flows }}
+
+      - name: Relatório do Maestro
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-report
+          path: |
+            maestro-report.xml
+            maestro-debug
+            backend.log
+            metro.log
+          retention-days: 7

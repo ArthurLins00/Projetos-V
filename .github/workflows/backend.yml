@@ -1,36 +1,131 @@
 name: Backend
 
 on:
-  push:
-    branches-ignore: [main, dev]
-    paths:
-      - 'backend/**'
-      - 'e2e/**'
-      - 'playwright.config.ts'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/backend.yml'
-      - '.github/workflows/regressao.yml'
-  workflow_dispatch:
   workflow_call:
+    inputs:
+      e2e:
+        description: 'E2E do Playwright: none ou full'
+        type: string
+        default: none
+      build:
+        description: 'Compila o backend (prisma generate + tsc)'
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      e2e:
+        description: 'E2E do Playwright'
+        type: choice
+        options: [none, full]
+        default: full
+      build:
+        description: 'Compila o backend'
+        type: boolean
+        default: true
 
 concurrency:
-  group: backend-${{ github.ref }}
+  group: backend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   NODE_VERSION: '22'
 
 jobs:
-  testes:
-    name: Testes
-    uses: ./.github/workflows/regressao.yml
-    secrets: inherit
+  unit-api:
+    name: Testes unitários e de API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Gera o Prisma Client (os testes usam o tipo para o mock)
+        run: npx prisma generate
+      - name: Testes Unitários
+        run: npm run test:unit -- --ci
+      - name: Testes de API
+        if: ${{ !cancelled() }}
+        run: npm run test:api -- --ci
+
+  e2e:
+    name: Testes End-to-End (E2E)
+    if: inputs.e2e == 'full'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fiscalize
+          POSTGRES_PASSWORD: fiscalize
+          POSTGRES_DB: fiscalize_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fiscalize"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://fiscalize:fiscalize@localhost:5432/fiscalize_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'Admin@123456' }}
+      E2E_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Instala dependências (raiz + backend)
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Prepara o banco (prisma generate + migrações + seed)
+        working-directory: backend
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run seed
+
+      - name: Testes End-to-End (E2E)
+        run: npm run test:e2e
+
+      - name: Relatório do Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e-report
+            test-results
+          retention-days: 7
 
   build:
     name: Build (prisma generate + tsc)
+    if: inputs.build
     runs-on: ubuntu-latest
-    needs: testes
+    needs: unit-api
     defaults:
       run:
         working-directory: backend
