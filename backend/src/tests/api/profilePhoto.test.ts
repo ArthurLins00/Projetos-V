@@ -47,13 +47,13 @@ describe('Foto de perfil (/auth/me/photo)', () => {
     expect(fs.unlink).toHaveBeenCalledWith(expect.stringContaining('avatar-cidadao-foto-1.jpg'));
   });
 
-  it('recusa arquivo que não é imagem (400)', async () => {
+  it('recusa arquivo que não é imagem (422)', async () => {
     const res = await request(app)
       .put('/auth/me/photo')
       .set(auth)
       .send({ photo: Buffer.from('texto qualquer').toString('base64') });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
     expect(fs.writeFile).not.toHaveBeenCalled();
   });
 

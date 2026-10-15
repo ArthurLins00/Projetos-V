@@ -72,6 +72,16 @@ export const errorHandler = (
     });
   }
 
+  // Corpo acima do limite do express.json: o parser rejeita antes de chegar ao controller
+  if ((error as any).type === 'entity.too.large') {
+    console.warn(`[${timestamp}] PayloadTooLarge: ${req.method} ${req.originalUrl}`);
+    return res.status(413).json({
+      error: 'Arquivo muito grande. Envie uma imagem menor.',
+      statusCode: 413,
+      timestamp,
+    });
+  }
+
   if (error.name === 'PrismaClientKnownRequestError') {
     const prismaError = error as any;
     const code = prismaError.code;

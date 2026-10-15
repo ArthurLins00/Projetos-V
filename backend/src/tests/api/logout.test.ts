@@ -1,6 +1,8 @@
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { app } from '../../app';
+import { JWT_SECRET } from '../../config/env';
 
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 import { prisma } from '../../config/__mocks__/prisma';
@@ -49,5 +51,25 @@ describe('AUT-10 | Realizar logout e revogar o token | RF04 (API)', () => {
     const depois = await request(app).get('/auth/me').set('Authorization', `Bearer ${token}`);
     expect(depois.status).toBe(401);
     expect(depois.body.error).toMatch(/revogado/i);
+  });
+
+  it('TC-09: logout sem token ou com token expirado retorna 401, nunca 500', async () => {
+    const semToken = await request(app).post('/auth/logout');
+    expect(semToken.status).toBe(401);
+
+    const expirado = jwt.sign({ id: usuario.id, email: usuario.email, perfil: usuario.perfil }, JWT_SECRET, { expiresIn: '-1s' });
+    const comExpirado = await request(app).post('/auth/logout').set('Authorization', `Bearer ${expirado}`);
+    expect(comExpirado.status).toBe(401);
+    expect(comExpirado.body.code).toBe('token_expired');
+
+    const malformado = await request(app).post('/auth/logout').set('Authorization', 'Bearer nao-e-um-jwt');
+    expect(malformado.status).toBe(401);
+  });
+
+  it('TC-09: logout repetido com o mesmo token já revogado retorna 401', async () => {
+    await request(app).post('/auth/logout').set('Authorization', `Bearer ${token}`);
+
+    const repetido = await request(app).post('/auth/logout').set('Authorization', `Bearer ${token}`);
+    expect(repetido.status).toBe(401);
   });
 });

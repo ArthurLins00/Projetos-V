@@ -263,7 +263,7 @@ export const authService = {
 
     const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
     const extension = detectImageExtension(buffer);
-    if (!extension) throw new AppError(400, 'Formato de imagem inválido. Envie JPEG ou PNG.');
+    if (!extension) throw new AppError(422, 'Formato de imagem inválido. Envie JPEG ou PNG.');
 
     const fileName = `avatar-${userId}-${Date.now()}.${extension}`;
     await fs.mkdir(UPLOADS_DIR, { recursive: true });

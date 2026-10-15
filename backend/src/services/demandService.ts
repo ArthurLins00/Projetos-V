@@ -50,6 +50,8 @@ const BLOCKED_STATUSES = ['Em_Andamento', 'Resolvido', 'Fechado'] as const;
 
 export const MAX_PHOTOS = 5;
 
+const REGRA_ORGAO_ATIVO = { orgao_regra_competencia_orgaoprincipalidToorgao: { status: 'Ativo' as const } };
+
 async function loadEditableChamado(chamadoId: string, userId: string) {
   const chamado = await prisma.chamado.findUnique({ where: { id: chamadoId } });
   if (!chamado) throw new AppError(404, 'Demanda não encontrada.');
@@ -67,7 +69,7 @@ async function loadEditableChamado(chamadoId: string, userId: string) {
 async function savePhotoFile(chamadoId: string, base64: string) {
   const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
   const extension = detectImageExtension(buffer);
-  if (!extension) throw new AppError(400, 'Formato de imagem inválido. Envie JPEG ou PNG.');
+  if (!extension) throw new AppError(422, 'Formato de imagem inválido. Envie JPEG ou PNG.');
 
   const fileName = `${chamadoId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${extension}`;
   await fs.mkdir(UPLOADS_DIR, { recursive: true });
@@ -260,7 +262,7 @@ export const demandService = {
       }
 
       const regra = await prisma.regra_competencia.findFirst({
-        where: { categoriaid: categoryId, subcategoria: title ?? chamado.subcategoria },
+        where: { categoriaid: categoryId, subcategoria: title ?? chamado.subcategoria, ...REGRA_ORGAO_ATIVO },
       });
 
       if (regra) {
@@ -269,7 +271,7 @@ export const demandService = {
         slahoras = regra.slahoras;
       } else {
         const orgaoCategoria = await prisma.orgao_categoria.findFirst({
-          where: { categoriaid: categoryId },
+          where: { categoriaid: categoryId, orgao: { status: 'Ativo' } },
           include: { orgao: true },
         });
         if (orgaoCategoria) {
@@ -384,10 +386,11 @@ export const demandService = {
     let prioridade: 'Baixa' | 'Media' | 'Alta' | 'Critica' = 'Media';
     let slahoras = 48;
 
+    // Órgão inativo nunca recebe chamado: a regra ou o vínculo dele são ignorados
     const regra = await prisma.regra_competencia.findFirst({
-      where: { categoriaid: categoryId, subcategoria: title },
+      where: { categoriaid: categoryId, subcategoria: title, ...REGRA_ORGAO_ATIVO },
     }) ?? await prisma.regra_competencia.findFirst({
-      where: { categoriaid: categoryId },
+      where: { categoriaid: categoryId, ...REGRA_ORGAO_ATIVO },
     });
 
     if (regra) {
@@ -396,7 +399,7 @@ export const demandService = {
       slahoras = regra.slahoras;
     } else {
       const oc = await prisma.orgao_categoria.findFirst({
-        where: { categoriaid: categoryId },
+        where: { categoriaid: categoryId, orgao: { status: 'Ativo' } },
         include: { orgao: { select: { id: true, slahoras: true } } },
       });
       if (oc) {

@@ -90,4 +90,30 @@ describe('POST /auth/register', () => {
     
     expect(prisma.usuario.create).not.toHaveBeenCalled();
   });
+
+  describe('TC-41 | validação dos campos do cadastro', () => {
+    const valido = { nome: 'Maria', email: 'maria@exemplo.com', senha: 'abc123' };
+
+    it.each([
+      [{ ...valido, nome: undefined }, /Campos obrigatórios/i],
+      [{ ...valido, email: undefined }, /Campos obrigatórios/i],
+      [{ ...valido, senha: undefined }, /Campos obrigatórios/i],
+      [{ ...valido, email: 'maria.exemplo.com' }, /E-mail inválido/i],
+      [{ ...valido, email: 'maria@exemplo' }, /E-mail inválido/i],
+      [{ ...valido, senha: '12345' }, /mínimo 6 caracteres/i],
+    ])('recusa %j com 400 e não grava nada', async (body, mensagem) => {
+      const response = await request(app).post(ROUTE).send(body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toMatch(mensagem);
+      expect(prisma.usuario.create).not.toHaveBeenCalled();
+    });
+
+    it.each(['123456', '1234567'])('aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)', async (senha) => {
+      const response = await request(app).post(ROUTE).send({ ...valido, senha });
+
+      expect(response.status).toBe(201);
+      expect(prisma.usuario.create).toHaveBeenCalled();
+    });
+  });
 });

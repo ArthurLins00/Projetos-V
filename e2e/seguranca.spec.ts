@@ -91,6 +91,6 @@ test.describe('Validação de dados', () => {
       data: { photo: Buffer.from('<script>alert(1)</script>').toString('base64') },
     });
 
-    expect(response.status()).toBe(400);
+    expect(response.status()).toBe(422);
   });
 });

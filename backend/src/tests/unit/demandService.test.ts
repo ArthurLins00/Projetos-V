@@ -241,10 +241,10 @@ describe('demandService (unitário)', () => {
       expect(foto.url).toMatch(/\.jpg$/);
     });
 
-    it('rejeita conteúdo que não é imagem, mesmo em base64 (400)', async () => {
+    it('rejeita conteúdo que não é imagem, mesmo em base64 (422)', async () => {
       const texto = Buffer.from('não sou uma imagem').toString('base64');
 
-      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, texto)).rejects.toMatchObject({ statusCode: 400 });
+      await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, texto)).rejects.toMatchObject({ statusCode: 422 });
       expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
     });
 
