@@ -76,7 +76,8 @@ Exemplo de configuração:
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/fiscalize?schema=public"
 
 JWT_SECRET="sua_chave_secreta_super_segura_aqui_123"
-JWT_EXPIRATION="24h"
+JWT_EXPIRATION="15m"
+REFRESH_TOKEN_TTL_DAYS=30
 
 PORT=3000
 
@@ -359,7 +360,8 @@ taskkill /PID <PID> /F
 | Variável | Descrição | Default |
 |----------|-----------|---------|
 | `PORT` | Porta do servidor | `3000` |
-| `JWT_EXPIRATION` | Expiração do token | `24h` |
+| `JWT_EXPIRATION` | Expiração do access token | `15m` |
+| `REFRESH_TOKEN_TTL_DAYS` | Expiração do refresh token, em dias | `30` |
 | `FRONTEND_URL` | URL do frontend (CORS) | `http://localhost:3001` |
 | `NODE_ENV` | Ambiente | `development` |
 

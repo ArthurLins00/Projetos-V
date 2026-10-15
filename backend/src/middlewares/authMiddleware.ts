@@ -80,6 +80,7 @@ export const authenticate = async (
     if (error instanceof TokenExpiredError) {
       return res.status(401).json({
         error: 'Token expirado. Faça login novamente.',
+        code: 'token_expired',
       });
     }
 
