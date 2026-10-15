@@ -33,7 +33,7 @@ env:
 jobs:
   unit-api:
     name: Testes unitários e de API
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
@@ -41,8 +41,8 @@ jobs:
       NODE_ENV: test
       JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -59,7 +59,7 @@ jobs:
   e2e:
     name: Testes End-to-End (E2E)
     if: inputs.e2e == 'full'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -87,8 +87,8 @@ jobs:
       SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'Admin@123456' }}
       E2E_API_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -113,7 +113,7 @@ jobs:
 
       - name: Relatório do Playwright
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: e2e-report
           path: |
@@ -124,14 +124,14 @@ jobs:
   build:
     name: Build (prisma generate + tsc)
     if: inputs.build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit-api
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -141,7 +141,7 @@ jobs:
         run: npm run build
       - name: Publica o build
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: backend-dist
           path: |

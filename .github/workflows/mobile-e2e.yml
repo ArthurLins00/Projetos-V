@@ -26,7 +26,7 @@ env:
 jobs:
   maestro:
     name: Fluxos de tela (Maestro)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     services:
       postgres:
@@ -54,9 +54,9 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
       SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'Admin@123456' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -64,12 +64,12 @@ jobs:
             backend/package-lock.json
             mobile/package-lock.json
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Backend (dependências, migrações, seed e build)
         working-directory: backend
@@ -135,7 +135,7 @@ jobs:
 
       - name: Relatório do Maestro
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: maestro-report
           path: |

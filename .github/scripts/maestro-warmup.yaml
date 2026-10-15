@@ -1,0 +1,9 @@
+appId: com.projetosv.fiscalize
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "login-email"
+    timeout: 300000
+- stopApp
