@@ -284,7 +284,13 @@ export const openApiSpec = {
                 schema: {
                   allOf: [
                     { $ref: '#/components/schemas/AuthUser' },
-                    { type: 'object', properties: { token: { type: 'string' } } },
+                    {
+                      type: 'object',
+                      properties: {
+                        token: { type: 'string', description: 'Access token (JWT de curta duração)' },
+                        refreshToken: { type: 'string', description: 'Refresh token de longa duração, usado em /auth/refresh' },
+                      },
+                    },
                   ],
                 },
               },
@@ -359,11 +365,55 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/refresh': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Renova a sessão: troca o refresh token por um novo par de tokens',
+        description: 'O refresh token enviado é revogado. Reutilizar um refresh token já trocado revoga todas as sessões do usuário.',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['refreshToken'],
+                properties: { refreshToken: { type: 'string' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Novo par de tokens. O access token também é enviado no cookie `token`.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { token: { type: 'string' }, refreshToken: { type: 'string' } },
+                },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { description: 'Usuário inativo' },
+        },
+      },
+    },
     '/auth/logout': {
       post: {
         tags: ['Auth'],
-        summary: 'Logout (revoga o token e limpa o cookie)',
+        summary: 'Logout (revoga o access token, o refresh token enviado e limpa o cookie)',
         security: BEARER,
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: { type: 'object', properties: { refreshToken: { type: 'string' } } },
+            },
+          },
+        },
         responses: {
           200: {
             description: 'Logout realizado',

@@ -40,6 +40,12 @@ export interface User {
 
 export interface LoginResponse extends User {
   token: string;
+  refreshToken: string;
+}
+
+export interface RefreshResponse {
+  token: string;
+  refreshToken: string;
 }
 
 export interface UserProfile extends User {

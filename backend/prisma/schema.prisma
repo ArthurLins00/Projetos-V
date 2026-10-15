@@ -257,6 +257,7 @@ model usuario {
   gestor        gestor?
   notificacao   notificacao[]
   push_token    push_token[]
+  refresh_token refresh_token[]
   usuario_audit usuario_audit[]
   audit_logs    audit_logs[]  @relation("audit_logs_admin")
 
@@ -314,6 +315,19 @@ model push_token {
   usuario   usuario  @relation(fields: [usuarioid], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([usuarioid], map: "idx_push_token_usuario")
+}
+
+model refresh_token {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  usuarioid     String    @db.Uuid
+  tokenhash     String    @unique @db.Char(64)
+  expiraem      DateTime  @db.Timestamp(6)
+  revogadoem    DateTime? @db.Timestamp(6)
+  substituidoem DateTime? @db.Timestamp(6)
+  criadoem      DateTime  @default(now()) @db.Timestamp(6)
+  usuario       usuario   @relation(fields: [usuarioid], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuarioid], map: "idx_refresh_token_usuario")
 }
 
 model usuario_audit {

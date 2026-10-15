@@ -15,7 +15,12 @@ export function uniqueSuffix() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-export type Session = { token: string; headers: Record<string, string>; user: { id: string; perfil: string } };
+export type Session = {
+  token: string;
+  refreshToken: string;
+  headers: Record<string, string>;
+  user: { id: string; perfil: string };
+};
 
 export async function registerAndLogin(request: APIRequestContext, prefix = 'e2e'): Promise<Session & { email: string; senha: string }> {
   const email = `${prefix}.${uniqueSuffix()}@teste.fiscalize`;
@@ -33,7 +38,12 @@ export async function login(_request: APIRequestContext, email: string, senha: s
     const response = await context.post('/auth/login', { data: { email, senha } });
     expect(response.status(), await response.text()).toBe(200);
     const body = await response.json();
-    return { token: body.token, headers: { Authorization: `Bearer ${body.token}` }, user: body };
+    return {
+      token: body.token,
+      refreshToken: body.refreshToken,
+      headers: { Authorization: `Bearer ${body.token}` },
+      user: body,
+    };
   } finally {
     await context.dispose();
   }

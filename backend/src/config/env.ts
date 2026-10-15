@@ -12,7 +12,8 @@ export const NODE_ENV = process.env.NODE_ENV || 'development';
 export const isProduction = NODE_ENV === 'production';
 
 export const JWT_SECRET = requireEnv('JWT_SECRET');
-export const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
+export const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '15m';
+export const REFRESH_TOKEN_TTL_DAYS = Number(process.env.REFRESH_TOKEN_TTL_DAYS) || 30;
 
 export const PORT = Number(process.env.PORT) || 3000;
 

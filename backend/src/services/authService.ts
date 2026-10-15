@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { createHash, randomInt, randomUUID, timingSafeEqual } from 'crypto';
+import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'crypto';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
-import { JWT_SECRET, JWT_EXPIRATION } from '../config/env';
+import { JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_TTL_DAYS } from '../config/env';
 import { mailService } from './mailService';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -38,6 +38,35 @@ type ResetCode = { hash: string; expiresAt: number; createdAt: number; attempts:
 const resetCodes = new Map<string, ResetCode>();
 
 const hashCode = (code: string) => createHash('sha256').update(code).digest();
+
+const hashRefreshToken = (token: string) => createHash('sha256').update(token).digest('hex');
+
+function signAccessToken(usuario: { id: string; email: string; perfil: string }) {
+  return jwt.sign(
+    {
+      id: usuario.id,
+      email: usuario.email,
+      perfil: usuario.perfil,
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRATION, jwtid: randomUUID() } as SignOptions
+  );
+}
+
+// O refresh token é opaco; o banco guarda só o hash, então um vazamento da tabela não abre sessões
+async function issueRefreshToken(usuarioId: string, db: any = prisma) {
+  const refreshToken = randomBytes(48).toString('base64url');
+
+  await db.refresh_token.create({
+    data: {
+      usuarioid: usuarioId,
+      tokenhash: hashRefreshToken(refreshToken),
+      expiraem: new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  return refreshToken;
+}
 
 export const authService = {
   async register(nome: string, email: string, senha: string) {
@@ -97,17 +126,76 @@ export const authService = {
       throw new AppError(401, 'Credenciais inválidas.');
     }
 
-    const token = jwt.sign(
-      {
-        id: usuario.id,
-        email: usuario.email,
-        perfil: usuario.perfil,
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION, jwtid: randomUUID() } as SignOptions
-    );
+    const token = signAccessToken(usuario);
+    const refreshToken = await issueRefreshToken(usuario.id);
 
-    return { usuario, token };
+    return { usuario, token, refreshToken };
+  },
+
+  async refresh(refreshToken: string) {
+    const invalido = new AppError(401, 'Refresh token inválido ou expirado. Faça login novamente.');
+
+    const registro = await prisma.refresh_token.findUnique({
+      where: { tokenhash: hashRefreshToken(refreshToken) },
+      include: { usuario: true },
+    });
+
+    if (!registro) {
+      throw invalido;
+    }
+
+    // Um refresh já trocado sendo usado de novo indica cópia do token: derruba todas as sessões do usuário.
+    // Token revogado por logout não entra aqui, senão sair de um aparelho derrubaria os outros.
+    if (registro.substituidoem) {
+      await this.revokeAllRefreshTokens(registro.usuarioid);
+      throw invalido;
+    }
+
+    if (registro.revogadoem) {
+      throw invalido;
+    }
+
+    if (registro.expiraem.getTime() <= Date.now()) {
+      throw invalido;
+    }
+
+    if (registro.usuario.status !== 'Ativo') {
+      throw new AppError(403, 'Usuário inativo. Contate o administrador.');
+    }
+
+    const novoRefreshToken = await prisma.$transaction(async (tx: any) => {
+      // A condição em revogadoem impede que duas renovações simultâneas usem o mesmo token
+      const { count } = await tx.refresh_token.updateMany({
+        where: { id: registro.id, revogadoem: null },
+        data: { revogadoem: new Date(), substituidoem: new Date() },
+      });
+
+      if (count === 0) {
+        throw invalido;
+      }
+
+      return issueRefreshToken(registro.usuarioid, tx);
+    });
+
+    return {
+      usuario: registro.usuario,
+      token: signAccessToken(registro.usuario),
+      refreshToken: novoRefreshToken,
+    };
+  },
+
+  async revokeRefreshToken(refreshToken: string, usuarioId: string) {
+    await prisma.refresh_token.updateMany({
+      where: { tokenhash: hashRefreshToken(refreshToken), usuarioid: usuarioId, revogadoem: null },
+      data: { revogadoem: new Date() },
+    });
+  },
+
+  async revokeAllRefreshTokens(usuarioId: string) {
+    await prisma.refresh_token.updateMany({
+      where: { usuarioid: usuarioId, revogadoem: null },
+      data: { revogadoem: new Date() },
+    });
   },
 
   async getUserById(userId: string) {
@@ -290,6 +378,9 @@ export const authService = {
         atualizadopor: usuario.id,
       },
     });
+
+    // Quem recuperou a senha pode estar tirando o acesso de alguém que a descobriu
+    await this.revokeAllRefreshTokens(usuario.id);
 
     resetCodes.delete(email);
   },

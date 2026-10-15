@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
@@ -29,15 +29,82 @@ export const api = axios.create({
   timeout: 10000,
 });
 
+export const TOKEN_KEY = 'user_token';
+export const REFRESH_TOKEN_KEY = 'refresh_token';
+
+type SessionHandlers = {
+  onRefreshed?: (token: string) => void;
+  onExpired?: () => void;
+};
+
+let sessionHandlers: SessionHandlers = {};
+
+export function setSessionHandlers(handlers: SessionHandlers) {
+  sessionHandlers = handlers;
+}
+
+let refreshInFlight: Promise<string | null> | null = null;
+
+// Cada refresh token só vale uma vez, então requisições que expiram juntas compartilham a mesma renovação
+function refreshAccessToken(): Promise<string | null> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+      if (!refreshToken) return null;
+
+      try {
+        const { data } = await axios.post<{ token: string; refreshToken: string }>(
+          `${API_URL}/auth/refresh`,
+          { refreshToken },
+          { timeout: 10000 }
+        );
+        await SecureStore.setItemAsync(TOKEN_KEY, data.token);
+        await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refreshToken);
+        sessionHandlers.onRefreshed?.(data.token);
+        return data.token;
+      } catch (error: any) {
+        // Sem resposta é falha de rede: mantém a sessão para tentar de novo depois
+        if (!error?.response) throw error;
+        return null;
+      }
+    })().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
 api.interceptors.request.use(
   async (config) => {
-    const token = await SecureStore.getItemAsync('user_token');
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError<{ code?: string }>) => {
+    const original = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
+
+    if (error.response?.status !== 401 || error.response.data?.code !== 'token_expired' || !original || original._retried) {
+      return Promise.reject(error);
+    }
+
+    original._retried = true;
+    const token = await refreshAccessToken();
+
+    if (!token) {
+      sessionHandlers.onExpired?.();
+      return Promise.reject(error);
+    }
+
+    original.headers.Authorization = `Bearer ${token}`;
+    return api(original);
+  }
 );
 
 export function getPhotoUri(photoUrl?: string | null): string | null {

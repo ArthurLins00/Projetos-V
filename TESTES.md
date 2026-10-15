@@ -3,8 +3,8 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend e app mobile).
 
-**Situação na última execução (29/09/2026):** 95 testes automatizados passando: 35 unitários,
-33 de API e 27 E2E (Playwright). Os 5 fluxos de tela (Maestro) foram validados passo a passo no emulador.
+**Situação na última execução (14/10/2026):** 188 testes automatizados passando: 50 unitários,
+102 de API e 36 E2E (Playwright). Os 5 fluxos de tela (Maestro) foram validados passo a passo no emulador.
 
 ---
 
@@ -96,7 +96,7 @@ Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não ro
 
 ## 3. Catálogo de testes
 
-### 3.1 Unitários — `backend/src/tests/unit` (35)
+### 3.1 Unitários — `backend/src/tests/unit` (50)
 
 Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas numa pasta temporária.
 
@@ -149,7 +149,18 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-35 | Upload em ocorrência de outra pessoa | 403 |
 | U-36 | Upload além do limite de 5 fotos | 400 |
 
-### 3.2 API — `backend/src/tests/api` (33)
+**`authService.test.ts`: refresh token (HU-01 / HU-02)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-37 | Login grava o refresh token | Só o hash SHA-256 vai para o banco, nunca o token |
+| U-38 | Duas renovações simultâneas com o mesmo token | A segunda falha com 401 e não emite novo token |
+| U-39 | Reuso de refresh já trocado por rotação | 401 e todas as sessões ativas do usuário são revogadas |
+| U-40 | Uso de refresh revogado por logout | 401 sem derrubar as outras sessões |
+| U-41 | Logout revoga refresh token | Só se o token for do próprio usuário |
+| U-42 | Recuperação de senha | Revoga todos os refresh tokens do usuário |
+
+### 3.2 API — `backend/src/tests/api` (102)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -174,7 +185,7 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 |---|---|---|
 | A-06 | Sem token | 401 "Token não fornecido" |
 | A-07 | Token malformado | 401 "Token inválido" |
-| A-08 | Token expirado | 401 "Token expirado" |
+| A-08 | Token expirado | 401 "Token expirado" com `code: "token_expired"` |
 | A-09 | Token válido e usuário ativo | 200 |
 
 **`authRegister.test.ts`: `POST /auth/register`**
@@ -221,7 +232,22 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 | A-32 | Chamado inexistente | 404 |
 | A-33 | Chamado de qualquer órgão | 200 (gestor não é vinculado a órgão) |
 
-### 3.3 E2E da API — `e2e/` (Playwright, 33)
+**`refreshToken.test.ts`: sessão com access e refresh token (HU-01 / HU-02)**
+
+A tabela `refresh_token` é simulada em memória para que a rotação seja verificada entre as chamadas.
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-34 | Login (TC-01) | Access token de 15 min e refresh token de 30 dias, guardado só como hash |
+| A-35 | Refresh válido (TC-03) | 200 com novo par; o refresh usado é revogado e o novo access token é aceito em `/auth/me` |
+| A-36 | Refresh expirado (TC-04) | 1 s antes do vencimento é aceito; 1 s depois retorna 401 |
+| A-37 | Refresh reutilizado após logout (TC-05) | 401 |
+| A-38 | Duas sessões do mesmo usuário | O logout de uma (e o reuso do refresh dela) não revoga o refresh da outra |
+| A-39 | Reuso de refresh já trocado | 401 e todas as sessões do usuário deixam de renovar |
+| A-40 | Usuário inativado | 403 ao renovar |
+| A-41 | Sem o campo `refreshToken` / token desconhecido | 400 / 401 |
+
+### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
 jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma ocorrência).
@@ -279,6 +305,14 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-31 | Token de push | Registrar (inclusive repetido) e remover retornam 204; token em formato inválido retorna 400 |
 | E-32 | Recuperação de senha | Mesma resposta para e-mail existente e inexistente; código errado retorna 400 e a senha antiga continua valendo |
 
+**`sessao.spec.ts`: sessão com refresh token**
+
+| ID | Caso | Verifica |
+|---|---|---|
+| E-33 | Renovação da sessão | Novo par de tokens; o novo access token funciona; reutilizar o refresh antigo derruba a sessão inteira |
+| E-34 | Logout com duas sessões | O refresh da sessão encerrada é recusado e o da outra sessão continua renovando |
+| E-35 | Refresh inválido | 400 sem o campo e 401 com token desconhecido |
+
 ### 3.4 E2E de telas — `mobile/e2e` (Maestro, 5 fluxos)
 
 | ID | Fluxo | Passos |
@@ -300,6 +334,7 @@ Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os 
 | Cadastro | — | A-10 a A-12 | E-01, E-22, E-23 | M-02 |
 | Login e proteção de rotas | U-11, U-13 | A-01 a A-09 | E-20, E-21 | M-01 |
 | Logout e sessões | U-12, U-14, U-15 | A-13, A-14 | E-12, E-25 | M-04 |
+| Refresh token (HU-01, HU-02) | U-37 a U-42 | A-08, A-34 a A-41 | E-33 a E-35 | — |
 | Persistência de estado (useState/useEffect) | — | — | — | M-03 |
 | Perfis e permissões | U-01 a U-10 | A-33 | E-15 | — |
 | Criar ocorrência | — | A-20, A-21 | E-03, E-26 | M-05 |

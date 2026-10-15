@@ -100,8 +100,9 @@ completos estão no Swagger (`/docs`).
 | Método | Rota | Descrição |
 |---|---|---|
 | `POST` | `/auth/register` | Cadastra um cidadão (`nome`, `email`, `senha`) |
-| `POST` | `/auth/login` | Login (`email`, `senha`); retorna `{ id, nome, email, perfil, token }` |
-| `POST` | `/auth/logout` | Revoga o token atual |
+| `POST` | `/auth/login` | Login (`email`, `senha`); retorna `{ id, nome, email, perfil, token, refreshToken }` |
+| `POST` | `/auth/refresh` | Troca um `refreshToken` válido por um novo par `{ token, refreshToken }`; o refresh usado é revogado |
+| `POST` | `/auth/logout` | Revoga o access token atual e o `refreshToken` enviado no corpo |
 | `GET` | `/auth/me` | Dados do usuário logado |
 | `POST` | `/auth/me/push-token` | Registra o token de push (Expo) do aparelho (`token`) |
 | `DELETE` | `/auth/me/push-token` | Remove o token de push do aparelho (`token`), usado ao sair da conta |
@@ -309,7 +310,8 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 |---|---|---|---|
 | `DATABASE_URL` | sim | — | Conexão com o PostgreSQL |
 | `JWT_SECRET` | sim | — | Chave de assinatura dos tokens |
-| `JWT_EXPIRATION` | não | `24h` | Validade do token |
+| `JWT_EXPIRATION` | não | `15m` | Validade do access token |
+| `REFRESH_TOKEN_TTL_DAYS` | não | `30` | Validade do refresh token, em dias |
 | `PORT` | não | `3000` | Porta do servidor |
 | `NODE_ENV` | não | `development` | Ambiente (`development` ou `production`) |
 | `ALLOWED_ORIGINS` | em produção | — | Origens liberadas no CORS, separadas por vírgula |

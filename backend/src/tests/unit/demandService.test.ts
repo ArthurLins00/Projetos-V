@@ -30,7 +30,7 @@ function makeChamado(overrides: Record<string, unknown> = {}) {
     cidadaoid: CIDADAO_ID,
     gestorid: null,
     categoria: { id: 1, nome: 'Infraestrutura' },
-    cidadao: { usuario: { id: CIDADAO_ID, nome: 'Cidadão', email: 'c@x.com' } },
+    cidadao: { usuario: { id: CIDADAO_ID, nome: 'Cidadão', email: 'llanos47.enfermeiro@icloud.com' } },
     criadoem: new Date('2026-01-01T10:00:00Z'),
     atualizadoem: new Date('2026-01-01T10:00:00Z'),
     ...overrides,

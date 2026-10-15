@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
+import { REFRESH_TOKEN_KEY, TOKEN_KEY, setSessionHandlers } from '../services/api';
 import { pushService } from '../services/pushService';
 import { User } from '../models/User';
 
@@ -20,10 +21,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const clearSession = async () => {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    await SecureStore.deleteItemAsync('user_data');
+    setToken(null);
+    setUser(null);
+  };
+
+  useEffect(() => {
+    setSessionHandlers({
+      onRefreshed: setToken,
+      // O refresh token expirou ou foi revogado (logout em outro lugar, troca de senha): volta para o login
+      onExpired: () => {
+        clearSession().catch(() => undefined);
+      },
+    });
+    return () => setSessionHandlers({});
+  }, []);
+
   useEffect(() => {
     async function loadStorageData() {
       try {
-        const storedToken = await SecureStore.getItemAsync('user_token');
+        const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
         const storedUser = await SecureStore.getItemAsync('user_data');
         if (storedToken && storedUser) {
           setToken(storedToken);
@@ -41,9 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, senha: string) => {
-    const { token: userToken, ...userData } = await authService.login(email, senha);
+    const { token: userToken, refreshToken, ...userData } = await authService.login(email, senha);
 
-    await SecureStore.setItemAsync('user_token', userToken);
+    await SecureStore.setItemAsync(TOKEN_KEY, userToken);
+    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
     await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
 
     setToken(userToken);
@@ -53,13 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await pushService.unregister();
-      await authService.logout();
+      await authService.logout(await SecureStore.getItemAsync(REFRESH_TOKEN_KEY));
     } catch {
     } finally {
-      await SecureStore.deleteItemAsync('user_token');
-      await SecureStore.deleteItemAsync('user_data');
-      setToken(null);
-      setUser(null);
+      await clearSession();
     }
   };
 

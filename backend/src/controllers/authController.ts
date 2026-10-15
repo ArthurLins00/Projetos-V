@@ -1,8 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { authService } from '../services/authService';
 import { notificationService } from '../services/notificationService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { isProduction } from '../config/env';
+
+function setTokenCookie(res: Response, token: string) {
+  const { exp } = jwt.decode(token) as { exp: number };
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'strict',
+    maxAge: exp * 1000 - Date.now(),
+  });
+}
 
 export const authController = {
   async register(req: Request, res: Response, next: NextFunction) {
@@ -38,14 +51,9 @@ export const authController = {
         throw new AppError(400, 'Campos obrigatórios: email, senha');
       }
       
-      const { usuario, token } = await authService.login(email, senha);
+      const { usuario, token, refreshToken } = await authService.login(email, senha);
 
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 86400000
-      });
+      setTokenCookie(res, token);
 
       res.status(200).json({
         id: usuario.id,
@@ -55,7 +63,26 @@ export const authController = {
         fotourl: usuario.fotourl,
         termosversao: usuario.termosversao,
         token,
+        refreshToken,
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async refresh(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { refreshToken } = req.body ?? {};
+
+      if (!refreshToken || typeof refreshToken !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: refreshToken');
+      }
+
+      const { token, refreshToken: novoRefreshToken } = await authService.refresh(refreshToken);
+
+      setTokenCookie(res, token);
+
+      res.status(200).json({ token, refreshToken: novoRefreshToken });
     } catch (error) {
       next(error);
     }
@@ -117,7 +144,12 @@ export const authController = {
       if (token) {
         await authService.addTokenToBlocklist(token);
       }
-      
+
+      const { refreshToken } = req.body ?? {};
+      if (typeof refreshToken === 'string' && req.user) {
+        await authService.revokeRefreshToken(refreshToken, req.user.id);
+      }
+
       res.status(200).json({ message: 'Logout realizado com sucesso' });
     } catch (error) {
       next(error);
