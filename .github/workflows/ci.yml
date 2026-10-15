@@ -25,3 +25,19 @@ jobs:
     name: Agente de IA
     uses: ./.github/workflows/ai-agent.yml
     secrets: inherit
+
+  # Único check a marcar como obrigatório na proteção da branch: falha se qualquer job acima falhar
+  ci-ok:
+    name: CI concluído
+    runs-on: ubuntu-latest
+    needs: [backend, mobile, ai-agent]
+    # Roda mesmo com falha nos jobs anteriores; um check pulado contaria como aprovado
+    if: always()
+    steps:
+      - name: Falha se algum job falhou ou foi cancelado
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "Resultado dos jobs: ${{ toJSON(needs) }}"
+          exit 1
+      - name: Todos os jobs passaram
+        run: echo "CI concluído com sucesso"
