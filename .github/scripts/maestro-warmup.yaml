@@ -1,9 +1,13 @@
 appId: com.projetosv.fiscalize
 ---
-- launchApp:
-    clearState: true
-- extendedWaitUntil:
-    visible:
-      id: "login-email"
-    timeout: 300000
+# O primeiro launch baixa o bundle do Metro; se travar, relança o app
+- retry:
+    maxRetries: 2
+    commands:
+      - launchApp:
+          clearState: true
+      - extendedWaitUntil:
+          visible:
+            id: "login-email"
+          timeout: 180000
 - stopApp

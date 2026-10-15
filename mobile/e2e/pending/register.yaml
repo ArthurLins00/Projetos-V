@@ -6,8 +6,12 @@ appId: com.projetosv.fiscalize
     clearState: true
 - extendedWaitUntil:
     visible:
-      id: "login-go-register"
+      id: "login-email"
     timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: "login-go-register"
+    centerElement: true
 - tapOn:
     id: "login-go-register"
 
@@ -21,6 +25,9 @@ appId: com.projetosv.fiscalize
     id: "register-password"
 - inputText: "SenhaMaestro@123"
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "register-submit"
 - tapOn:
     id: "register-submit"
 
@@ -30,9 +37,10 @@ appId: com.projetosv.fiscalize
 - tapOn: "OK"
 
 - runFlow:
-    file: subflows/login.yaml
+    file: ../subflows/login.yaml
     env:
       EMAIL: ${output.email}
       PASSWORD: "SenhaMaestro@123"
-- assertVisible: "Olá, Maestro Teste"
+# A saudação tem numberOfLines={1} e pode aparecer truncada no header
+- assertVisible: "Olá, Maestro.*"
 - assertVisible: "Nenhuma demanda registrada ainda."

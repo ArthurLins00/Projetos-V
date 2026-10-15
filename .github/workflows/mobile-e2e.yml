@@ -106,10 +106,14 @@ jobs:
         run: |
           nohup npx expo start --port 8081 > ../metro.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -sf http://localhost:8081/status | grep -q running && exit 0
+            curl -sf http://localhost:8081/status | grep -q running && break
+            if [ "$i" = 60 ]; then echo "Metro não subiu"; cat ../metro.log; exit 1; fi
             sleep 2
           done
-          echo "Metro não subiu"; cat ../metro.log; exit 1
+          # Gera o bundle antes do emulador pedir, para o primeiro launch não esperar a compilação inteira
+          curl -sf --max-time 900 -o /dev/null \
+            "http://localhost:8081/.expo/.virtual-metro-entry.bundle?platform=android&dev=true&lazy=true&minify=false" \
+            || echo "::warning::Pré-geração do bundle falhou; o app vai compilar no primeiro launch"
 
       - name: Instala o Maestro
         run: |
@@ -141,6 +145,7 @@ jobs:
           path: |
             maestro-report.xml
             maestro-debug
+            logcat.txt
             backend.log
             metro.log
           retention-days: 7
