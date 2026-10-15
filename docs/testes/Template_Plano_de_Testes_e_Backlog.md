@@ -45,7 +45,14 @@ Fica fora do escopo: o comportamento de sistemas externos fora do controle da sq
 | `Perfis, permissões e isolamento entre cidadãos` | `Sim` | `Regra que protege os fluxos: um cidadão não pode ver nem alterar o chamado de outro.` |
 | `Atendimento pelo gestor (fila do órgão e mudança de status)` | `Sim` | `Fluxo principal do lado do órgão público; fecha o ciclo de vida do chamado.` |
 | `Qualidade da foto da câmera no emulador Android` | `Não` | `Limitação conhecida da câmera virtual do emulador (foto sai preta), fora do controle da squad.` |
-| `ETL de métricas e painel administrativo` | `Não` | `Não faz parte dos fluxos principais do cidadão; custa mais do que devolve no prazo do projeto.` |
+| `ETL de métricas e painel de métricas` | `Não` | `Não faz parte dos fluxos principais do cidadão; custa mais do que devolve no prazo do projeto.` |
+| `Recuperação de senha por código enviado ao e-mail` | `Sim` | `Única forma de o cidadão recuperar o acesso sem suporte; o código protege a conta.` |
+| `Edição do perfil e foto de perfil` | `Sim` | `Troca de e-mail e senha exige a senha atual; falha aqui permite tomar a conta de outra pessoa.` |
+| `Aceite dos termos de uso` | `Sim` | `Condição para usar o app; o aceite registrado não pode regredir de versão.` |
+| `Notificações na tela do app` | `Sim` | `Complementa o push (HU-05) e funciona mesmo sem device token registrado.` |
+| `Gestão de perfis de usuário pelo administrador` | `Sim` | `Promover ou rebaixar gestor decide quem atende os chamados; um admin não pode alterar outro admin.` |
+| `Assistente de IA (classificação, roteamento e acompanhamento de chamados)` | `Sim` | `Regras do produto aplicadas pelas ferramentas do agente; o modelo é substituído por cliente roteirizado e o Gemini real só é chamado fora de PR.` |
+| `Qualidade das respostas em linguagem natural do modelo de IA` | `Não` | `Comportamento do provedor, não determinístico e fora do controle da squad; verificamos só o uso correto das ferramentas.` |
 
 Verificação
 
@@ -181,6 +188,15 @@ O que mudou entre as duas saídas
 | `Edição e remoção só pelo dono e só com status Aberto` | `Componente` | `Regra concentrada no demandService; a tabela de decisão perfil × dono × status roda sem HTTP.` |
 | `Isolamento entre dois cidadãos (ver, editar, anexar foto, remover)` | `Sistema` | `Só com dois usuários reais e banco real se garante que o chamado do dono fica intacto.` |
 | `Múltiplos dispositivos recebendo a push de fato` | `Sistema` | `Depende de dois aparelhos físicos e do FCM real; verificação manual antes do release.` |
+| `Recuperação de senha: código, limite de tentativas e reuso` | `Integração` | `O código passa pela rota, pelo serviço e pelo envio de e-mail substituído por duplo.` |
+| `Edição do perfil, foto de perfil e aceite dos termos` | `Integração` | `As regras ficam no controller e no authService; só a rota prova o código HTTP e o que é gravado.` |
+| `Notificações na tela: listagem, não lidas e isolamento` | `Integração` | `A consulta filtra pelo usuário do token; isolado não prova que uma pessoa não marca a notificação de outra.` |
+| `Promoção e rebaixamento de perfil pelo admin` | `Integração` | `Atravessa requireRole, controller e transação que cria o registro de gestor ou cidadão.` |
+| `Assistente de IA no backend: autenticação e falha do agente` | `Integração` | `O backend repassa o JWT ao agente; só a rota prova os códigos 401, 502 e 503.` |
+| `Ferramentas do agente: classificação, prioridade, roteamento e chamados similares` | `Componente` | `Funções puras sobre o texto e as coordenadas; o modelo é trocado por cliente roteirizado.` |
+| `Pesquisa, filtros, detalhe com prazo e validação de região` | `Integração` | `Dependem da consulta montada pelo demandService e da validação no controller.` |
+| `Fila, aceite e comentários do gestor` | `Integração` | `Rotas do gestor com requireRole e histórico gravado na mesma transação.` |
+| `Telas de login, cadastro, sessão persistida e logout` | `Sistema` | `Só aparecem com o app real no emulador, o Metro e o backend no ar.` |
 
 ### 4.4 Tabela intermediária de derivação
 
@@ -216,6 +232,21 @@ O que mudou entre as duas saídas
 | `Captura de localização pelo GPS no aparelho` | `Partição de equivalência` | `permissão concedida; negada; GPS desligado; sem sinal` | `TC-45, TC-46` |
 | `Gestor altera o status só de chamados do seu órgão` | `Partição de equivalência` | `status válido; inexistente (“Finalizado”); chamado inexistente; chamado de outro órgão` | `TC-47` |
 | `Banco indisponível retorna 503` | `Partição de equivalência` | `banco no ar; banco fora do ar` | `TC-48` |
+| `Recuperação de senha: código de 6 dígitos válido por 15 min, até 5 tentativas` | `Partição de equivalência + Valor limite` | `e-mail existente; inexistente (mesma resposta); código certo; errado; reutilizado; 5 tentativas (aceita) e 6ª (invalida); nova senha com 5 caracteres` | `TC-49` |
+| `Edição do perfil: e-mail e senha exigem a senha atual` | `Tabela de decisão` | `campo alterado (nome, e-mail, senha) × senha atual (ausente, errada, certa) × e-mail livre ou em uso` | `TC-50` |
+| `Foto de perfil: só JPEG ou PNG, troca apaga a anterior` | `Partição de equivalência` | `JPEG; não imagem; campo ausente; corpo acima de 100 KB; remoção` | `TC-51` |
+| `Termos de uso: versão inteira positiva, aceite não regride` | `Partição de equivalência + Valor limite` | `nunca aceitou; versão 0; 1,5; texto; versão menor que a aceita; versão maior` | `TC-52` |
+| `Notificações na tela: só as do próprio usuário` | `Partição de equivalência` | `todas; só não lidas; marcar a própria; marcar a de outra pessoa; id inválido; sem token` | `TC-53` |
+| `Admin promove e rebaixa perfil, nunca de outro admin nem para Admin` | `Tabela de decisão` | `quem pede (Admin, Gestor) × alvo (Cidadão, Gestor, Admin) × perfil pedido (Gestor, Cidadão, Admin)` | `TC-54` |
+| `Assistente de IA exige login e trata a falha do agente` | `Partição de equivalência` | `sem token; mensagem ou sessionId inválidos; agente no ar; agente fora do ar; agente falhando no modelo` | `TC-55` |
+| `Agente classifica, prioriza e roteia a ocorrência` | `Tabela de decisão` | `texto com gatilho de emergência (com e sem acento) × categoria reconhecida ou não × coordenadas válidas ou não` | `TC-56` |
+| `Pesquisa e filtros da listagem` | `Partição de equivalência` | `termo no título, descrição, endereço, protocolo ou categoria; maiúsculas; só espaços; status explícito; padrão sem Removidas` | `TC-57` |
+| `Detalhe com histórico e prazo (SLA)` | `Partição de equivalência` | `chamado próprio; prazo depois da criação; histórico com a criação e as mudanças` | `TC-58` |
+| `Região do chamado: UF válida, cidade não vazia, zona Urbana ou Rural` | `Partição de equivalência` | `UF válida em minúsculas; UF inexistente (XX); cidade só com espaços; zona fora da lista` | `TC-59` |
+| `Remoção de foto e troca da capa` | `Partição de equivalência` | `foto existente; foto inexistente; remover a capa com outra foto restante` | `TC-60` |
+| `Login de usuário inativo` | `Partição de equivalência` | `usuário Ativo; Inativo com senha correta` | `TC-61` |
+| `Fila, aceite e comentários do gestor` | `Tabela de decisão` | `perfil (Cidadão, Gestor, Admin) × ação (listar, filtro meus, aceitar, comentar, mudar status) × responsável é gestor ou não` | `TC-62` |
+| `Telas de login, cadastro, sessão e logout` | `Transição de estados` | `deslogado → login inválido → deslogado; cadastro → login → lista vazia; logado → reabrir → logado; logout → reabrir → deslogado` | `TC-63` |
 
 ### 4.5 Matriz de rastreabilidade de evidências
 
@@ -271,6 +302,21 @@ O que mudou entre as duas saídas
 | `TC-46` | `HU-04` | `—` | `"que meu chamado registre automaticamente minha localização" (fluxo completo nas telas)` | `N` |
 | `TC-47` | `HU-05` | `—` | `"quando um gestor altera o status do meu chamado" (as regras de status válido e órgão alheio vêm do código)` | `S` |
 | `TC-48` | `—` | `—` | `— (resposta 503 com banco fora do ar vem do código)` | `S` |
+| `TC-49` | `—` | `—` | `— (recuperação de senha vem do código; não há HU)` | `S` |
+| `TC-50` | `—` | `—` | `— (edição do perfil vem do código; não há HU)` | `S` |
+| `TC-51` | `—` | `—` | `— (foto de perfil vem do código; não há HU)` | `S` |
+| `TC-52` | `—` | `—` | `— (termos de uso vêm do código; não há HU)` | `S` |
+| `TC-53` | `HU-05` | `—` | `— (a HU trata só do push; as notificações na tela vêm do código)` | `S` |
+| `TC-54` | `HU-09` | `—` | `— (a HU trata do requireRole; a mudança de perfil pelo admin vem do código)` | `S` |
+| `TC-55` | `—` | `—` | `— (assistente de IA vem do código e do README do agente; não há HU)` | `S` |
+| `TC-56` | `—` | `—` | `— (regras RF-02 e RN-03 citadas nos testes do agente; não estão nas HUs deste plano)` | `S` |
+| `TC-57` | `HU-06` | `—` | `— (a HU trata da paginação; pesquisa e filtros vêm do código)` | `S` |
+| `TC-58` | `—` | `—` | `— (detalhe e prazo vêm do código; não há HU)` | `S` |
+| `TC-59` | `HU-04` | `—` | `— (a HU trata da localização; estado, cidade e zona vêm do código)` | `S` |
+| `TC-60` | `HU-03` | `—` | `— (a HU trata do envio; remoção e capa vêm do código)` | `S` |
+| `TC-61` | `HU-01` | `—` | `— (a HU não diz o que acontece com usuário inativo)` | `S` |
+| `TC-62` | `HU-05` | `—` | `"quando um gestor altera o status do meu chamado" (fila, aceite e comentários vêm do código)` | `S` |
+| `TC-63` | `HU-01` | `—` | `— (as telas vêm do código e dos fluxos Maestro)` | `S` |
 
 ### 4.6 Casos de teste
 
@@ -278,7 +324,7 @@ Grave a saída íntegra em um arquivo próprio versionado no repositório e refe
 
 Arquivo: [`docs/testes/ia/saida-rodada-2.md`](ia/saida-rodada-2.md)
 
-Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU.
+Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório.
 
 | ID | HU | CA | Título | Pré-condições | Passos | Resultado esperado | Pós-condições |
 | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -330,6 +376,21 @@ Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes j
 | TC-46 | HU-04 | — | Fluxo completo nas telas | Emulador, Metro e backend com seed | Nova demanda (GPS, foto) → salvar → pesquisar → editar → excluir | Cada etapa refletida na tela | — |
 | TC-47 | HU-05 | — | Gestor muda status | Gestor da COMPESA logado | Status válido; “Finalizado”; id inexistente; chamado de outro órgão | 200; 400; 404; 403 | Status no histórico |
 | TC-48 | — | — | Banco indisponível | Backend no ar | Derrubar o PostgreSQL; chamar `/health` e uma rota | 503 com mensagem padrão | Banco restaurado |
+| TC-49 | — | — | Recuperação de senha | Cidadão ativo cadastrado | Pedir o código; redefinir com código certo; repetir o código; errar 6 vezes; e-mail inexistente; nova senha com 5 caracteres | Senha trocada e sessões revogadas; código não reutilizável; invalidado após 5 erros; mesma resposta para e-mail inexistente; 400 na senha curta | Senha nova vale |
+| TC-50 | — | — | Edição do perfil | Cidadão logado | Alterar nome; alterar e-mail e senha com e sem a senha atual; usar e-mail de outra conta | Nome sem senha atual; e-mail e senha exigem a senha atual (400 sem ela, 401 errada); 409 no e-mail em uso | Perfil atualizado |
+| TC-51 | — | — | Foto de perfil | Cidadão logado | Enviar JPEG; enviar não imagem; enviar sem campo; remover | fotourl gravada e a anterior apagada; 422; 400; fotourl nula e arquivo apagado | — |
+| TC-52 | — | — | Termos de uso | Conta nova | Login; aceitar versão 1; reenviar versão menor; versões 0, 1,5 e texto | termosversao nula no login; versão e data gravadas; não regride; 400 nas inválidas | Aceite registrado |
+| TC-53 | HU-05 | — | Notificações na tela | Cidadão com notificações | Listar; filtrar não lidas; marcar a própria e a de outra pessoa; marcar todas | Mais recente primeiro com total de não lidas; 404 na de outra pessoa; contador zerado | — |
+| TC-54 | HU-09 | — | Gestão de perfis pelo admin | Admin, gestor e cidadão cadastrados | Admin lista e busca; promove cidadão; rebaixa gestor; tenta alterar outro admin; tenta promover a Admin; gestor tenta listar | Registro de gestor ou cidadão criado; 403 em admin alheio e para gestor; 400 no perfil Admin; novo perfil vale sem novo login | — |
+| TC-55 | — | — | Assistente de IA no backend | Cidadão logado; agente substituído por duplo | Enviar sem token; sem mensagem ou sessionId; com agente no ar; fora do ar; falhando | 401; 400; token repassado e sessão presa ao usuário; 503; 502 | — |
+| TC-56 | — | — | Agente de IA | Cliente roteirizado no lugar do modelo | Relatar fiação exposta, esgoto, buraco e texto não reconhecido; coordenadas inválidas; consultar chamados próprios e de outro cidadão | Categoria, órgão e prioridade corretos (emergência é Crítica); Outros Problemas → SEMC; coordenadas inválidas recusadas; cidadão não vê chamado alheio | — |
+| TC-57 | HU-06 | — | Pesquisa e filtros | Chamados do cidadão em status variados | Pesquisar por título, endereço, protocolo e categoria; termo inexistente; só espaços; filtrar por status | Encontra sem diferenciar maiúsculas; nada para termo inexistente; espaços ignorados; Removidas só com filtro explícito | — |
+| TC-58 | — | — | Detalhe com prazo | Chamado criado | Abrir o detalhe | Dados, região, histórico e prazo (slaDeadline depois da criação) | — |
+| TC-59 | HU-04 | — | Região do chamado | Cidadão logado | Criar com UF em minúsculas; UF XX; cidade só com espaços; zona Litoral | UF gravada em maiúsculas; 400 nos inválidos e nada gravado | — |
+| TC-60 | HU-03 | — | Remoção de foto | Chamado aberto com duas fotos | Remover a capa; remover foto inexistente | Registro e arquivo apagados; a foto restante vira capa; 404 | Uma foto no chamado |
+| TC-61 | HU-01 | — | Login de usuário inativo | Usuário com status Inativo | Login com a senha correta | 403 “Usuário inativo” | — |
+| TC-62 | HU-05 | — | Fila, aceite e comentários do gestor | Gestor, admin e cidadão logados | Listar a fila e o filtro “meus”; aceitar; aceitar indicando responsável que não é gestor; comentar vazio e com texto; admin muda status; cidadão acessa | Fila de todos os órgãos; atribuição a quem aceitou; 400 no responsável inválido e no comentário vazio; comentário no histórico; admin permitido; 403 para cidadão | Histórico registrado |
+| TC-63 | HU-01 | — | Telas de login, cadastro, sessão e logout (assistido) | Emulador, Metro e backend com seed | Fluxos Maestro M-01 a M-04 | Alerta de credenciais inválidas; cadastro e login pela tela; sessão mantida ao reabrir; logout mantido ao reabrir | — |
 
 ---
 
@@ -396,8 +457,23 @@ execuções até o retorno  =  Ti ÷ (Tm − Ta − Mn/F)
 | `TC-46` | `Sistema` | `12 min` | `240 min` | `180 s` | `45 min` | `4` | `Não, permanece manual` |
 | `TC-47` | `Integração` | `8 min` | `60 min` | `2 s` | `10 min` | `10` | `Sim` |
 | `TC-48` | `Integração` | `20 min` | `180 min` | `5 s` | `30 min` | `4` | `Não, permanece manual` |
+| `TC-49` | `Integração` | `8 min` | `60 min` | `2 s` | `5 min` | `15` | `Sim` |
+| `TC-50` | `Integração` | `6 min` | `45 min` | `1 s` | `5 min` | `15` | `Sim` |
+| `TC-51` | `Integração` | `5 min` | `45 min` | `2 s` | `5 min` | `10` | `Sim` |
+| `TC-52` | `Integração` | `4 min` | `30 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-53` | `Integração` | `8 min` | `60 min` | `2 s` | `10 min` | `15` | `Sim` |
+| `TC-54` | `Integração` | `10 min` | `60 min` | `2 s` | `10 min` | `10` | `Sim` |
+| `TC-55` | `Integração` | `6 min` | `45 min` | `1 s` | `5 min` | `15` | `Sim` |
+| `TC-56` | `Componente` | `20 min` | `180 min` | `3 s` | `20 min` | `20` | `Sim` |
+| `TC-57` | `Integração` | `6 min` | `45 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-58` | `Sistema` | `5 min` | `40 min` | `2 s` | `5 min` | `20` | `Sim` |
+| `TC-59` | `Integração` | `5 min` | `30 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-60` | `Integração` | `5 min` | `40 min` | `2 s` | `5 min` | `15` | `Sim` |
+| `TC-61` | `Integração` | `3 min` | `20 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-62` | `Integração` | `12 min` | `90 min` | `3 s` | `15 min` | `15` | `Sim` |
+| `TC-63` | `Sistema` | `15 min` | `240 min` | `120 s` | `40 min` | `4` | `Não, permanece manual` |
 
-Por que os cinco `Não`: TC-24, TC-35, TC-45 e TC-46 têm denominador negativo (Mn/F supera o ganho por execução), então nunca se pagam; TC-48 só se paga após ~15 execuções (180 ÷ (20 − 0,08 − 7,5)), acima das ~12 do horizonte do projeto. Todos continuam no plano com execução manual antes de cada release: TC-24 e TC-45 em aparelho físico com gravação de tela, TC-35 e TC-48 com roteiro e print, e TC-46 usando o fluxo Maestro `demand_crud.yaml` como roteiro assistido.
+Por que os seis `Não`: TC-24, TC-35, TC-45 e TC-46 têm denominador negativo (Mn/F supera o ganho por execução), então nunca se pagam; TC-48 só se paga após ~15 execuções (180 ÷ (20 − 0,08 − 7,5)), acima das ~12 do horizonte do projeto. Todos continuam no plano com execução manual antes de cada release: TC-24 e TC-45 em aparelho físico com gravação de tela, TC-35 e TC-48 com roteiro e print, e TC-46 usando o fluxo Maestro `demand_crud.yaml` como roteiro assistido. TC-63 só se paga após ~80 execuções (240 ÷ (15 − 2 − 10)); os fluxos Maestro M-01 a M-04 já existem e são usados da mesma forma, como roteiro assistido no emulador, fora do CI.
 
 ---
 
@@ -425,50 +501,71 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 
 | Ordem | ID do caso | HU | Nível | Risco | Custo | Frequência | Prioridade | Responsável | Status |
 | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
-| 1 | `TC-02` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Arthur Borba Lins` | `Automatizado (A-02, A-03, U-13, E-21)` |
-| 2 | `TC-01` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Bruno Dornelas` | `Parcial (A-01, A-05, U-11; falta o refresh token)` |
-| 3 | `TC-06` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Bruno Felipe Castilho` | `Parcial (A-08 retorna 401 sem o código token_expired)` |
-| 4 | `TC-07` | `HU-02` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Felipe Cisneiros` | `Automatizado (A-13, U-14, E-12)` |
-| 5 | `TC-08` | `HU-02` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Michelangelo Morais do Rego` | `Automatizado (A-14, E-25)` |
-| 6 | `TC-11` | `HU-03` | `Componente` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Paulo Henrique Alves Pereira` | `Parcial (U-33, A-25, E-27 retornam 400, HU pede 422)` |
-| 7 | `TC-36` | `HU-09` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Ramom de Oliveira Aguiar` | `A fazer` |
-| 8 | `TC-38` | `HU-09` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Thyalles Araujo Campos` | `A fazer` |
+| 1 | `TC-02` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-02, A-03, U-13, E-21)` |
+| 2 | `TC-01` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-34, A-01, A-05, U-11, U-37; access token de 15 min e refresh token de 30 dias)` |
+| 3 | `TC-06` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-08 retorna 401 com o código token_expired)` |
+| 4 | `TC-07` | `HU-02` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-13, U-14, E-12)` |
+| 5 | `TC-08` | `HU-02` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-14, A-38, E-25, E-34)` |
+| 6 | `TC-11` | `HU-03` | `Componente` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-33, A-25, E-27; conteúdo que não é imagem retorna 422)` |
+| 7 | `TC-36` | `HU-09` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-50)` |
+| 8 | `TC-38` | `HU-09` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-53)` |
 | 9 | `TC-39` | `HU-09` | `Componente` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-01 a U-10, E-15)` |
-| 10 | `TC-40` | `—` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Arthur Borba Lins` | `Automatizado (A-10 a A-12, E-22, E-23)` |
-| 11 | `TC-12` | `HU-03` | `Integração` | `3` | `1` | `2` | `(3×2)÷1 = 6,0` | `Bruno Dornelas` | `A fazer` |
-| 12 | `TC-09` | `HU-02` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Bruno Felipe Castilho` | `A fazer` |
-| 13 | `TC-13` | `HU-03` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Felipe Cisneiros` | `A fazer` |
-| 14 | `TC-37` | `HU-09` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Michelangelo Morais do Rego` | `A fazer` |
-| 15 | `TC-41` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Paulo Henrique Alves Pereira` | `A fazer` |
-| 16 | `TC-10` | `HU-03` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Ramom de Oliveira Aguiar` | `Parcial (U-31, U-32, E-09; disco local em vez de bucket)` |
-| 17 | `TC-27` | `HU-06` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Thyalles Araujo Campos` | `A fazer (erro sem stack trace); cursor Bloqueado` |
-| 18 | `TC-30` | `HU-07` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Parcial (E-03 sem client_uuid)` |
-| 19 | `TC-42` | `—` | `Componente` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Arthur Borba Lins` | `Automatizado (U-21 a U-30, A-22, A-23, E-08, E-11, E-18)` |
-| 20 | `TC-43` | `—` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Bruno Dornelas` | `Automatizado (A-19, E-24)` |
-| 21 | `TC-17` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Bruno Felipe Castilho` | `A fazer` |
-| 22 | `TC-28` | `HU-06` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Felipe Cisneiros` | `Parcial (U-20 converte o registro para o formato da API)` |
-| 23 | `TC-33` | `HU-08` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Michelangelo Morais do Rego` | `Bloqueado (rotas sem /api/v1)` |
-| 24 | `TC-47` | `HU-05` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Paulo Henrique Alves Pereira` | `Automatizado (A-28 a A-33, E-16, E-17, E-19)` |
-| 25 | `TC-03` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Ramom de Oliveira Aguiar` | `Bloqueado (sem /auth/refresh)` |
-| 26 | `TC-04` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Thyalles Araujo Campos` | `Bloqueado (sem /auth/refresh)` |
-| 27 | `TC-05` | `HU-02` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Bloqueado (sem /auth/refresh)` |
-| 28 | `TC-16` | `HU-04` | `Componente` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Arthur Borba Lins` | `Parcial (E-13, E-14 roteiam só por categoria)` |
-| 29 | `TC-22` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Bruno Dornelas` | `Bloqueado (sem push)` |
-| 30 | `TC-23` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Bruno Felipe Castilho` | `Bloqueado (sem push)` |
-| 31 | `TC-31` | `HU-07` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Felipe Cisneiros` | `Bloqueado (sem client_uuid)` |
-| 32 | `TC-44` | `HU-04` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Michelangelo Morais do Rego` | `Parcial (A-21, A-27; falta órgão inativo)` |
-| 33 | `TC-25` | `HU-06` | `Integração` | `2` | `2` | `3` | `(2×3)÷2 = 3,0` | `Paulo Henrique Alves Pereira` | `Parcial (U-20, A-16 paginam por offset)` |
-| 34 | `TC-18` | `HU-04` | `Componente` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Ramom de Oliveira Aguiar` | `Bloqueado (sem área de cobertura)` |
-| 35 | `TC-20` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Thyalles Araujo Campos` | `Bloqueado (sem registro de device token)` |
-| 36 | `TC-21` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Bloqueado (sem push)` |
-| 37 | `TC-26` | `HU-06` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Arthur Borba Lins` | `Bloqueado (sem cursor)` |
-| 38 | `TC-14` | `HU-03` | `Integração` | `2` | `2` | `1` | `(2×1)÷2 = 1,0` | `Bruno Dornelas` | `Bloqueado (1 foto por chamado; U-34 substitui)` |
-| 39 | `TC-32` | `HU-07` | `Integração` | `2` | `2` | `1` | `(2×1)÷2 = 1,0` | `Bruno Felipe Castilho` | `Bloqueado (sem /demands/changes)` |
-| 40 | `TC-34` | `HU-08` | `Integração` | `1` | `1` | `1` | `(1×1)÷1 = 1,0` | `Felipe Cisneiros` | `Bloqueado (decisão do time pendente)` |
-| 41 | `TC-15` | `HU-03` | `Integração` | `2` | `3` | `1` | `(2×1)÷3 = 0,7` | `Michelangelo Morais do Rego` | `Bloqueado (sem bucket)` |
-| 42 | `TC-19` | `HU-04` | `Integração` | `1` | `2` | `1` | `(1×1)÷2 = 0,5` | `Paulo Henrique Alves Pereira` | `Bloqueado (sem /demands/nearby)` |
-| 43 | `TC-29` | `HU-06` | `Integração` | `1` | `2` | `1` | `(1×1)÷2 = 0,5` | `Ramom de Oliveira Aguiar` | `Bloqueado (sem ETag)` |
+| 10 | `TC-40` | `—` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-10 a A-12, E-22, E-23)` |
+| 11 | `TC-61` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-04)` |
+| 12 | `TC-12` | `HU-03` | `Integração` | `3` | `1` | `2` | `(3×2)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-44, A-45; exatamente 15 MB passa pelo parser, 1 byte acima retorna 413 e nada é gravado)` |
+| 13 | `TC-09` | `HU-02` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-42, A-43; sem token, expirado, malformado ou já revogado retorna 401, nunca 500)` |
+| 14 | `TC-13` | `HU-03` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-46)` |
+| 15 | `TC-37` | `HU-09` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-51, A-52)` |
+| 16 | `TC-41` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-56, A-57; senha com 5 caracteres recusada, 6 e 7 aceitas)` |
+| 17 | `TC-52` | `—` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (terms.test.ts, E-28, E-29)` |
+| 18 | `TC-57` | `HU-06` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-16 a U-19, A-17, E-05, E-06)` |
+| 19 | `TC-58` | `—` | `Sistema` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-18, E-07)` |
+| 20 | `TC-10` | `HU-03` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-31, U-32, E-09; fotos no armazenamento local do backend, já que o bucket está fora do escopo)` |
+| 21 | `TC-27` | `HU-06` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-54, A-55; resposta 500 sem stack nem mensagem interna fora de desenvolvimento)` |
+| 22 | `TC-30` | `HU-07` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (E-03; protocolo DEM-AAAAMMDD-XXXX e status Aberto, já que o client_uuid está fora do escopo)` |
+| 23 | `TC-42` | `—` | `Componente` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-21 a U-30, A-22, A-23, E-08, E-11, E-18)` |
+| 24 | `TC-43` | `—` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-19, E-24)` |
+| 25 | `TC-62` | `HU-05` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (gestorChamados.test.ts: fila, aceite, comentários e admin; E-14)` |
+| 26 | `TC-17` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-47; aceito e roteado pela categoria)` |
+| 27 | `TC-28` | `HU-06` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-20, A-49; sem relacionamentos completos, só a primeira foto como capa)` |
+| 28 | `TC-47` | `HU-05` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-28 a A-33, E-16, E-17, E-19)` |
+| 29 | `TC-50` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (profile.test.ts)` |
+| 30 | `TC-55` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (aiChat.test.ts)` |
+| 31 | `TC-59` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (demands.test.ts: validação de região; E-03)` |
+| 32 | `TC-60` | `HU-03` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-34, E-09)` |
+| 33 | `TC-03` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-35, E-33)` |
+| 34 | `TC-04` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-36; 1 s antes do vencimento aceita, 1 s depois retorna 401)` |
+| 35 | `TC-05` | `HU-02` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-37, E-34)` |
+| 36 | `TC-16` | `HU-04` | `Componente` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-47, E-13, E-14; roteamento pela categoria, já que a área de cobertura está fora do escopo)` |
+| 37 | `TC-22` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts; sem token registrado o push não é chamado e o fluxo segue)` |
+| 38 | `TC-23` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts; provedor fora do ar só gera log e não interrompe a mudança de status)` |
+| 39 | `TC-44` | `HU-04` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-21, A-27, A-48; órgão inativo nunca recebe o chamado)` |
+| 40 | `TC-49` | `—` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (passwordReset.test.ts, E-32, U-42)` |
+| 41 | `TC-54` | `HU-09` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (adminUsers.test.ts)` |
+| 42 | `TC-56` | `—` | `Componente` | `3` | `3` | `3` | `(3×3)÷3 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (ai-agent: agente, ferramentas e acompanhamento com cliente roteirizado; os testes ao vivo contra o Gemini rodam fora de PR)` |
+| 43 | `TC-25` | `HU-06` | `Integração` | `2` | `2` | `3` | `(2×3)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-20, A-16; paginação por página e limite, já que o cursor está fora do escopo)` |
+| 44 | `TC-20` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts, E-31; registro do token Expo Push e recusa de formato inválido)` |
+| 45 | `TC-21` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts com duplo do Expo Push; E-17b e E-19 pela rota real do gestor)` |
+| 46 | `TC-53` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notifications.test.ts, E-17b, E-19)` |
+| 47 | `TC-51` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (profilePhoto.test.ts, E-30)` |
+| 48 | `TC-14` | `HU-03` | `Integração` | `2` | `2` | `1` | `(2×1)÷2 = 1,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-36, E-09; até 5 fotos por chamado, na ordem de envio e sem sobrescrever)` |
 
 Verificação
 
 - [x] O primeiro item é de risco alto, custo baixo e frequência alta (TC-02: risco 3, custo 1, frequência 3).
+
+### 6.1 Removidos por estar fora do escopo
+
+*Casos que estavam no backlog, mas dependem de funcionalidades que o projeto decidiu não implementar no prazo. Continuam descritos nas seções 4 e 5 para manter a rastreabilidade; não serão automatizados nem executados manualmente.*
+
+| ID do caso | HU | Status anterior | Motivo da remoção |
+| :---- | :---- | :---- | :---- |
+| `TC-31` | `HU-07` | `Bloqueado (sem client_uuid)` | Criação idempotente com `client_uuid` não foi implementada; o app não tem modo offline com reenvio de chamados. |
+| `TC-32` | `HU-07` | `Bloqueado (sem /demands/changes)` | A sincronização incremental (`/demands/changes`) depende do modo offline, que não faz parte do produto entregue. |
+| `TC-19` | `HU-04` | `Bloqueado (sem /demands/nearby)` | A busca por proximidade (`/demands/nearby`) não faz parte dos fluxos do cidadão nem do gestor. |
+| `TC-29` | `HU-06` | `Bloqueado (sem ETag)` | Cache condicional com ETag é otimização de rede; não protege nenhum fluxo principal no prazo do projeto. |
+| `TC-15` | `HU-03` | `Bloqueado (sem bucket)` | As fotos ficam no armazenamento local do backend; o bucket com URL assinada está fora do escopo (seção 1). |
+| `TC-18` | `HU-04` | `Bloqueado (sem área de cobertura)` | A área de cobertura dos órgãos não foi implementada; o roteamento é feito pela categoria (TC-16). |
+| `TC-26` | `HU-06` | `Bloqueado (sem cursor)` | A paginação por cursor não foi implementada; a listagem pagina por página e limite (TC-25). |
+| `TC-33` | `HU-08` | `Bloqueado (rotas sem /api/v1)` | O versionamento das rotas em `/api/v1` não foi implementado; só existe uma versão do app em uso. |
+| `TC-34` | `HU-08` | `Bloqueado (decisão do time pendente)` | Depende do versionamento em `/api/v1` (TC-33), que ficou fora do escopo. |

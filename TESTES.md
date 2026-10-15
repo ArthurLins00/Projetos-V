@@ -3,8 +3,8 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend e app mobile).
 
-**Situação na última execução (14/10/2026):** 188 testes automatizados passando: 50 unitários,
-102 de API e 36 E2E (Playwright). Os 5 fluxos de tela (Maestro) foram validados passo a passo no emulador.
+**Situação na última execução (14/10/2026):** 211 testes automatizados passando: 50 unitários,
+125 de API e 36 E2E (Playwright). Os 5 fluxos de tela (Maestro) foram validados passo a passo no emulador.
 
 ---
 
@@ -144,7 +144,7 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-30 | Edição válida | Campos atualizados; histórico com dados antigos e novos |
 | U-31 | Upload de JPEG válido | Arquivo salvo e foto registrada em `chamado_foto` |
 | U-32 | Upload com prefixo `data:image/jpeg;base64,` | Aceito |
-| U-33 | Upload de conteúdo que não é imagem | 400 (valida a assinatura do arquivo, não a extensão) |
+| U-33 | Upload de conteúdo que não é imagem | 422 (valida a assinatura do arquivo, não a extensão) |
 | U-34 | Remoção de foto | Registro e arquivo apagados |
 | U-35 | Upload em ocorrência de outra pessoa | 403 |
 | U-36 | Upload além do limite de 5 fotos | 400 |
@@ -160,7 +160,7 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-41 | Logout revoga refresh token | Só se o token for do próprio usuário |
 | U-42 | Recuperação de senha | Revoga todos os refresh tokens do usuário |
 
-### 3.2 API — `backend/src/tests/api` (102)
+### 3.2 API — `backend/src/tests/api` (125)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -217,8 +217,8 @@ Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os
 | A-22 | Cidadão remove a própria ocorrência | 204; status `Fechado` |
 | A-23 | Cidadão remove ocorrência de outra pessoa | 403 |
 | A-24 | Foto sem o campo `photo` | 400 |
-| A-25 | Foto que não é imagem | 400 |
-| A-26 | Foto maior que 100 KB | Aceita pela rota (limite ampliado para fotos) |
+| A-25 | Foto que não é imagem | 422 |
+| A-26 | Foto maior que 100 KB | Aceita pela rota (limite ampliado para fotos) e chega à validação (422) |
 | A-27 | Listar categorias | 200 com as categorias ativas |
 
 **`gestorChamados.test.ts`: `PUT /gestor/chamados/:id/status`**
@@ -246,6 +246,47 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-39 | Reuso de refresh já trocado | 401 e todas as sessões do usuário deixam de renovar |
 | A-40 | Usuário inativado | 403 ao renovar |
 | A-41 | Sem o campo `refreshToken` / token desconhecido | 400 / 401 |
+
+**`logout.test.ts`: logout sem token válido (TC-09)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-42 | Logout sem token, com token expirado ou malformado | 401 (expirado com `code: "token_expired"`), nunca 500 |
+| A-43 | Logout repetido com token já revogado | 401 |
+
+**`demands.test.ts`: limites da foto, roteamento e payload**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-44 | Corpo exatamente no limite de 15 MB (TC-12) | Passa pelo parser e chega à validação da imagem (422) |
+| A-45 | Corpo 1 byte acima do limite (TC-12) | 413 e nada é gravado |
+| A-46 | Foto em demanda inexistente (TC-13) | 404 e nada é gravado |
+| A-47 | Chamado sem coordenadas (TC-17) | 201, roteado pela categoria |
+| A-48 | Regra e vínculo apontando para órgão inativo (TC-44) | O chamado nunca é encaminhado ao órgão inativo |
+| A-49 | Payload da listagem (TC-28) | Sem relacionamentos completos do Prisma; `creator` e `category` só com os campos da API; só a capa em `photoUrl` |
+
+**`cors.test.ts`: CORS do app nativo e whitelist do painel (HU-09)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-50 | Sem header `Origin` (app nativo) (TC-36) | Processada normalmente |
+| A-51 | `Origin` da whitelist (TC-37) | `Access-Control-Allow-Origin` com a origem e `Allow-Credentials` |
+| A-52 | Preflight da `Origin` da whitelist (TC-37) | 204 liberando `POST` e o header `Authorization` |
+| A-53 | `Origin` fora da whitelist (TC-38) | Sem `Access-Control-Allow-Origin`, na requisição simples e no preflight |
+
+**`errorHandling.test.ts`: erro inesperado (TC-27)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-54 | Erro 500 com `NODE_ENV` `production` ou `test` | Mensagem padrão, sem `stack` e sem a mensagem interna do erro |
+| A-55 | Erro 500 em `development` | Inclui o `stack` para depuração local |
+
+**`authRegister.test.ts`: validação do cadastro (TC-41)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-56 | Campo ausente, e-mail sem `@` ou sem domínio, senha com 5 caracteres | 400 e nada é gravado |
+| A-57 | Senha com 6 e 7 caracteres | 201 |
 
 ### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
@@ -293,7 +334,7 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-24 | Isolamento entre cidadãos | O intruso não vê, não edita, não anexa foto e não remove; a ocorrência do dono fica intacta |
 | E-25 | Duas sessões do mesmo usuário | O logout de uma não derruba a outra |
 | E-26 | Ocorrência inválida | 400 sem campos obrigatórios e com categoria inexistente |
-| E-27 | Foto que não é imagem | 400 |
+| E-27 | Foto que não é imagem | 422 |
 
 **`conta.spec.ts`: termos, foto de perfil, notificações e recuperação de senha**
 
@@ -331,21 +372,24 @@ Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os 
 
 | Requisito / funcionalidade | Unitário | API | E2E (API) | E2E (telas) |
 |---|---|---|---|---|
-| Cadastro | — | A-10 a A-12 | E-01, E-22, E-23 | M-02 |
+| Cadastro | — | A-10 a A-12, A-56, A-57 | E-01, E-22, E-23 | M-02 |
 | Login e proteção de rotas | U-11, U-13 | A-01 a A-09 | E-20, E-21 | M-01 |
-| Logout e sessões | U-12, U-14, U-15 | A-13, A-14 | E-12, E-25 | M-04 |
+| Logout e sessões | U-12, U-14, U-15 | A-13, A-14, A-42, A-43 | E-12, E-25 | M-04 |
 | Refresh token (HU-01, HU-02) | U-37 a U-42 | A-08, A-34 a A-41 | E-33 a E-35 | — |
 | Persistência de estado (useState/useEffect) | — | — | — | M-03 |
 | Perfis e permissões | U-01 a U-10 | A-33 | E-15 | — |
-| Criar ocorrência | — | A-20, A-21 | E-03, E-26 | M-05 |
+| Criar ocorrência | — | A-20, A-21, A-47, A-48 | E-03, E-26 | M-05 |
 | Listagem (FlatList) e pesquisa | U-16 a U-20 | A-15 a A-17 | E-02, E-04 a E-06 | M-05 |
 | Detalhe | — | A-18, A-19 | E-07 | M-05 |
 | Atualizar ocorrência | U-28 a U-30 | — | E-08, E-11, E-18 | M-05 |
 | Remover ocorrência | U-21 a U-27 | A-22, A-23 | E-10, E-18 | M-05 |
-| Câmera / fotos (até 5) | U-31 a U-36 | A-24 a A-26 | E-09, E-27 | M-05 |
+| Câmera / fotos (até 5) | U-31 a U-36 | A-24 a A-26, A-44 a A-46 | E-09, E-27 | M-05 |
 | GPS (coordenadas) | — | — | E-03, E-04 | M-05 |
 | Região (estado, cidade, zona) | `demandService.test.ts` (create) | `demands.test.ts` (validação) | E-03, E-07 | M-05 |
 | Prazo (SLA) | — | — | E-07 | — |
+| Payload da listagem | U-20 | A-49 | — | — |
+| CORS (HU-09) | — | A-50 a A-53 | — | — |
+| Tratamento de erros | — | A-54, A-55 | — | — |
 | Isolamento entre cidadãos | U-22, U-28, U-35 | A-19, A-23 | E-24 | — |
 | Atendimento pelo gestor | — | A-28 a A-33 | E-13 a E-19 | — |
 | Recuperação de senha | — | `passwordReset.test.ts` | E-32 | — |
@@ -368,6 +412,9 @@ Os testes revelaram defeitos que foram corrigidos no código:
 | Fluxo Maestro esperava "E-mail ou senha incorretos.", mas o app exibe "Credenciais inválidas." | `login_invalid_password.yaml` | M-01 |
 | Sem login, a lista chegava a abrir e chamava a API sem token (aviso vermelho cobria o botão "+") | `app/_layout.tsx` | M-05 |
 | Após pesquisar, o primeiro toque num card só fechava o teclado | `DemandListView` | M-05 |
+| Reutilizar o refresh token de uma sessão encerrada por logout derrubava as outras sessões do usuário | `authService` | A-38, E-34 |
+| Corpo acima do limite de 15 MB retornava 500 em vez de 413 | `errorMiddleware` | A-45 |
+| Regra de competência e vínculo com a categoria podiam encaminhar o chamado a um órgão inativo | `demandService` | A-48 |
 
 ---
 

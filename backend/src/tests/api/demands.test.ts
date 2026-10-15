@@ -156,7 +156,7 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/photo/i);
   });
 
-  it('POST /demands/:id/photos recusa arquivo que não é imagem (400)', async () => {
+  it('POST /demands/:id/photos recusa arquivo que não é imagem (422)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
     prisma.chamado_foto.count.mockResolvedValue(0);
 
@@ -165,7 +165,7 @@ describe('API de Demandas (/demands)', () => {
       .set(auth)
       .send({ photo: Buffer.from('texto qualquer').toString('base64') });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(422);
     expect(response.body.error).toMatch(/Formato de imagem inválido/i);
   });
 
@@ -176,7 +176,8 @@ describe('API de Demandas (/demands)', () => {
 
     const response = await request(app).post('/demands/chamado-1/photos').set(auth).send({ photo: grande });
 
-    expect(response.status).toBe(400);
+    // Passou pelo parser (não é 413) e chegou à validação do conteúdo
+    expect(response.status).toBe(422);
     expect(response.body.error).toMatch(/Formato de imagem inválido/i);
   });
 
@@ -197,5 +198,114 @@ describe('API de Demandas (/demands)', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 1, nome: 'Infraestrutura', descricao: null }]);
+  });
+
+  describe('limite de tamanho da foto (TC-12)', () => {
+    const LIMITE = 15 * 1024 * 1024;
+    // Corpo JSON com exatamente `bytes` bytes: {"photo":"AAAA..."}
+    const corpoCom = (bytes: number) => `{"photo":"${'A'.repeat(bytes - '{"photo":""}'.length)}"}`;
+
+    beforeEach(() => {
+      prisma.chamado.findUnique.mockResolvedValue(chamado as any);
+      prisma.chamado_foto.count.mockResolvedValue(0);
+    });
+
+    it('corpo exatamente no limite de 15 MB passa pelo parser e chega à validação da imagem', async () => {
+      const response = await request(app)
+        .post('/demands/chamado-1/photos')
+        .set(auth)
+        .set('Content-Type', 'application/json')
+        .send(corpoCom(LIMITE));
+
+      expect(response.status).toBe(422);
+    });
+
+    it('1 byte acima do limite retorna 413 e nada é gravado', async () => {
+      const response = await request(app)
+        .post('/demands/chamado-1/photos')
+        .set(auth)
+        .set('Content-Type', 'application/json')
+        .send(corpoCom(LIMITE + 1));
+
+      expect(response.status).toBe(413);
+      expect(response.body.error).toMatch(/muito grande/i);
+      expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
+    });
+  });
+
+  it('TC-13: POST /demands/:id/photos em demanda inexistente retorna 404 e nada é gravado', async () => {
+    prisma.chamado.findUnique.mockResolvedValue(null);
+
+    const response = await request(app)
+      .post('/demands/nao-existe/photos')
+      .set(auth)
+      .send({ photo: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]).toString('base64') });
+
+    expect(response.status).toBe(404);
+    expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
+  });
+
+  describe('roteamento na criação', () => {
+    const payload = { title: 'Poste apagado', description: 'Rua escura', category_id: 3, location: 'Rua A, 1' };
+
+    beforeEach(() => {
+      prisma.categoria.findUnique.mockResolvedValue({ id: 3, nome: 'Iluminação Pública', ativo: true } as any);
+      prisma.cidadao.findUnique.mockResolvedValue({ id: cidadao.id } as any);
+      prisma.chamado.create.mockImplementation((async ({ data }: any) => ({
+        id: 'novo',
+        status: 'Aberto',
+        criadoem: new Date(),
+        categoria: { id: 3, nome: 'Iluminação Pública' },
+        ...data,
+      })) as any);
+    });
+
+    it('TC-17: chamado sem coordenadas é aceito e roteado pela categoria', async () => {
+      prisma.regra_competencia.findFirst.mockResolvedValue(null);
+      prisma.orgao_categoria.findFirst.mockResolvedValue({ orgaoid: 'EMLURB', orgao: { id: 'EMLURB', slahoras: 72 } } as any);
+
+      const response = await request(app).post('/demands').set(auth).send(payload);
+
+      expect(response.status).toBe(201);
+      expect(response.body.protocolo).toMatch(/^DEM-\d{8}-[A-Z0-9]{4}$/);
+      const { data } = prisma.chamado.create.mock.calls[0][0] as any;
+      expect(data.orgaoid).toBe('EMLURB');
+      expect(data.slahoras).toBe(72);
+    });
+
+    it('TC-44: órgão inativo nunca recebe o chamado, nem pela regra de competência nem pelo vínculo com a categoria', async () => {
+      // O banco só tem regra e vínculo apontando para um órgão inativo: quem filtra por órgão ativo não encontra nada
+      const filtraOrgaoAtivo = (where: any) =>
+        where?.orgao_regra_competencia_orgaoprincipalidToorgao?.status === 'Ativo' || where?.orgao?.status === 'Ativo';
+      prisma.regra_competencia.findFirst.mockImplementation((async ({ where }: any) =>
+        filtraOrgaoAtivo(where) ? null : { orgaoprincipalid: 'INATIVO', prioridade: 'Alta', slahoras: 24 }) as any);
+      prisma.orgao_categoria.findFirst.mockImplementation((async ({ where }: any) =>
+        filtraOrgaoAtivo(where) ? null : { orgaoid: 'INATIVO', orgao: { id: 'INATIVO', slahoras: 24 } }) as any);
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      const response = await request(app).post('/demands').set(auth).send(payload);
+
+      expect(response.status).toBe(201);
+      const { data } = prisma.chamado.create.mock.calls[0][0] as any;
+      expect(data.orgaoid).not.toBe('INATIVO');
+    });
+  });
+
+  it('TC-28: listagem devolve payload enxuto, sem relacionamentos completos do Prisma', async () => {
+    prisma.chamado.findMany.mockResolvedValue([
+      { ...chamado, categoriaid: 3, orgaoid: 'EMLURB', uf: 'PE', cidade: 'Recife', zona: 'Urbana', chamado_foto: [{ url: '/uploads/a.jpg' }], slahoras: 48, sladeadline: new Date() },
+    ] as any);
+    prisma.chamado.count.mockResolvedValue(1);
+
+    const response = await request(app).get('/demands').set(auth);
+
+    expect(response.status).toBe(200);
+    const [item] = response.body.data;
+    for (const campo of ['cidadao', 'timeline_event', 'chamado_foto', 'photos', 'cidadaoid', 'categoriaid', 'orgaoid', 'gestorid']) {
+      expect(item).not.toHaveProperty(campo);
+    }
+    expect(Object.keys(item.creator).sort()).toEqual(['email', 'id', 'nome']);
+    expect(Object.keys(item.category).sort()).toEqual(['id', 'nome']);
+    expect(item.photoUrl).toBe('/uploads/a.jpg');
   });
 });
