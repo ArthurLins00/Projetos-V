@@ -101,6 +101,7 @@ jobs:
         working-directory: mobile
         env:
           CI: 'true'
+          NODE_ENV: development
           EXPO_PUBLIC_API_URL: http://10.0.2.2:3000
         run: |
           nohup npx expo start --port 8081 > ../metro.log 2>&1 &
