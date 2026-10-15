@@ -2,7 +2,7 @@ appId: com.projetosv.fiscalize
 ---
 - evalScript: ${output.titulo = 'Maestro poste ' + Date.now()}
 
-- runFlow: subflows/login.yaml
+- runFlow: ../subflows/login.yaml
 
 - tapOn:
     id: "new-demand-button"

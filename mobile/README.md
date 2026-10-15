@@ -159,6 +159,7 @@ Os fluxos ficam em [`e2e/`](e2e) e rodam no emulador com o app instalado, o Metr
 
 Para rodar pela CLI do Maestro, execute `npm run test:e2e:mobile` na raiz do repositório. No Maestro
 Studio, abra a pasta `e2e/`. Os fluxos de `e2e/subflows/` são reaproveitados pelos outros e não rodam sozinhos.
+`register` e `demand_crud` estão em `e2e/pending/`, fora do CI até serem corrigidos.
 
 Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 

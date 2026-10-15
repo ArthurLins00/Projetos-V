@@ -37,7 +37,7 @@ appId: com.projetosv.fiscalize
 - tapOn: "OK"
 
 - runFlow:
-    file: subflows/login.yaml
+    file: ../subflows/login.yaml
     env:
       EMAIL: ${output.email}
       PASSWORD: "SenhaMaestro@123"

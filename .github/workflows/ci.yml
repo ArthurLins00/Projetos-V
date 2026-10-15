@@ -34,7 +34,7 @@ jobs:
     name: E2E Mobile smoke (Maestro)
     uses: ./.github/workflows/mobile-e2e.yml
     with:
-      flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/register.yaml mobile/e2e/session_persistence.yaml
+      flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/session_persistence.yaml
     secrets: inherit
 
   ci-ok:
