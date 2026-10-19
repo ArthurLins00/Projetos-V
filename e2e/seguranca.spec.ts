@@ -36,7 +36,8 @@ test.describe('Autenticação', () => {
 });
 
 test.describe('Isolamento entre cidadãos', () => {
-  test('um cidadão não vê, não edita, não anexa foto e não remove a ocorrência de outro', async ({ request }) => {
+  // Smoke de PR: cadastro, login, criação de ocorrência e isolamento em um único teste independente
+  test('um cidadão não vê, não edita, não anexa foto e não remove a ocorrência de outro', { tag: '@smoke' }, async ({ request }) => {
     const dono = await registerAndLogin(request, 'dono');
     const intruso = await registerAndLogin(request, 'intruso');
     const demand = await createDemand(request, dono);

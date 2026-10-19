@@ -1,10 +1,12 @@
 # Documentação de testes — Fiscalize
 
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
-automatizados do projeto (backend e app mobile).
+automatizados do projeto (backend, app mobile e agente de IA).
 
-**Situação na última execução (14/10/2026):** 211 testes automatizados passando: 50 unitários,
-125 de API e 36 E2E (Playwright). Os 5 fluxos de tela (Maestro) foram validados passo a passo no emulador.
+**Situação na última execução (19/10/2026):** 234 testes automatizados passando: 50 unitários,
+125 de API, 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado), além de 3 fluxos de tela (Maestro)
+no emulador do CI. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
+rodam ao vivo contra o Gemini só na regressão diária.
 
 ---
 
@@ -15,15 +17,18 @@ e completos no topo.
 
 ```
                 ┌──────────────────────────┐
-                │ E2E de telas (Maestro) 5 │  app real no emulador
+                │ E2E de telas (Maestro) 3 │  app real no emulador
               ┌─┴──────────────────────────┴─┐
-              │ E2E da API (Playwright) 27   │  backend + banco reais
+              │ E2E da API (Playwright) 36   │  backend + banco reais
             ┌─┴──────────────────────────────┴─┐
-            │ API (Jest + Supertest) 33        │  rotas HTTP, banco mockado
+            │ API (Jest + Supertest) 125       │  rotas HTTP, banco mockado
           ┌─┴──────────────────────────────────┴─┐
-          │ Unitários (Jest) 35                  │  regras de negócio isoladas
+          │ Unitários (Jest) 50                  │  regras de negócio isoladas
           └──────────────────────────────────────┘
 ```
+
+O agente de IA (`ai-agent/`) tem a própria suíte: 23 testes com o Gemini substituído por um cliente roteirizado
+e 10 testes ao vivo contra o Gemini (seção 3.5).
 
 | Nível | Ferramenta | O que isola | Banco | Duração |
 |---|---|---|---|---|
@@ -89,10 +94,12 @@ Deixe no ar o emulador com o app de debug instalado (`npx expo run:android` em `
 - **CLI:** instale o Maestro (https://maestro.mobile.dev) e rode `npm run test:e2e:mobile`;
 - **Maestro Studio:** abra a pasta `mobile/e2e` e execute cada fluxo.
 
-No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobile-e2e.yml`) roda todos os fluxos
-dentro da regressão diária (veja a seção 2.1) ou manualmente pela aba Actions. Ele compila o app de debug, sobe o
-backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as capturas como artefato
-`maestro-report`. Não roda em push nem em PR, porque leva dezenas de minutos.
+No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobile-e2e.yml`) roda os 2 fluxos smoke
+em todo PR, todos os fluxos na regressão diária (veja a seção 2.1) e também pode ser disparado pela aba Actions. Ele
+compila o app de debug, sobe o backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as
+capturas como artefato `maestro-report`. Não roda no push de branches de trabalho, porque leva dezenas de minutos.
+Se os fluxos falharem, o script `.github/scripts/run-maestro.sh` os repete uma vez (como o `retries: 1` do
+Playwright) e registra um aviso no job; a falha só reprova o job se a segunda tentativa também falhar.
 
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
 (configurado em `mobile/e2e/config.yaml`).
@@ -107,22 +114,28 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Evento | Workflow | O que roda |
 |---|---|---|
 | Push em branch de trabalho | `push.yml` | Unitários e de API do backend; testes do agente de IA com cliente roteirizado (e typecheck do mobile, pelo `mobile.yml`, quando `mobile/` muda) |
-| Pull request para `main` ou `dev` (e push nelas) | `ci.yml` | Unitários, de API e todos os E2E do Playwright; build do backend; typecheck do mobile; testes do agente de IA; **3 fluxos Maestro smoke** no emulador |
-| Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e os fluxos Maestro no emulador |
+| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **3 testes smoke E2E** (1 do Playwright e 2 fluxos Maestro no emulador); build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado |
+| Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
+| Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
+
+Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
+estar habilitado no fork (aba Actions → *I understand my workflows, go ahead and enable them*). Os eventos de PR,
+de push em `main`/`dev` e o agendamento rodam no repositório principal.
 
 Os workflows `backend.yml`, `ai-agent.yml`, `mobile.yml` e `mobile-e2e.yml` são reutilizáveis: quem chama
-decide o nível. O backend recebe `e2e: none | full`, o agente recebe `live: true | false` e o Maestro recebe `flows`
-(a pasta inteira ou uma lista de fluxos).
+decide o nível. O backend recebe `e2e: none | smoke | full`, o agente recebe `live: true | false` e o Maestro
+recebe `flows` (a pasta inteira ou uma lista de fluxos).
 
-**Testes smoke de tela (antes do merge):** 2 fluxos Maestro rodam no emulador em todo PR. A suíte completa de
-fluxos fica para a regressão diária.
+**Testes smoke E2E (antes do merge):** 3 testes, escolhidos por exercitarem o caminho principal sem câmera nem GPS,
+que são instáveis no emulador do CI. O restante dos E2E roda no push em `main`/`dev` e na regressão diária.
 
-| Fluxo | Arquivo | Por que é smoke |
+| Teste | Onde | Por que é smoke |
 |---|---|---|
-| Login com senha errada (M-01) | `login_invalid_password.yaml` | Confirma que o app abre, fala com o backend e trata o erro de login |
-| Sessão mantida ao reabrir o app (M-03) | `session_persistence.yaml` | Sem a sessão salva o cidadão precisaria entrar a cada abertura |
+| Isolamento entre cidadãos (E-24) | `e2e/seguranca.spec.ts`, tag `@smoke` | Em um único teste independente cobre cadastro, login, criação de ocorrência e as regras de acesso entre cidadãos, contra o banco real |
+| Login com senha errada (M-01) | `mobile/e2e/login_invalid_password.yaml` | Confirma que o app abre, fala com o backend e trata o erro de login |
+| Sessão mantida ao reabrir o app (M-03) | `mobile/e2e/session_persistence.yaml` | Sem a sessão salva o cidadão precisaria entrar a cada abertura |
 
-Esses fluxos não usam câmera nem GPS, que são instáveis no emulador do CI. O `register.yaml` (M-02) e o
+Para rodar só o smoke do Playwright localmente: `npm run test:e2e -- --grep @smoke`. O `register.yaml` (M-02) e o
 `demand_crud.yaml` (M-05) estão em `mobile/e2e/pending/`, fora do CI até serem corrigidos.
 
 **Agendamento:** o cron do GitHub é em UTC (`0 6 * * *` = 03h em Brasília) e é *best-effort*: em horários de alta
@@ -130,9 +143,17 @@ demanda pode atrasar ou não rodar. Por isso a regressão também pode ser dispa
 completa (diária)* → *Run workflow*.
 
 **Quality Gate:** o job **CI concluído** do `ci.yml` falha se qualquer job do PR falhar ou for cancelado. Ele é o
-único check obrigatório na regra de proteção das branches `main` e `dev` (Settings → Rules → Rulesets: *Require a
-pull request before merging* e *Require status checks to pass* com **CI concluído**). Com a regra ativa, o botão de
-merge fica bloqueado até o check passar.
+único check obrigatório no ruleset `main` do repositório `ArthurLins00/Projetos-V`, que vale para as branches
+`main` e `dev` (Settings → Rules → Rulesets):
+
+- *Enforcement status*: **Active**;
+- *Restrict deletions* e *Block force pushes*;
+- *Require a pull request before merging*, com 1 aprovação;
+- *Require status checks to pass*, com o check **CI concluído** (fonte GitHub Actions) e *Require branches to be up
+  to date before merging*.
+
+O nome do check é o `name` do job (**CI concluído**), não o nome do arquivo `ci.yml`: um check com o nome do arquivo
+nunca é reportado e travaria todos os merges. Com a regra ativa, o botão de merge fica bloqueado até o check passar.
 
 ---
 
@@ -201,6 +222,24 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-40 | Uso de refresh revogado por logout | 401 sem derrubar as outras sessões |
 | U-41 | Logout revoga refresh token | Só se o token for do próprio usuário |
 | U-42 | Recuperação de senha | Revoga todos os refresh tokens do usuário |
+
+**`demandService.test.ts`: região e fotos (complemento)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-43 | Criação com região | Estado, cidade e zona gravados e devolvidos no formato da API |
+| U-44 | Alterar fotos de ocorrência em andamento | 403 |
+| U-45 | Remoção de foto inexistente | 404 |
+
+**`notificationService.test.ts`: notificações (HU-05)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-46 | Mudança de status sem aparelho registrado | Notificação registrada, e-mail enviado ao cidadão e push não chamado |
+| U-47 | Push para os aparelhos do cidadão (duplo do Expo Push) | Push enviado; tokens que não existem mais são removidos |
+| U-48 | E-mail ou push falhando (provedor fora do ar) | Só gera log; o fluxo não é interrompido |
+| U-49 | Chamado inexistente | Nada é registrado nem enviado |
+| U-50 | Registro do token de push | Token Expo válido gravado; formato inválido recusado |
 
 ### 3.2 API — `backend/src/tests/api` (125)
 
@@ -330,6 +369,104 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-56 | Campo ausente, e-mail sem `@` ou sem domínio, senha com 5 caracteres | 400 e nada é gravado |
 | A-57 | Senha com 6 e 7 caracteres | 201 |
 
+**`demands.test.ts`: região e remoção de foto (complemento)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-58 | Região inválida: UF inexistente, cidade só com espaços, zona fora de Urbana/Rural (TC-59) | 400 |
+| A-59 | `DELETE /demands/:id/photos/:photoId` | 204 |
+
+**`gestorChamados.test.ts`: gestão de chamados (complemento, TC-62)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-60 | Admin altera o status | 200 |
+| A-61 | Cidadão altera o status | 403 |
+| A-62 | `GET /gestor/chamados` | Chamados de todos os órgãos; filtro "meus" aplicado |
+| A-63 | Aceitar com responsável que não é gestor | 400 |
+| A-64 | Aceitar o chamado | Atribuído a quem aceitou |
+| A-65 | Comentário sem mensagem | 400 |
+| A-66 | Comentário válido | Mensagem registrada no histórico |
+
+**`adminUsers.test.ts`: gestão de usuários pelo admin (TC-54)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-67 | `GET /admin/users` com busca | Lista filtrada por nome ou e-mail |
+| A-68 | `GET /admin/users` como gestor | 403 |
+| A-69 | Promover cidadão a gestor | Perfil alterado e registro de gestor criado |
+| A-70 | Rebaixar gestor a cidadão | Perfil alterado e registro de cidadão garantido |
+| A-71 | Alterar o perfil de outro admin | 403 |
+| A-72 | Promover a Admin | 400 |
+| A-73 | Mudança de perfil sem novo login | O token antigo já passa a acessar `/gestor` |
+
+**`aiChat.test.ts`: assistente `/ai/chat` (TC-55)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-74 | Sem token | 401 |
+| A-75 | Mensagem ausente, com mais de 1000 caracteres ou `sessionId` inválido | 400 |
+| A-76 | Chamada válida | Repassa o token do usuário e prende a sessão ao id dele |
+| A-77 | Serviço do agente fora do ar | 503 |
+| A-78 | Agente falha ao consultar o modelo | 502 |
+
+**`notifications.test.ts`: tela de notificações (TC-53)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-79 | Listagem | Da mais recente para a mais antiga, com o total de não lidas |
+| A-80 | `?unread=true` | Só as não lidas |
+| A-81 | Marcar como lida | Só se a notificação for do próprio usuário |
+| A-82 | Notificação de outra pessoa ou id inválido | 404 |
+| A-83 | Marcar todas como lidas | Todas marcadas |
+| A-84 | Sem token | 401 |
+
+**`passwordReset.test.ts`: recuperação de senha (TC-49)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-85 | Código correto | Código enviado por e-mail e senha redefinida |
+| A-86 | E-mail inexistente | 200, sem enviar e-mail (não revela contas) |
+| A-87 | Código incorreto e reuso do código | 400 nos dois casos |
+| A-88 | Limite de tentativas excedido | Código invalidado (400) |
+| A-89 | Nova senha curta | 400 |
+
+**`profile.test.ts`: `PUT /auth/me` (TC-50)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-90 | Alterar o nome | Atualizado sem exigir a senha atual |
+| A-91 | Alterar o e-mail com a senha atual correta | Atualizado |
+| A-92 | Trocar a senha | Novo hash gravado |
+| A-93 | Alterar o e-mail sem a senha atual | 400 |
+| A-94 | Senha atual incorreta | 401 |
+| A-95 | E-mail já usado por outra conta | 409 |
+| A-96 | Corpo vazio, nome só com espaços, e-mail inválido ou senha curta | 400 |
+| A-97 | Sem token | 401 |
+
+**`profilePhoto.test.ts`: foto de perfil `/auth/me/photo` (TC-51)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-98 | Enviar foto | Grava a nova, retorna `fotourl` e apaga a anterior |
+| A-99 | Arquivo que não é imagem | 422 |
+| A-100 | Sem o campo `photo` | 400 |
+| A-101 | Corpo maior que 100 KB | Aceito |
+| A-102 | Sem token | 401 |
+| A-103 | `DELETE` | Foto e arquivo removidos |
+| A-104 | `GET /auth/me` | Inclui `fotourl` |
+
+**`terms.test.ts`: termos de uso `/auth/me/terms` (TC-52)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-105 | Login de quem nunca aceitou | `termosversao` nula |
+| A-106 | Aceite | Versão e data gravadas |
+| A-107 | Aceite de versão já aceita ou menor | Não regride nem regrava |
+| A-108 | Versão ausente, zero, decimal ou texto | 400 |
+| A-109 | Sem token | 401 |
+| A-110 | `GET /auth/me` | Inclui `termosversao` |
+
 ### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
@@ -373,7 +510,7 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-21 | Senha errada | 401 com mensagem genérica |
 | E-22 | E-mail duplicado | 409 |
 | E-23 | Cadastro como Admin | Perfil resultante `Cidadao` |
-| E-24 | Isolamento entre cidadãos | O intruso não vê, não edita, não anexa foto e não remove; a ocorrência do dono fica intacta |
+| E-24 | Isolamento entre cidadãos (`@smoke`) | O intruso não vê, não edita, não anexa foto e não remove; a ocorrência do dono fica intacta |
 | E-25 | Duas sessões do mesmo usuário | O logout de uma não derruba a outra |
 | E-26 | Ocorrência inválida | 400 sem campos obrigatórios e com categoria inexistente |
 | E-27 | Foto que não é imagem | 422 |
@@ -396,17 +533,29 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | E-34 | Logout com duas sessões | O refresh da sessão encerrada é recusado e o da outra sessão continua renovando |
 | E-35 | Refresh inválido | 400 sem o campo e 401 com token desconhecido |
 
-### 3.4 E2E de telas — `mobile/e2e` (Maestro, 5 fluxos)
+### 3.4 E2E de telas — `mobile/e2e` (Maestro, 3 fluxos no CI + 2 pendentes)
 
-| ID | Fluxo | Passos |
-|---|---|---|
-| M-01 | `login_invalid_password.yaml` | Senha errada → alerta "Falha no Login" / "Credenciais inválidas." → continua na tela de login |
-| M-02 | `register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação |
-| M-03 | `session_persistence.yaml` | Login → fechar e reabrir o app → continua logado |
-| M-04 | `logout.yaml` | Login → Perfil → "Sair da conta" → confirmar → tela de login → reabrir o app → continua deslogado |
-| M-05 | `demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista |
+| ID | Fluxo | Passos | Onde roda |
+|---|---|---|---|
+| M-01 | `login_invalid_password.yaml` | Senha errada → alerta "Falha no Login" / "Credenciais inválidas." → continua na tela de login | PR (smoke) e regressão |
+| M-02 | `pending/register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação | Pendente: roteiro assistido |
+| M-03 | `session_persistence.yaml` | Login → fechar e reabrir o app → continua logado | PR (smoke) e regressão |
+| M-04 | `logout.yaml` | Login → Perfil → "Sair da conta" → confirmar → tela de login → reabrir o app → continua deslogado | Regressão |
+| M-05 | `pending/demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista | Pendente: roteiro assistido |
 
 Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os termos de uso quando a tela aparece.
+
+### 3.5 Agente de IA — `ai-agent/tests` (23 + 10 ao vivo)
+
+Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído por um cliente roteirizado
+(`tests/scriptedClient.ts`), então o loop do agente e as ferramentas reais rodam sem rede e sem cota (TC-56).
+
+| Arquivo | Testes | O que cobre |
+|---|---|---|
+| `agente.test.ts` | 3 | Os 3 casos de triagem (CT-01 a CT-03): categoria, órgão, prioridade e chamados similares |
+| `ferramentas.test.ts` | 7 | Regras das ferramentas `classificar_e_rotear_ocorrencia`, `buscar_chamados_similares` e `executarFerramenta` |
+| `acompanhamento.test.ts` | 13 | Perfil de acompanhamento: regra de acesso por perfil, prazos, consulta ao backend com o JWT do usuário e o servidor `POST /chat` |
+| `live/gemini.test.ts` | 10 | Os mesmos cenários contra o Gemini real (`npm run test:live`); só na regressão diária, porque dependem de rede e da cota da API |
 
 ---
 
@@ -414,30 +563,33 @@ Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os 
 
 | Requisito / funcionalidade | Unitário | API | E2E (API) | E2E (telas) |
 |---|---|---|---|---|
-| Cadastro | — | A-10 a A-12, A-56, A-57 | E-01, E-22, E-23 | M-02 |
+| Cadastro | — | A-10 a A-12, A-56, A-57 | E-01, E-22, E-23 | M-02 (pendente) |
 | Login e proteção de rotas | U-11, U-13 | A-01 a A-09 | E-20, E-21 | M-01 |
 | Logout e sessões | U-12, U-14, U-15 | A-13, A-14, A-42, A-43 | E-12, E-25 | M-04 |
 | Refresh token (HU-01, HU-02) | U-37 a U-42 | A-08, A-34 a A-41 | E-33 a E-35 | — |
 | Persistência de estado (useState/useEffect) | — | — | — | M-03 |
-| Perfis e permissões | U-01 a U-10 | A-33 | E-15 | — |
-| Criar ocorrência | — | A-20, A-21, A-47, A-48 | E-03, E-26 | M-05 |
-| Listagem (FlatList) e pesquisa | U-16 a U-20 | A-15 a A-17 | E-02, E-04 a E-06 | M-05 |
-| Detalhe | — | A-18, A-19 | E-07 | M-05 |
-| Atualizar ocorrência | U-28 a U-30 | — | E-08, E-11, E-18 | M-05 |
-| Remover ocorrência | U-21 a U-27 | A-22, A-23 | E-10, E-18 | M-05 |
-| Câmera / fotos (até 5) | U-31 a U-36 | A-24 a A-26, A-44 a A-46 | E-09, E-27 | M-05 |
-| GPS (coordenadas) | — | — | E-03, E-04 | M-05 |
-| Região (estado, cidade, zona) | `demandService.test.ts` (create) | `demands.test.ts` (validação) | E-03, E-07 | M-05 |
+| Perfis e permissões | U-01 a U-10 | A-33, A-60, A-61, A-67 a A-73 | E-15 | — |
+| Criar ocorrência | — | A-20, A-21, A-47, A-48 | E-03, E-26 | M-05 (pendente) |
+| Listagem (FlatList) e pesquisa | U-16 a U-20 | A-15 a A-17 | E-02, E-04 a E-06 | M-05 (pendente) |
+| Detalhe | — | A-18, A-19 | E-07 | M-05 (pendente) |
+| Atualizar ocorrência | U-28 a U-30 | — | E-08, E-11, E-18 | M-05 (pendente) |
+| Remover ocorrência | U-21 a U-27 | A-22, A-23 | E-10, E-18 | M-05 (pendente) |
+| Câmera / fotos (até 5) | U-31 a U-36, U-44, U-45 | A-24 a A-26, A-44 a A-46, A-59 | E-09, E-27 | M-05 (pendente) |
+| GPS (coordenadas) | — | — | E-03, E-04 | M-05 (pendente) |
+| Região (estado, cidade, zona) | U-43 | A-58 | E-03, E-07 | M-05 (pendente) |
 | Prazo (SLA) | — | — | E-07 | — |
 | Payload da listagem | U-20 | A-49 | — | — |
 | CORS (HU-09) | — | A-50 a A-53 | — | — |
 | Tratamento de erros | — | A-54, A-55 | — | — |
 | Isolamento entre cidadãos | U-22, U-28, U-35 | A-19, A-23 | E-24 | — |
-| Atendimento pelo gestor | — | A-28 a A-33 | E-13 a E-19 | — |
-| Recuperação de senha | — | `passwordReset.test.ts` | E-32 | — |
-| Termos de uso | — | `terms.test.ts` | E-28, E-29 | M-01 a M-05 (aceite no login) |
-| Foto de perfil | — | `profilePhoto.test.ts` | E-30 | — |
-| Notificações (e-mail, push e tela) | `notificationService.test.ts` | `notifications.test.ts` | E-17b, E-19, E-31 | — |
+| Atendimento pelo gestor | — | A-28 a A-33, A-62 a A-66 | E-13 a E-19 | — |
+| Recuperação de senha | U-42 | A-85 a A-89 | E-32 | — |
+| Edição do perfil | — | A-90 a A-97 | — | — |
+| Termos de uso | — | A-105 a A-110 | E-28, E-29 | M-03, M-04 (aceite no login) |
+| Foto de perfil | — | A-98 a A-104 | E-30 | — |
+| Notificações (e-mail, push e tela) | U-46 a U-50 | A-79 a A-84 | E-17b, E-19, E-31 | — |
+| Assistente de IA | — | A-74 a A-78 | — | — |
+| Agente de IA (triagem e acompanhamento) | `ai-agent/tests` (seção 3.5) | — | — | — |
 
 ---
 
@@ -508,4 +660,6 @@ Os testes revelaram defeitos que foram corrigidos no código:
 - **Dados de teste:** os E2E deixam cidadãos `*@teste.fiscalize` e suas ocorrências no banco. Para limpar,
   recrie o banco (`npx prisma migrate reset`, que apaga tudo) e rode o seed de novo.
 - **Maestro:** os fluxos precisam do app de debug instalado e de um emulador ou aparelho conectado;
-  por isso eles ficam fora do `npm test` e, no CI, só rodam na regressão diária (`regressao.yml`).
+  por isso eles ficam fora do `npm test`. No CI, 2 fluxos rodam como smoke em todo PR e todos os fluxos de
+  `mobile/e2e/` rodam na regressão diária (`regressao.yml`). O emulador do CI às vezes falha sem relação com o
+  app (houve falhas em 15/10 e 16/10); por isso há uma nova tentativa automática (seção 2).

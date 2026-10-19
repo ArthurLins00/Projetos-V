@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       e2e:
-        description: 'E2E do Playwright: none ou full'
+        description: 'E2E do Playwright: none, smoke (só os testes @smoke) ou full'
         type: string
         default: none
       build:
@@ -16,7 +16,7 @@ on:
       e2e:
         description: 'E2E do Playwright'
         type: choice
-        options: [none, full]
+        options: [none, smoke, full]
         default: full
       build:
         description: 'Compila o backend'
@@ -58,7 +58,7 @@ jobs:
 
   e2e:
     name: Testes End-to-End (E2E)
-    if: inputs.e2e == 'full'
+    if: inputs.e2e == 'full' || inputs.e2e == 'smoke'
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -109,7 +109,9 @@ jobs:
           npm run seed
 
       - name: Testes End-to-End (E2E)
-        run: npm run test:e2e
+        env:
+          E2E_GREP: ${{ inputs.e2e == 'smoke' && '--grep @smoke' || '' }}
+        run: npm run test:e2e -- $E2E_GREP
 
       - name: Relatório do Playwright
         if: ${{ !cancelled() }}
