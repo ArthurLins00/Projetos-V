@@ -16,7 +16,8 @@ jobs:
     name: Backend
     uses: ./.github/workflows/backend.yml
     with:
-      e2e: full
+      # PR: só o smoke (o Gate fica rápido); push em main/dev: todos os E2E do Playwright
+      e2e: ${{ github.event_name == 'pull_request' && 'smoke' || 'full' }}
       build: true
     secrets: inherit
 

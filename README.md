@@ -147,7 +147,9 @@ npm test
 | `npm run test:e2e:mobile` | Fluxos de tela no emulador (Maestro) |
 
 Os testes E2E precisam do banco criado e populado (`npm run seed`). O Playwright sobe o backend
-sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.md`](TESTES.md).
+sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.md`](TESTES.md), que também
+descreve o que o GitHub Actions roda a cada push, antes de cada merge e na regressão diária, e o Quality Gate
+que bloqueia o merge quando algum teste falha (seção 2.1).
 
 ---
 

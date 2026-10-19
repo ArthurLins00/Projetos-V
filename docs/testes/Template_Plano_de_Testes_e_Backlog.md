@@ -473,7 +473,7 @@ execuções até o retorno  =  Ti ÷ (Tm − Ta − Mn/F)
 | `TC-62` | `Integração` | `12 min` | `90 min` | `3 s` | `15 min` | `15` | `Sim` |
 | `TC-63` | `Sistema` | `15 min` | `240 min` | `120 s` | `40 min` | `4` | `Não, permanece manual` |
 
-Por que os seis `Não`: TC-24, TC-35, TC-45 e TC-46 têm denominador negativo (Mn/F supera o ganho por execução), então nunca se pagam; TC-48 só se paga após ~15 execuções (180 ÷ (20 − 0,08 − 7,5)), acima das ~12 do horizonte do projeto. Todos continuam no plano com execução manual antes de cada release: TC-24 e TC-45 em aparelho físico com gravação de tela, TC-35 e TC-48 com roteiro e print, e TC-46 usando o fluxo Maestro `demand_crud.yaml` como roteiro assistido. TC-63 só se paga após ~80 execuções (240 ÷ (15 − 2 − 10)); os fluxos Maestro M-01 a M-04 já existem e são usados da mesma forma, como roteiro assistido no emulador, fora do CI.
+Por que os seis `Não`: TC-24, TC-35, TC-45 e TC-46 têm denominador negativo (Mn/F supera o ganho por execução), então nunca se pagam; TC-48 só se paga após ~15 execuções (180 ÷ (20 − 0,08 − 7,5)), acima das ~12 do horizonte do projeto. Todos continuam no plano com execução manual antes de cada release: TC-24 e TC-45 em aparelho físico com gravação de tela, TC-35 e TC-48 com roteiro e print, e TC-46 usando o fluxo Maestro `demand_crud.yaml` como roteiro assistido. TC-63 só se paga após ~80 execuções (240 ÷ (15 − 2 − 10)); mesmo assim, os fluxos Maestro M-01, M-03 e M-04, que ficaram estáveis no emulador do CI, passaram a rodar na pipeline (M-01 e M-03 como smoke em todo PR e os três na regressão diária), sem custo extra de implementação porque já existiam. O M-02 (cadastro pela tela) está em `mobile/e2e/pending/` e continua como roteiro assistido no emulador, assim como o `demand_crud.yaml` do TC-46.
 
 ---
 
@@ -517,7 +517,7 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 14 | `TC-13` | `HU-03` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-46)` |
 | 15 | `TC-37` | `HU-09` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-51, A-52)` |
 | 16 | `TC-41` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-56, A-57; senha com 5 caracteres recusada, 6 e 7 aceitas)` |
-| 17 | `TC-52` | `—` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (terms.test.ts, E-28, E-29)` |
+| 17 | `TC-52` | `—` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-105 a A-110, E-28, E-29)` |
 | 18 | `TC-57` | `HU-06` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-16 a U-19, A-17, E-05, E-06)` |
 | 19 | `TC-58` | `—` | `Sistema` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-18, E-07)` |
 | 20 | `TC-10` | `HU-03` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-31, U-32, E-09; fotos no armazenamento local do backend, já que o bucket está fora do escopo)` |
@@ -525,29 +525,29 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 22 | `TC-30` | `HU-07` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (E-03; protocolo DEM-AAAAMMDD-XXXX e status Aberto, já que o client_uuid está fora do escopo)` |
 | 23 | `TC-42` | `—` | `Componente` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-21 a U-30, A-22, A-23, E-08, E-11, E-18)` |
 | 24 | `TC-43` | `—` | `Sistema` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-19, E-24)` |
-| 25 | `TC-62` | `HU-05` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (gestorChamados.test.ts: fila, aceite, comentários e admin; E-14)` |
+| 25 | `TC-62` | `HU-05` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-60 a A-66: fila, aceite, comentários e admin; E-14)` |
 | 26 | `TC-17` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-47; aceito e roteado pela categoria)` |
 | 27 | `TC-28` | `HU-06` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-20, A-49; sem relacionamentos completos, só a primeira foto como capa)` |
 | 28 | `TC-47` | `HU-05` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-28 a A-33, E-16, E-17, E-19)` |
-| 29 | `TC-50` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (profile.test.ts)` |
-| 30 | `TC-55` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (aiChat.test.ts)` |
-| 31 | `TC-59` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (demands.test.ts: validação de região; E-03)` |
-| 32 | `TC-60` | `HU-03` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-34, E-09)` |
+| 29 | `TC-50` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-90 a A-97)` |
+| 30 | `TC-55` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-74 a A-78)` |
+| 31 | `TC-59` | `HU-04` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-43, A-58, E-03)` |
+| 32 | `TC-60` | `HU-03` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-34, U-45, A-59, E-09)` |
 | 33 | `TC-03` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-35, E-33)` |
 | 34 | `TC-04` | `HU-01` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-36; 1 s antes do vencimento aceita, 1 s depois retorna 401)` |
 | 35 | `TC-05` | `HU-02` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-37, E-34)` |
 | 36 | `TC-16` | `HU-04` | `Componente` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-47, E-13, E-14; roteamento pela categoria, já que a área de cobertura está fora do escopo)` |
-| 37 | `TC-22` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts; sem token registrado o push não é chamado e o fluxo segue)` |
-| 38 | `TC-23` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts; provedor fora do ar só gera log e não interrompe a mudança de status)` |
+| 37 | `TC-22` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-46; sem token registrado o push não é chamado e o fluxo segue)` |
+| 38 | `TC-23` | `HU-05` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-48; provedor fora do ar só gera log e não interrompe a mudança de status)` |
 | 39 | `TC-44` | `HU-04` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-21, A-27, A-48; órgão inativo nunca recebe o chamado)` |
-| 40 | `TC-49` | `—` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (passwordReset.test.ts, E-32, U-42)` |
-| 41 | `TC-54` | `HU-09` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (adminUsers.test.ts)` |
-| 42 | `TC-56` | `—` | `Componente` | `3` | `3` | `3` | `(3×3)÷3 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (ai-agent: agente, ferramentas e acompanhamento com cliente roteirizado; os testes ao vivo contra o Gemini rodam fora de PR)` |
+| 40 | `TC-49` | `—` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-85 a A-89, E-32, U-42)` |
+| 41 | `TC-54` | `HU-09` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-67 a A-73)` |
+| 42 | `TC-56` | `—` | `Componente` | `3` | `3` | `3` | `(3×3)÷3 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (ai-agent/tests, seção 3.5 do TESTES.md: 23 testes com cliente roteirizado em todo push e PR; 10 testes ao vivo contra o Gemini na regressão diária)` |
 | 43 | `TC-25` | `HU-06` | `Integração` | `2` | `2` | `3` | `(2×3)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-20, A-16; paginação por página e limite, já que o cursor está fora do escopo)` |
-| 44 | `TC-20` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts, E-31; registro do token Expo Push e recusa de formato inválido)` |
-| 45 | `TC-21` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notificationService.test.ts com duplo do Expo Push; E-17b e E-19 pela rota real do gestor)` |
-| 46 | `TC-53` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (notifications.test.ts, E-17b, E-19)` |
-| 47 | `TC-51` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (profilePhoto.test.ts, E-30)` |
+| 44 | `TC-20` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-50, E-31; registro do token Expo Push e recusa de formato inválido)` |
+| 45 | `TC-21` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-47 com duplo do Expo Push; E-17b e E-19 pela rota real do gestor)` |
+| 46 | `TC-53` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-79 a A-84, E-17b, E-19)` |
+| 47 | `TC-51` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-98 a A-104, E-30)` |
 | 48 | `TC-14` | `HU-03` | `Integração` | `2` | `2` | `1` | `(2×1)÷2 = 1,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-36, E-09; até 5 fotos por chamado, na ordem de envio e sem sobrescrever)` |
 
 Verificação
