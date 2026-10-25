@@ -17,6 +17,27 @@ function setTokenCookie(res: Response, token: string) {
   });
 }
 
+type Session = {
+  usuario: { id: string; nome: string; email: string; perfil: string; fotourl: string | null; termosversao: number | null };
+  token: string;
+  refreshToken: string;
+};
+
+function sendSession(res: Response, { usuario, token, refreshToken }: Session) {
+  setTokenCookie(res, token);
+
+  res.status(200).json({
+    id: usuario.id,
+    nome: usuario.nome,
+    email: usuario.email,
+    perfil: usuario.perfil,
+    fotourl: usuario.fotourl,
+    termosversao: usuario.termosversao,
+    token,
+    refreshToken,
+  });
+}
+
 export const authController = {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
@@ -51,20 +72,78 @@ export const authController = {
         throw new AppError(400, 'Campos obrigatórios: email, senha');
       }
       
-      const { usuario, token, refreshToken } = await authService.login(email, senha);
+      const resultado = await authService.login(email, senha);
 
-      setTokenCookie(res, token);
+      if ('desafioId' in resultado) {
+        res.status(200).json({
+          requer2fa: true,
+          desafioId: resultado.desafioId,
+          email: resultado.usuario.email,
+        });
+        return;
+      }
 
-      res.status(200).json({
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        perfil: usuario.perfil,
-        fotourl: usuario.fotourl,
-        termosversao: usuario.termosversao,
-        token,
-        refreshToken,
-      });
+      sendSession(res, resultado);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async verifyTwoFactor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { desafioId, codigo } = req.body ?? {};
+
+      if (!desafioId || !codigo) {
+        throw new AppError(400, 'Campos obrigatórios: desafioId, codigo');
+      }
+
+      if (typeof desafioId !== 'string' || typeof codigo !== 'string' || !/^\d{6}$/.test(codigo.trim())) {
+        throw new AppError(400, 'Código inválido ou expirado.');
+      }
+
+      sendSession(res, await authService.verifyTwoFactor(desafioId, codigo.trim()));
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async resendTwoFactor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { desafioId } = req.body ?? {};
+
+      if (!desafioId || typeof desafioId !== 'string') {
+        throw new AppError(400, 'Campo obrigatório: desafioId');
+      }
+
+      await authService.resendTwoFactor(desafioId);
+
+      res.status(200).json({ message: 'Enviamos um novo código para o seu e-mail.' });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async updateTwoFactor(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id;
+
+      if (!usuarioId) {
+        throw new AppError(401, 'Usuário não identificado.');
+      }
+
+      const { ativo, senhaAtual } = req.body ?? {};
+
+      if (typeof ativo !== 'boolean') {
+        throw new AppError(400, 'Campo obrigatório: ativo (booleano)');
+      }
+
+      if (!senhaAtual || typeof senhaAtual !== 'string') {
+        throw new AppError(400, 'Informe a senha atual para alterar a verificação em duas etapas.');
+      }
+
+      const usuario = await authService.setTwoFactor(usuarioId, ativo, senhaAtual);
+
+      res.status(200).json(usuario);
     } catch (error) {
       next(error);
     }
@@ -174,6 +253,7 @@ export const authController = {
         status: usuario.status,
         fotourl: usuario.fotourl,
         termosversao: usuario.termosversao,
+        doisfatores: usuario.doisfatores,
         criadoem: usuario.criadoem
       });
     } catch (error) {

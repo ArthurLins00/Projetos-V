@@ -67,6 +67,7 @@ export const openApiSpec = {
           perfil: { $ref: '#/components/schemas/Perfil' },
           fotourl: { type: 'string', nullable: true, example: '/uploads/avatar-<id>-1760000000000.jpg' },
           termosversao: { type: 'integer', nullable: true, description: 'Última versão dos termos de uso aceita', example: 1 },
+          doisfatores: { type: 'boolean', description: 'Verificação em duas etapas por e-mail ativa' },
         },
       },
       Perfil: { type: 'string', enum: ['Cidadao', 'Gestor', 'Admin'], example: 'Cidadao' },
@@ -301,6 +302,65 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/login/2fa': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Concluir o login com o código de verificação enviado por e-mail',
+        description:
+          'Usado quando `/auth/login` responde `{ requer2fa: true, desafioId }`. O código expira em 10 min e aceita até 5 tentativas.',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['desafioId', 'codigo'],
+                properties: {
+                  desafioId: { type: 'string', format: 'uuid' },
+                  codigo: { type: 'string', example: '123456' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Autenticado. Mesma resposta de um login sem verificação em duas etapas.' },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
+    '/auth/login/2fa/resend': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Reenviar o código de verificação (no máximo um por minuto)',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['desafioId'],
+                properties: { desafioId: { type: 'string', format: 'uuid' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Novo código enviado',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          429: { description: 'Reenvio pedido antes de um minuto' },
+        },
+      },
+    },
     '/auth/forgot-password': {
       post: {
         tags: ['Auth'],
@@ -527,6 +587,36 @@ export const openApiSpec = {
           },
           400: { $ref: '#/components/responses/BadRequest' },
           401: { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/auth/me/two-factor': {
+      put: {
+        tags: ['Auth'],
+        summary: 'Ativar ou desativar a verificação em duas etapas por e-mail',
+        security: BEARER,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['ativo', 'senhaAtual'],
+                properties: {
+                  ativo: { type: 'boolean' },
+                  senhaAtual: { type: 'string', format: 'password' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Usuário atualizado com o novo valor de `doisfatores`',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthUser' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { description: 'Não autenticado ou senha atual incorreta' },
         },
       },
     },
