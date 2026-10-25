@@ -65,9 +65,13 @@
       "expo-font"
     ],
     "extra": {
-      "router": {},
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
       "eas": {
-        "projectId": "01f8f8ea-6e57-4eaa-adc0-d79d822f782a"
+        "projectId": "8610ecb4-1b2f-495c-a3f3-3339b8c3d7b7"
       }
     },
     "owner": "victorsimasdev"
