@@ -22,8 +22,13 @@ export const authService = {
     return response.data;
   },
 
-  async register(nome: string, email: string, senha: string): Promise<User> {
-    const response = await api.post<User>('/auth/register', { nome, email, senha });
+  async register(nome: string, email: string, senha: string, ignorarSenhaRepetida = false): Promise<User> {
+    const response = await api.post<User>('/auth/register', {
+      nome,
+      email,
+      senha,
+      ...(ignorarSenhaRepetida && { ignorarSenhaRepetida }),
+    });
     return response.data;
   },
 
