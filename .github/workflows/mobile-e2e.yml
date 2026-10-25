@@ -142,10 +142,13 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: maestro-report
+          # As capturas de tela e a árvore de elementos do Maestro ficam numa pasta .maestro
+          include-hidden-files: true
           path: |
             maestro-report.xml
             maestro-debug
             logcat.txt
+            logcat-warmup-1.txt
             backend.log
             metro.log
           retention-days: 7
