@@ -91,7 +91,7 @@ export function NotificationsView() {
               </Pressable>
             )}
           </View>
-        ) : null
+        ) : undefined
       }
       ListEmptyComponent={
         <EmptyState
@@ -104,7 +104,7 @@ export function NotificationsView() {
           }
         />
       }
-      ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : null}
+      ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : undefined}
       renderItem={({ item, index }) => <NotificationItem item={item} index={index} onPress={() => vm.open(item)} />}
     />
   );
