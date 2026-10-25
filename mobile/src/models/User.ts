@@ -43,6 +43,13 @@ export interface LoginResponse extends User {
   refreshToken: string;
 }
 
+// Resposta do login quando a conta tem verificação em duas etapas: a sessão só sai depois do código
+export interface TwoFactorChallenge {
+  requer2fa: true;
+  desafioId: string;
+  email: string;
+}
+
 export interface RefreshResponse {
   token: string;
   refreshToken: string;
@@ -50,6 +57,7 @@ export interface RefreshResponse {
 
 export interface UserProfile extends User {
   status: string;
+  doisfatores?: boolean;
   criadoem: string;
 }
 

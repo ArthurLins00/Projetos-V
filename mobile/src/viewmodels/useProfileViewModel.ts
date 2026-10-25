@@ -26,6 +26,9 @@ export function useProfileViewModel() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
 
+  const [twoFactorPassword, setTwoFactorPassword] = useState('');
+  const [savingTwoFactor, setSavingTwoFactor] = useState(false);
+
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
@@ -92,6 +95,29 @@ export function useProfileViewModel() {
       Alert.alert('Erro', getApiErrorMessage(error, 'Não foi possível alterar a senha.'));
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const twoFactorEnabled = !!profile?.doisfatores;
+
+  const toggleTwoFactor = async () => {
+    if (!twoFactorPassword) return Alert.alert('Erro', 'Informe sua senha atual.');
+
+    try {
+      setSavingTwoFactor(true);
+      const updated = await authService.setTwoFactor(!twoFactorEnabled, twoFactorPassword);
+      setProfile(updated);
+      setTwoFactorPassword('');
+      Alert.alert(
+        'Sucesso',
+        updated.doisfatores
+          ? 'Verificação em duas etapas ativada. Nos próximos logins enviaremos um código para o seu e-mail.'
+          : 'Verificação em duas etapas desativada.'
+      );
+    } catch (error) {
+      Alert.alert('Erro', getApiErrorMessage(error, 'Não foi possível alterar a verificação em duas etapas.'));
+    } finally {
+      setSavingTwoFactor(false);
     }
   };
 
@@ -179,6 +205,11 @@ export function useProfileViewModel() {
     setConfirmarSenha,
     savingPassword,
     savePassword,
+    twoFactorEnabled,
+    twoFactorPassword,
+    setTwoFactorPassword,
+    savingTwoFactor,
+    toggleTwoFactor,
     photoUrl,
     uploadingPhoto,
     changePhoto,
