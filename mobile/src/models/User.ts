@@ -48,7 +48,7 @@ export interface TwoFactorChallenge {
   requer2fa: true;
   desafioId: string;
   email: string;
-  // Só vem quando o backend roda com TWO_FACTOR_DEMO (npm run dev:demo)
+  // Só vem quando o backend roda com DEMO_MODE (npm run dev:demo)
   codigo?: string;
 }
 

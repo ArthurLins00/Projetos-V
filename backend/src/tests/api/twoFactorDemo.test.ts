@@ -6,14 +6,14 @@ jest.mock('../../services/mailService', () => ({ mailService: { send: jest.fn() 
 import { prisma } from '../../config/__mocks__/prisma';
 
 // A flag é lida quando o módulo de env carrega, então precisa existir antes de importar o app
-process.env.TWO_FACTOR_DEMO = 'true';
+process.env.DEMO_MODE = 'true';
 const { app } = require('../../app');
 
-describe('Verificação em duas etapas com TWO_FACTOR_DEMO (API)', () => {
+describe('Verificação em duas etapas com DEMO_MODE (API)', () => {
   const senha = 'senhaSegura123';
 
   afterAll(() => {
-    delete process.env.TWO_FACTOR_DEMO;
+    delete process.env.DEMO_MODE;
   });
 
   it('devolve o código na resposta do login e ele conclui a autenticação', async () => {

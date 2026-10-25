@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
-    "dev:demo": "cross-env TWO_FACTOR_DEMO=true ts-node-dev src/server.ts",
+    "dev:demo": "cross-env DEMO_MODE=true ts-node-dev src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "migrate:deploy": "prisma migrate deploy",

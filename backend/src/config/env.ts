@@ -47,8 +47,8 @@ export function resolveMailFrom(mailFrom: string | undefined, smtpUser: string) 
 export const MAIL_FROM = resolveMailFrom(process.env.MAIL_FROM, SMTP_USER);
 
 // Devolve o código de verificação na resposta do login, para demonstrar o app sem acesso à caixa de e-mail
-export const TWO_FACTOR_DEMO = process.env.TWO_FACTOR_DEMO === 'true';
+export const DEMO_MODE = process.env.DEMO_MODE === 'true';
 
-if (TWO_FACTOR_DEMO && isProduction) {
-  throw new Error('TWO_FACTOR_DEMO não pode ser usado em produção.');
+if (DEMO_MODE && isProduction) {
+  throw new Error('DEMO_MODE não pode ser usado em produção.');
 }
