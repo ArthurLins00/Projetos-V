@@ -321,7 +321,7 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | `SMTP_HOST` | em produção | — | Servidor SMTP para os e-mails de recuperação de senha (sem ele, em desenvolvimento o código é exibido no log do servidor) |
 | `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
 | `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
-| `MAIL_FROM` | não | `Fiscalize <no-reply@fiscalize.gov.br>` | Remetente dos e-mails |
+| `MAIL_FROM` | não | `Fiscalize <SMTP_USER>` | Remetente dos e-mails. Se tiver só o nome (ex.: `Fiscalize`), o endereço usado é o do `SMTP_USER` |
 | `TWO_FACTOR_DEMO` | não | `false` | Devolve o código da verificação em duas etapas na resposta do login, para demonstrações sem acesso ao e-mail. Proibido em produção |
 | `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
