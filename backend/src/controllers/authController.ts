@@ -41,7 +41,7 @@ function sendSession(res: Response, { usuario, token, refreshToken }: Session) {
 export const authController = {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { nome, email, senha } = req.body;
+      const { nome, email, senha, ignorarSenhaRepetida } = req.body;
       
       if (!nome || !email || !senha) {
         throw new AppError(400, 'Campos obrigatórios: nome, email, senha');
@@ -56,7 +56,7 @@ export const authController = {
         throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
       }
       
-      const usuario = await authService.register(nome, email, senha);
+      const usuario = await authService.register(nome, email, senha, ignorarSenhaRepetida === true);
       
       res.status(201).json({ id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil });
     } catch (error) {

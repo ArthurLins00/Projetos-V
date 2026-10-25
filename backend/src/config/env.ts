@@ -46,7 +46,8 @@ export function resolveMailFrom(mailFrom: string | undefined, smtpUser: string) 
 
 export const MAIL_FROM = resolveMailFrom(process.env.MAIL_FROM, SMTP_USER);
 
-// Devolve o código de verificação na resposta do login, para demonstrar o app sem acesso à caixa de e-mail
+// Modo de demonstração: devolve o código da verificação em duas etapas na resposta do login
+// e avisa no cadastro quando a senha escolhida já pertence a outra conta
 export const DEMO_MODE = process.env.DEMO_MODE === 'true';
 
 if (DEMO_MODE && isProduction) {

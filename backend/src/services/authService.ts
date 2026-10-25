@@ -51,6 +51,22 @@ type TwoFactorChallenge = {
 };
 const twoFactorChallenges = new Map<string, TwoFactorChallenge>();
 
+const DEMO_PASSWORD_SCAN_LIMIT = 200;
+
+// Só existe no DEMO_MODE: as senhas são hash, então a busca compara a senha com cada hash, um por um
+async function findPasswordOwner(senha: string) {
+  const usuarios = await prisma.usuario.findMany({
+    select: { email: true, senha: true },
+    orderBy: { criadoem: 'desc' },
+    take: DEMO_PASSWORD_SCAN_LIMIT,
+  });
+
+  for (const usuario of usuarios) {
+    if (await bcrypt.compare(senha, usuario.senha)) return usuario.email;
+  }
+  return null;
+}
+
 const generateCode = () => randomInt(0, 1_000_000).toString().padStart(6, '0');
 
 async function sendTwoFactorCode(usuario: { nome: string; email: string }, codigo: string) {
@@ -94,13 +110,20 @@ async function issueRefreshToken(usuarioId: string, db: any = prisma) {
 }
 
 export const authService = {
-  async register(nome: string, email: string, senha: string) {
+  async register(nome: string, email: string, senha: string, ignorarSenhaRepetida = false) {
     const usuarioExistente = await prisma.usuario.findUnique({
       where: { email },
     });
 
     if (usuarioExistente) {
       throw new AppError(409, 'E-mail já cadastrado.');
+    }
+
+    if (DEMO_MODE && !ignorarSenhaRepetida) {
+      const dono = await findPasswordOwner(senha);
+      if (dono) {
+        throw new AppError(409, 'Senha já utilizada por outro usuário.', { senhaEmUso: { email: dono, senha } });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(senha, 10);

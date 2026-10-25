@@ -322,7 +322,7 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
 | `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
 | `MAIL_FROM` | não | `Fiscalize <SMTP_USER>` | Remetente dos e-mails. Se tiver só o nome (ex.: `Fiscalize`), o endereço usado é o do `SMTP_USER` |
-| `DEMO_MODE` | não | `false` | Devolve o código da verificação em duas etapas na resposta do login, para demonstrações sem acesso ao e-mail. Proibido em produção |
+| `DEMO_MODE` | não | `false` | Modo de demonstração: devolve o código da verificação em duas etapas na resposta do login e, no cadastro, avisa qual conta já usa a senha escolhida. Proibido em produção |
 | `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
 | `SEED_ADMIN_PASSWORD` | não | `Admin@123456` | Senha do admin criado pelo seed |
