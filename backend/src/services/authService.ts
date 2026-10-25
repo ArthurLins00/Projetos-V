@@ -4,7 +4,7 @@ import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
-import { JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_TTL_DAYS } from '../config/env';
+import { JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_TTL_DAYS, TWO_FACTOR_DEMO } from '../config/env';
 import { mailService } from './mailService';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -166,7 +166,7 @@ export const authService = {
 
       await sendTwoFactorCode(usuario, codigo);
 
-      return { usuario, desafioId };
+      return { usuario, desafioId, ...(TWO_FACTOR_DEMO && { codigo }) };
     }
 
     const token = signAccessToken(usuario);
@@ -235,6 +235,8 @@ export const authService = {
     });
 
     await sendTwoFactorCode(usuario, codigo);
+
+    return TWO_FACTOR_DEMO ? { codigo } : {};
   },
 
   async setTwoFactor(userId: string, ativo: boolean, senhaAtual: string) {

@@ -79,6 +79,7 @@ export const authController = {
           requer2fa: true,
           desafioId: resultado.desafioId,
           email: resultado.usuario.email,
+          ...(resultado.codigo && { codigo: resultado.codigo }),
         });
         return;
       }
@@ -115,9 +116,9 @@ export const authController = {
         throw new AppError(400, 'Campo obrigatório: desafioId');
       }
 
-      await authService.resendTwoFactor(desafioId);
+      const { codigo } = await authService.resendTwoFactor(desafioId);
 
-      res.status(200).json({ message: 'Enviamos um novo código para o seu e-mail.' });
+      res.status(200).json({ message: 'Enviamos um novo código para o seu e-mail.', ...(codigo && { codigo }) });
     } catch (error) {
       next(error);
     }

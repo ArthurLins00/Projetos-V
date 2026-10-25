@@ -38,3 +38,10 @@ export const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
 export const SMTP_USER = process.env.SMTP_USER?.trim() || '';
 export const SMTP_PASS = process.env.SMTP_PASS || '';
 export const MAIL_FROM = process.env.MAIL_FROM?.trim() || 'Fiscalize <no-reply@fiscalize.gov.br>';
+
+// Devolve o código de verificação na resposta do login, para demonstrar o app sem acesso à caixa de e-mail
+export const TWO_FACTOR_DEMO = process.env.TWO_FACTOR_DEMO === 'true';
+
+if (TWO_FACTOR_DEMO && isProduction) {
+  throw new Error('TWO_FACTOR_DEMO não pode ser usado em produção.');
+}

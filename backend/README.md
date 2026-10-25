@@ -291,6 +291,7 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | Script | Descrição |
 |---|---|
 | `npm run dev` | Servidor em desenvolvimento, com recarga automática |
+| `npm run dev:demo` | Igual ao `dev`, mas com `TWO_FACTOR_DEMO=true` |
 | `npm run build` | Gera o Prisma Client e compila o TypeScript para `dist/` |
 | `npm start` | Executa a versão compilada |
 | `npm test` | Todos os testes (unitários + API) |
@@ -321,6 +322,7 @@ contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e
 | `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
 | `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
 | `MAIL_FROM` | não | `Fiscalize <no-reply@fiscalize.gov.br>` | Remetente dos e-mails |
+| `TWO_FACTOR_DEMO` | não | `false` | Devolve o código da verificação em duas etapas na resposta do login, para demonstrações sem acesso ao e-mail. Proibido em produção |
 | `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
 | `SEED_ADMIN_PASSWORD` | não | `Admin@123456` | Senha do admin criado pelo seed |
