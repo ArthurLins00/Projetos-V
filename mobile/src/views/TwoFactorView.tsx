@@ -13,9 +13,16 @@ export function TwoFactorView() {
   return (
     <AuthLayout title="Verificação" subtitle="Confirme que é você entrando na conta" icon="mail-unread" onBack={vm.goBack} backLabel="Login">
       <Text style={styles.heading}>Verificação da conta</Text>
-      <Text testID="two-factor-caption" style={styles.caption}>
-        Enviamos um código de 6 dígitos para o seu e-mail: <Text style={styles.strong}>{vm.maskedEmail}</Text>
-      </Text>
+      {vm.demoCode ? (
+        <Text testID="two-factor-caption" style={styles.caption}>
+          Acabamos de enviar o código <Text style={styles.strong}>{vm.demoCode}</Text> para o seu e-mail:{' '}
+          <Text style={styles.strong}>{vm.censoredEmail}</Text>
+        </Text>
+      ) : (
+        <Text testID="two-factor-caption" style={styles.caption}>
+          Enviamos um código de 6 dígitos para o seu e-mail: <Text style={styles.strong}>{vm.maskedEmail}</Text>
+        </Text>
+      )}
       <Text style={styles.caption}>Digite o código abaixo para acessar sua conta:</Text>
 
       <CodeInput testID="two-factor-code" value={vm.code} onChangeText={vm.changeCode} editable={!vm.loading} />

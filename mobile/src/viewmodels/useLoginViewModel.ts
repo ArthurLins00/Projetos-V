@@ -21,7 +21,11 @@ export function useLoginViewModel() {
       if (challenge) {
         router.push({
           pathname: '/(auth)/two-factor',
-          params: { desafioId: challenge.desafioId, email: challenge.email },
+          params: {
+            desafioId: challenge.desafioId,
+            email: challenge.email,
+            ...(challenge.codigo && { codigo: challenge.codigo }),
+          },
         });
       }
     } catch (error) {

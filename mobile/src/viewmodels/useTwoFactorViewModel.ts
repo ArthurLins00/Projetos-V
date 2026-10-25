@@ -14,10 +14,27 @@ export function maskEmail(email: string) {
   return `${usuario[0]}***@${dominio}`;
 }
 
+// "joao.silva@gmail.com" -> "joao.silva@g**il.c*m": cada parte do domínio perde as letras logo após a primeira
+export function censorDomain(email: string) {
+  const [usuario, dominio] = email.split('@');
+  if (!usuario || !dominio) return email;
+
+  const censurado = dominio
+    .split('.')
+    .map((parte) => {
+      const ocultos = Math.floor((parte.length - 1) / 2);
+      return parte[0] + '*'.repeat(ocultos) + parte.slice(1 + ocultos);
+    })
+    .join('.');
+
+  return `${usuario}@${censurado}`;
+}
+
 export function useTwoFactorViewModel() {
   const router = useRouter();
   const { verifyTwoFactor } = useAuth();
-  const { desafioId, email } = useLocalSearchParams<{ desafioId: string; email: string }>();
+  const { desafioId, email, codigo } = useLocalSearchParams<{ desafioId: string; email: string; codigo?: string }>();
+  const [demoCode, setDemoCode] = useState(codigo);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -46,8 +63,9 @@ export function useTwoFactorViewModel() {
   const resend = async () => {
     try {
       setResending(true);
-      const { message } = await authService.resendTwoFactor(desafioId);
+      const { message, codigo: novoCodigo } = await authService.resendTwoFactor(desafioId);
       setCode('');
+      if (novoCodigo) setDemoCode(novoCodigo);
       Alert.alert('Código reenviado', message);
     } catch (error) {
       Alert.alert('Erro', getApiErrorMessage(error, 'Não foi possível reenviar o código.'));
@@ -60,6 +78,8 @@ export function useTwoFactorViewModel() {
 
   return {
     maskedEmail: maskEmail(email ?? ''),
+    demoCode,
+    censoredEmail: censorDomain(email ?? ''),
     code,
     changeCode,
     verify: () => verify(),

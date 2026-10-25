@@ -12,8 +12,8 @@ export const authService = {
     return response.data;
   },
 
-  async resendTwoFactor(desafioId: string): Promise<{ message: string }> {
-    const response = await api.post<{ message: string }>('/auth/login/2fa/resend', { desafioId });
+  async resendTwoFactor(desafioId: string): Promise<{ message: string; codigo?: string }> {
+    const response = await api.post<{ message: string; codigo?: string }>('/auth/login/2fa/resend', { desafioId });
     return response.data;
   },
 
