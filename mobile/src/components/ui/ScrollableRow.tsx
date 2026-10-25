@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, ScrollView, Pressable, StyleProp, ViewStyle } from 'react-native';
+import { View, ScrollView, ScrollViewInstance, Pressable, StyleProp, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { makeStyles, shadow, useTheme } from '../../theme';
 
@@ -14,7 +14,7 @@ const EDGE_TOLERANCE = 4;
 export function ScrollableRow({ children, contentContainerStyle, testID }: Props) {
   const { colors } = useTheme();
   const styles = useStyles();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const [offset, setOffset] = useState(0);
   const [viewWidth, setViewWidth] = useState(0);
   const [contentWidth, setContentWidth] = useState(0);

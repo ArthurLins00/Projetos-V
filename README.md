@@ -9,7 +9,7 @@ cidadão acompanha o andamento pelo app até a resolução.
 
 | | |
 |---|---|
-| **App** | React Native + Expo (SDK 57), somente **Android e iOS** |
+| **App** | React Native + Expo (SDK 58), somente **Android e iOS** |
 | **Backend** | Node.js + Express + TypeScript + Prisma + PostgreSQL |
 | **Testes** | Jest + Supertest (unitário e API), Playwright (E2E da API) e Maestro (E2E de telas) |
 
@@ -73,7 +73,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 
 - **Node.js 22**
 - **PostgreSQL** (local ou via Docker)
-- **Android Studio** (emulador Android) ou o app **Expo Go** (SDK 57) no celular
+- **Android Studio** (emulador Android) ou o app **Expo Go** (SDK 58) no celular
 
 > **Windows:** clone o repositório num caminho **curto e sem acentos** (ex.: `C:\dev\Projetos-V`).
 > O build Android falha em caminhos como `Área de Trabalho` ou caminhos muito longos.

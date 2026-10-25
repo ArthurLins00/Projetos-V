@@ -3,7 +3,7 @@
 Aplicativo do Fiscalize para o cidadão registrar problemas urbanos com **foto e localização**,
 acompanhar o andamento e gerenciar as próprias ocorrências.
 
-**Stack:** React Native 0.86 · Expo SDK 57 · Expo Router · TypeScript · axios
+**Stack:** React Native 0.88 · Expo SDK 58 · Expo Router · TypeScript · axios
 
 **Plataformas:** somente **Android e iOS**. O build web está desabilitado de propósito
 (`"platforms": ["android", "ios"]` no [`app.json`](app.json)).
@@ -96,7 +96,7 @@ Se o app não alcançar o servidor, a mensagem de erro mostra a URL tentada.
 
 - Node.js 22
 - Backend rodando e com o seed aplicado (veja [`../backend/README.md`](../backend/README.md))
-- **Expo Go** (SDK 57) no celular **ou** Android Studio com um emulador
+- **Expo Go** (SDK 58) no celular **ou** Android Studio com um emulador
 
 ### Instalar e iniciar
 
