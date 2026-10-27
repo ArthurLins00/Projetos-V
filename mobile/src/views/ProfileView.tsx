@@ -146,6 +146,38 @@ export function ProfileView() {
           />
         </Card>
 
+        <Card title="Verificação em duas etapas" icon="shield-checkmark-outline">
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Status</Text>
+            <View style={[styles.statusPill, vm.twoFactorEnabled && styles.statusPillOn]}>
+              <Text testID="profile-two-factor-status" style={[styles.statusText, vm.twoFactorEnabled && styles.statusTextOn]}>
+                {vm.twoFactorEnabled ? 'Ativada' : 'Desativada'}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.description}>
+            Ao entrar, além da senha, pediremos um código de 6 dígitos enviado para o seu e-mail.
+          </Text>
+          <TextField
+            testID="profile-input-two-factor-password"
+            label="Senha atual (para confirmar)"
+            icon="key-outline"
+            value={vm.twoFactorPassword}
+            onChangeText={vm.setTwoFactorPassword}
+            secureTextEntry
+          />
+          <Button
+            testID="profile-toggle-two-factor"
+            variant={vm.twoFactorEnabled ? 'danger' : 'primary'}
+            icon={vm.twoFactorEnabled ? 'close-circle-outline' : 'shield-checkmark-outline'}
+            title={vm.twoFactorEnabled ? 'Desativar' : 'Ativar'}
+            onPress={vm.toggleTwoFactor}
+            loading={vm.savingTwoFactor}
+            disabled={!vm.profile || !vm.twoFactorPassword}
+            style={styles.cardButton}
+          />
+        </Card>
+
         <Button testID="profile-help" variant="secondary" icon="help-circle-outline" title="Ajuda e termos de uso" onPress={vm.openHelp} style={styles.helpButton} />
         <Button testID="profile-logout" variant="danger" icon="log-out-outline" title="Sair da conta" onPress={vm.confirmSignOut} />
       </ScrollView>
@@ -181,6 +213,13 @@ const useStyles = makeStyles((colors) => ({
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
   cardTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
   cardButton: { marginTop: 2 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  statusLabel: { fontSize: 14, fontWeight: '600', color: colors.text },
+  statusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: colors.surfaceMuted },
+  statusPillOn: { backgroundColor: colors.successSoft },
+  statusText: { fontSize: 12, fontWeight: '700', color: colors.textMuted },
+  statusTextOn: { color: colors.success },
+  description: { fontSize: 13, color: colors.textMuted, lineHeight: 19, marginBottom: 14 },
   helpButton: { marginBottom: 12 },
   segmented: { flexDirection: 'row', gap: 8, padding: 4, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
   segment: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: radius.sm },

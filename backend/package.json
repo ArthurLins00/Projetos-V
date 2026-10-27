@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
+    "dev:demo": "cross-env DEMO_MODE=true ts-node-dev src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "migrate:deploy": "prisma migrate deploy",
@@ -57,6 +58,7 @@
     "@types/nodemailer": "^6.4.24",
     "@types/supertest": "^7.2.1",
     "@types/uuid": "^10.0.0",
+    "cross-env": "^7.0.3",
     "jest": "^30.4.2",
     "jest-mock-extended": "^4.0.1",
     "prisma": "^7.8.0",

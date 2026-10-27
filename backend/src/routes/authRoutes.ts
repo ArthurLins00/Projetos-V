@@ -6,6 +6,8 @@ const router = Router();
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/login/2fa', authController.verifyTwoFactor);
+router.post('/login/2fa/resend', authController.resendTwoFactor);
 router.post('/refresh', authController.refresh);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
@@ -15,6 +17,7 @@ router.put('/me', authenticate, authController.updateMe);
 router.put('/me/photo', authenticate, authController.uploadPhoto);
 router.delete('/me/photo', authenticate, authController.removePhoto);
 router.post('/me/terms', authenticate, authController.acceptTerms);
+router.put('/me/two-factor', authenticate, authController.updateTwoFactor);
 router.post('/me/push-token', authenticate, authController.registerPushToken);
 router.delete('/me/push-token', authenticate, authController.removePushToken);
 

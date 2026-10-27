@@ -4,7 +4,7 @@ import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware';
 import { prisma } from '../config/prisma';
-import { JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_TTL_DAYS } from '../config/env';
+import { JWT_SECRET, JWT_EXPIRATION, REFRESH_TOKEN_TTL_DAYS, DEMO_MODE } from '../config/env';
 import { mailService } from './mailService';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -21,6 +21,7 @@ const PROFILE_SELECT = {
   status: true,
   fotourl: true,
   termosversao: true,
+  doisfatores: true,
   criadoem: true,
 } as const;
 
@@ -36,6 +37,46 @@ const RESET_CODE_MAX_ATTEMPTS = 5;
 
 type ResetCode = { hash: string; expiresAt: number; createdAt: number; attempts: number };
 const resetCodes = new Map<string, ResetCode>();
+
+const TWO_FACTOR_TTL_MS = 10 * 60 * 1000;
+const TWO_FACTOR_RESEND_MS = 60 * 1000;
+const TWO_FACTOR_MAX_ATTEMPTS = 5;
+
+type TwoFactorChallenge = {
+  usuarioId: string;
+  hash: string;
+  expiresAt: number;
+  sentAt: number;
+  attempts: number;
+};
+const twoFactorChallenges = new Map<string, TwoFactorChallenge>();
+
+const DEMO_PASSWORD_SCAN_LIMIT = 200;
+
+// Só existe no DEMO_MODE: as senhas são hash, então a busca compara a senha com cada hash, um por um
+async function findPasswordOwner(senha: string) {
+  const usuarios = await prisma.usuario.findMany({
+    select: { email: true, senha: true },
+    orderBy: { criadoem: 'desc' },
+    take: DEMO_PASSWORD_SCAN_LIMIT,
+  });
+
+  for (const usuario of usuarios) {
+    if (await bcrypt.compare(senha, usuario.senha)) return usuario.email;
+  }
+  return null;
+}
+
+const generateCode = () => randomInt(0, 1_000_000).toString().padStart(6, '0');
+
+async function sendTwoFactorCode(usuario: { nome: string; email: string }, codigo: string) {
+  await mailService.send(
+    usuario.email,
+    'Fiscalize — código de verificação',
+    `Olá, ${usuario.nome}.\n\nSeu código para entrar no Fiscalize é: ${codigo}\n\n` +
+      'Ele expira em 10 minutos. Se não foi você que tentou entrar, troque sua senha.'
+  );
+}
 
 const hashCode = (code: string) => createHash('sha256').update(code).digest();
 
@@ -69,13 +110,20 @@ async function issueRefreshToken(usuarioId: string, db: any = prisma) {
 }
 
 export const authService = {
-  async register(nome: string, email: string, senha: string) {
+  async register(nome: string, email: string, senha: string, ignorarSenhaRepetida = false) {
     const usuarioExistente = await prisma.usuario.findUnique({
       where: { email },
     });
 
     if (usuarioExistente) {
       throw new AppError(409, 'E-mail já cadastrado.');
+    }
+
+    if (DEMO_MODE && !ignorarSenhaRepetida) {
+      const dono = await findPasswordOwner(senha);
+      if (dono) {
+        throw new AppError(409, 'Senha já utilizada por outro usuário.', { senhaEmUso: { email: dono, senha } });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(senha, 10);
@@ -126,10 +174,110 @@ export const authService = {
       throw new AppError(401, 'Credenciais inválidas.');
     }
 
+    // Com 2FA a senha só abre um desafio; os tokens saem depois do código confirmado
+    if (usuario.doisfatores) {
+      const codigo = generateCode();
+      const desafioId = randomUUID();
+      const now = Date.now();
+      twoFactorChallenges.set(desafioId, {
+        usuarioId: usuario.id,
+        hash: hashCode(codigo).toString('hex'),
+        expiresAt: now + TWO_FACTOR_TTL_MS,
+        sentAt: now,
+        attempts: 0,
+      });
+
+      await sendTwoFactorCode(usuario, codigo);
+
+      return { usuario, desafioId, ...(DEMO_MODE && { codigo }) };
+    }
+
     const token = signAccessToken(usuario);
     const refreshToken = await issueRefreshToken(usuario.id);
 
     return { usuario, token, refreshToken };
+  },
+
+  async verifyTwoFactor(desafioId: string, codigo: string) {
+    const invalido = new AppError(400, 'Código inválido ou expirado.');
+    const desafio = twoFactorChallenges.get(desafioId);
+
+    if (!desafio || desafio.expiresAt < Date.now()) {
+      twoFactorChallenges.delete(desafioId);
+      throw invalido;
+    }
+
+    desafio.attempts += 1;
+    if (desafio.attempts > TWO_FACTOR_MAX_ATTEMPTS) {
+      twoFactorChallenges.delete(desafioId);
+      throw invalido;
+    }
+
+    if (!timingSafeEqual(hashCode(codigo), Buffer.from(desafio.hash, 'hex'))) {
+      throw invalido;
+    }
+
+    twoFactorChallenges.delete(desafioId);
+
+    const usuario = await prisma.usuario.findUnique({ where: { id: desafio.usuarioId } });
+    if (!usuario || usuario.status !== 'Ativo') {
+      throw invalido;
+    }
+
+    const token = signAccessToken(usuario);
+    const refreshToken = await issueRefreshToken(usuario.id);
+
+    return { usuario, token, refreshToken };
+  },
+
+  async resendTwoFactor(desafioId: string) {
+    const desafio = twoFactorChallenges.get(desafioId);
+
+    if (!desafio || desafio.expiresAt < Date.now()) {
+      twoFactorChallenges.delete(desafioId);
+      throw new AppError(400, 'Código inválido ou expirado.');
+    }
+
+    if (Date.now() - desafio.sentAt < TWO_FACTOR_RESEND_MS) {
+      throw new AppError(429, 'Aguarde um minuto para pedir um novo código.');
+    }
+
+    const usuario = await prisma.usuario.findUnique({ where: { id: desafio.usuarioId } });
+    if (!usuario || usuario.status !== 'Ativo') {
+      twoFactorChallenges.delete(desafioId);
+      throw new AppError(400, 'Código inválido ou expirado.');
+    }
+
+    const codigo = generateCode();
+    const now = Date.now();
+    Object.assign(desafio, {
+      hash: hashCode(codigo).toString('hex'),
+      expiresAt: now + TWO_FACTOR_TTL_MS,
+      sentAt: now,
+      attempts: 0,
+    });
+
+    await sendTwoFactorCode(usuario, codigo);
+
+    return DEMO_MODE ? { codigo } : {};
+  },
+
+  async setTwoFactor(userId: string, ativo: boolean, senhaAtual: string) {
+    const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
+
+    if (!usuario) {
+      throw new AppError(404, 'Usuário não encontrado.');
+    }
+
+    if (!(await bcrypt.compare(senhaAtual, usuario.senha))) {
+      throw new AppError(401, 'Senha atual incorreta.');
+    }
+
+    return prisma.usuario.update({
+      where: { id: userId },
+      data: { doisfatores: ativo, atualizadoem: new Date(), atualizadopor: userId },
+      select: PROFILE_SELECT,
+    });
   },
 
   async refresh(refreshToken: string) {
@@ -328,7 +476,7 @@ export const authService = {
       return;
     }
 
-    const codigo = randomInt(0, 1_000_000).toString().padStart(6, '0');
+    const codigo = generateCode();
     const now = Date.now();
     resetCodes.set(email, {
       hash: hashCode(codigo).toString('hex'),

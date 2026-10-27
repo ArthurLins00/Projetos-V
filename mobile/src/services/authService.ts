@@ -1,14 +1,34 @@
 import { api } from './api';
-import { LoginResponse, UpdateProfilePayload, User, UserProfile } from '../models/User';
+import { LoginResponse, TwoFactorChallenge, UpdateProfilePayload, User, UserProfile } from '../models/User';
 
 export const authService = {
-  async login(email: string, senha: string): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/auth/login', { email, senha });
+  async login(email: string, senha: string): Promise<LoginResponse | TwoFactorChallenge> {
+    const response = await api.post<LoginResponse | TwoFactorChallenge>('/auth/login', { email, senha });
     return response.data;
   },
 
-  async register(nome: string, email: string, senha: string): Promise<User> {
-    const response = await api.post<User>('/auth/register', { nome, email, senha });
+  async verifyTwoFactor(desafioId: string, codigo: string): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>('/auth/login/2fa', { desafioId, codigo });
+    return response.data;
+  },
+
+  async resendTwoFactor(desafioId: string): Promise<{ message: string; codigo?: string }> {
+    const response = await api.post<{ message: string; codigo?: string }>('/auth/login/2fa/resend', { desafioId });
+    return response.data;
+  },
+
+  async setTwoFactor(ativo: boolean, senhaAtual: string): Promise<UserProfile> {
+    const response = await api.put<UserProfile>('/auth/me/two-factor', { ativo, senhaAtual });
+    return response.data;
+  },
+
+  async register(nome: string, email: string, senha: string, ignorarSenhaRepetida = false): Promise<User> {
+    const response = await api.post<User>('/auth/register', {
+      nome,
+      email,
+      senha,
+      ...(ignorarSenhaRepetida && { ignorarSenhaRepetida }),
+    });
     return response.data;
   },
 

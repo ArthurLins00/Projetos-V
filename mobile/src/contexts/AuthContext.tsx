@@ -3,13 +3,15 @@ import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
 import { REFRESH_TOKEN_KEY, TOKEN_KEY, setSessionHandlers } from '../services/api';
 import { pushService } from '../services/pushService';
-import { User } from '../models/User';
+import { LoginResponse, TwoFactorChallenge, User } from '../models/User';
 
 interface AuthContextData {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  signIn: (email: string, senha: string) => Promise<void>;
+  // Devolve o desafio quando a conta exige o código enviado por e-mail; sem ele a sessão já começa
+  signIn: (email: string, senha: string) => Promise<TwoFactorChallenge | null>;
+  verifyTwoFactor: (desafioId: string, codigo: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
 }
@@ -60,15 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadStorageData();
   }, []);
 
-  const signIn = async (email: string, senha: string) => {
-    const { token: userToken, refreshToken, ...userData } = await authService.login(email, senha);
-
+  const startSession = async ({ token: userToken, refreshToken, ...userData }: LoginResponse) => {
     await SecureStore.setItemAsync(TOKEN_KEY, userToken);
     await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
     await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
 
     setToken(userToken);
     setUser(userData);
+  };
+
+  const signIn = async (email: string, senha: string) => {
+    const response = await authService.login(email, senha);
+    if ('requer2fa' in response) return response;
+
+    await startSession(response);
+    return null;
+  };
+
+  const verifyTwoFactor = async (desafioId: string, codigo: string) => {
+    await startSession(await authService.verifyTwoFactor(desafioId, codigo));
   };
 
   const signOut = async () => {
@@ -89,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, signIn, verifyTwoFactor, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

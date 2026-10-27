@@ -113,7 +113,7 @@ export function AdminUsersView() {
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
-            vm.error || !vm.users.length ? null : (
+            vm.error || !vm.users.length ? undefined : (
               <Text style={styles.count}>
                 {vm.total} {vm.total === 1 ? 'usuário' : 'usuários'}
               </Text>
@@ -126,7 +126,7 @@ export function AdminUsersView() {
               description={vm.error ? 'Puxe para baixo para tentar novamente.' : 'Tente outra busca ou filtro.'}
             />
           }
-          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : null}
+          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : undefined}
           renderItem={({ item }) => (
             <UserRow
               user={item}

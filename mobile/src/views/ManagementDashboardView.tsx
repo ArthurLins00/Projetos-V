@@ -153,7 +153,7 @@ export function ManagementDashboardView() {
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
-            vm.error || !vm.tickets.length ? null : (
+            vm.error || !vm.tickets.length ? undefined : (
               <Text style={styles.count}>
                 {vm.total} {vm.total === 1 ? 'chamado' : 'chamados'}
               </Text>
@@ -166,7 +166,7 @@ export function ManagementDashboardView() {
               description={vm.error ? 'Puxe para baixo para tentar novamente.' : 'Tente outra busca ou filtro.'}
             />
           }
-          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : null}
+          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : undefined}
           renderItem={({ item }) => <ManagedTicketCard ticket={item} onPress={() => vm.openTicket(item.id)} />}
         />
       )}

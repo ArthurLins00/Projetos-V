@@ -125,7 +125,7 @@ export function DemandListView() {
               description={vm.error ? 'Puxe para baixo para tentar novamente.' : filtering ? 'Tente outra busca ou filtro.' : 'Toque em "Nova demanda" para relatar um problema.'}
             />
           }
-          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : null}
+          ListFooterComponent={vm.loadingMore ? <ActivityIndicator color={colors.primary} style={styles.loadingMore} /> : undefined}
           renderItem={({ item }) => <DemandCard demand={item} onPress={() => vm.openDemand(item.id)} />}
         />
       )}

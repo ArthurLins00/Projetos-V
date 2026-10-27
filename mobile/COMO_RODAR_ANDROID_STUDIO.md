@@ -1,6 +1,6 @@
 # Como rodar o app (Fiscalize) no Android Studio
 
-O app é Expo (SDK 57) com build nativo **somente para Android e iOS** — não há build web.
+O app é Expo (SDK 58) com build nativo **somente para Android e iOS** — não há build web.
 Como ele usa módulos nativos (câmera, GPS, SecureStore), rodamos um *development build*
 gerado pelo `expo prebuild` e compilado pelo Android Studio.
 
@@ -176,7 +176,7 @@ Edição e exclusão só são permitidas enquanto a demanda estiver *Aberto*, *E
 |---|---|
 | `Project file "MainApplication" does not exist` | Caminho com acento — veja o passo 0 |
 | "Não foi possível conectar ao servidor" no login | Backend parado; celular em outra rede Wi-Fi; `EXPO_PUBLIC_API_URL` apontando para o lugar errado; ou firewall do Windows bloqueando a porta 3000 (libere o Node.js para redes Privadas **e** Públicas) |
-| Expo Go no iPhone não abre o projeto | O Expo Go precisa ser do SDK 57; celular e PC na mesma rede; se a rede isolar dispositivos, use `npx expo start --tunnel` (nesse caso o backend também precisa de URL pública em `EXPO_PUBLIC_API_URL`) |
+| Expo Go no iPhone não abre o projeto | O Expo Go precisa ser do SDK 58; celular e PC na mesma rede; se a rede isolar dispositivos, use `npx expo start --tunnel` (nesse caso o backend também precisa de URL pública em `EXPO_PUBLIC_API_URL`) |
 | `SDK location not found` | Configure `ANDROID_HOME` ou crie `mobile/android/local.properties` com `sdk.dir=C:\\Users\\<usuario>\\AppData\\Local\\Android\\Sdk` |
 | `Unsupported class file major version` | JDK errado — use o JBR 21 do Android Studio (passo 1.2 / Gradle JDK) |
 | Mudei o `app.json` e nada mudou | `npx expo prebuild --platform android --clean` e rode de novo |

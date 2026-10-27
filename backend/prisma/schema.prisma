@@ -249,6 +249,7 @@ model usuario {
   fotourl       String?         @db.VarChar(500)
   termosversao   Int?
   termosaceitoem DateTime?       @db.Timestamp(6)
+  doisfatores    Boolean         @default(false)
   criadoem      DateTime        @default(now()) @db.Timestamp(6)
   atualizadoem  DateTime        @default(now()) @db.Timestamp(6)
   atualizadopor String?         @db.Uuid

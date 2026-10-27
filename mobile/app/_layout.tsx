@@ -20,10 +20,11 @@ function InitialLayout() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-        <Stack.Protected guard={!!user}>
+        {/* Sem redirectTo o fallback é "/", que é o próprio (app)/index protegido e cai em "Unmatched Route" */}
+        <Stack.Protected guard={!!user} redirectTo="/login">
           <Stack.Screen name="(app)" />
         </Stack.Protected>
-        <Stack.Protected guard={!user}>
+        <Stack.Protected guard={!user} redirectTo="/">
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
       </Stack>

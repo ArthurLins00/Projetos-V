@@ -17,7 +17,17 @@ export function useLoginViewModel() {
     }
     try {
       setIsSubmitting(true);
-      await signIn(loginEmail.trim(), loginPassword);
+      const challenge = await signIn(loginEmail.trim(), loginPassword);
+      if (challenge) {
+        router.push({
+          pathname: '/(auth)/two-factor',
+          params: {
+            desafioId: challenge.desafioId,
+            email: challenge.email,
+            ...(challenge.codigo && { codigo: challenge.codigo }),
+          },
+        });
+      }
     } catch (error) {
       Alert.alert('Falha no Login', getApiErrorMessage(error, 'E-mail ou senha incorretos.'));
     } finally {

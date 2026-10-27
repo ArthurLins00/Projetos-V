@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import { ImageStyle, StyleSheet, TextStyle, useColorScheme, ViewStyle } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as SystemUI from 'expo-system-ui';
 import { Colors, darkColors, lightColors } from './palette';
@@ -61,7 +61,10 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export function makeStyles<T extends StyleSheet.NamedStyles<T>>(factory: (colors: Colors, isDark: boolean) => T) {
+// React Native 0.88 no longer exports StyleSheet.NamedStyles, so the equivalent is declared here.
+type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
+
+export function makeStyles<T extends NamedStyles<T>>(factory: (colors: Colors, isDark: boolean) => T) {
   return function useStyles() {
     const { colors, isDark } = useTheme();
     return useMemo(() => StyleSheet.create(factory(colors, isDark)), [colors, isDark]);

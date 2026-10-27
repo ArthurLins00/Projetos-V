@@ -37,4 +37,19 @@ export const SMTP_HOST = process.env.SMTP_HOST?.trim() || '';
 export const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
 export const SMTP_USER = process.env.SMTP_USER?.trim() || '';
 export const SMTP_PASS = process.env.SMTP_PASS || '';
-export const MAIL_FROM = process.env.MAIL_FROM?.trim() || 'Fiscalize <no-reply@fiscalize.gov.br>';
+// MAIL_FROM pode trazer só o nome ("Fiscalize"); sem endereço o Gmail descarta a mensagem, então usamos a conta do SMTP
+export function resolveMailFrom(mailFrom: string | undefined, smtpUser: string) {
+  const value = mailFrom?.trim() || 'Fiscalize';
+  if (value.includes('@')) return value;
+  return `${value} <${smtpUser || 'no-reply@fiscalize.gov.br'}>`;
+}
+
+export const MAIL_FROM = resolveMailFrom(process.env.MAIL_FROM, SMTP_USER);
+
+// Modo de demonstração: devolve o código da verificação em duas etapas na resposta do login
+// e avisa no cadastro quando a senha escolhida já pertence a outra conta
+export const DEMO_MODE = process.env.DEMO_MODE === 'true';
+
+if (DEMO_MODE && isProduction) {
+  throw new Error('DEMO_MODE não pode ser usado em produção.');
+}
