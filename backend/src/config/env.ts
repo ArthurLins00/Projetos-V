@@ -41,7 +41,7 @@ export const SMTP_PASS = process.env.SMTP_PASS || '';
 export function resolveMailFrom(mailFrom: string | undefined, smtpUser: string) {
   const value = mailFrom?.trim() || 'Fiscalize';
   if (value.includes('@')) return value;
-  return `${value} <${smtpUser || 'no-reply@fiscalize.gov.br'}>`;
+  return `${value} <${smtpUser || 'noreply@fiscalize.gov.br'}>`;
 }
 
 export const MAIL_FROM = resolveMailFrom(process.env.MAIL_FROM, SMTP_USER);
