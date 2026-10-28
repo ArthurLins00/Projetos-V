@@ -1,5 +1,6 @@
 {
   "name": "projetos-v",
+  "version": "1.0.0",
   "private": true,
   "description": "Fiscalize — orquestração da suíte de testes (backend + E2E)",
   "scripts": {

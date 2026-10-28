@@ -1,0 +1,56 @@
+name: Dependências
+
+# SBOM (lista de todas as dependências, formato CycloneDX) e npm audit de cada projeto, a partir
+# do package-lock.json, sem instalar nada. Só informa: vulnerabilidade não falha o CI.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependencias-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  dependencias:
+    name: SBOM e auditoria
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Gera o SBOM e audita cada projeto
+        run: |
+          mkdir -p reports
+          for project in backend mobile ai-agent e2e; do
+            dir=$project
+            [ "$project" = e2e ] && dir=.   # Playwright fica no package.json da raiz
+            echo "::group::$project"
+            if ! npm sbom --prefix "$dir" --sbom-format cyclonedx --package-lock-only > "reports/sbom-$project.cdx.json"; then
+              echo "::warning::Não foi possível gerar o SBOM de $project"
+              rm -f "reports/sbom-$project.cdx.json"
+            fi
+            # npm audit sai com código 1 quando encontra vulnerabilidade; o resultado vai para o sumário
+            npm audit --prefix "$dir" --json --package-lock-only > "reports/audit-$project.json" || true
+            echo "::endgroup::"
+          done
+
+      - name: Sumário
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/deps-summary.mjs reports backend mobile ai-agent e2e
+
+      - name: Relatórios
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: dependencias
+          path: reports
+          retention-days: 30

@@ -42,10 +42,14 @@ jobs:
       flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/session_persistence.yaml
     secrets: inherit
 
+  dependencias:
+    name: Dependências
+    uses: ./.github/workflows/dependencias.yml
+
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
-    needs: [backend, mobile, ai-agent, maestro-smoke]
+    needs: [backend, mobile, ai-agent, maestro-smoke, dependencias]
     if: always()
     timeout-minutes: 5
     steps:
