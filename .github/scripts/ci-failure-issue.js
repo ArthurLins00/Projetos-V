@@ -1,12 +1,43 @@
 // Abre uma issue para cada execução de workflow que falhar, com os jobs, passos e trechos do log,
 // e fecha as issues abertas quando o mesmo workflow volta a passar na mesma branch.
 // Chamado pelo .github/workflows/ci-failure-issues.yml via actions/github-script.
+//
+// Variáveis do repositório (Settings > Secrets and variables > Actions > Variables), opcionais:
+//   CI_FAILURE_ASSIGNEES  logins separados por vírgula, atribuídos em toda issue além do autor
+//   CI_FAILURE_LABELS     labels extras separadas por vírgula
 
 const LABEL = 'ci-failure';
 const FAILED = ['failure', 'timed_out'];
 const MAX_ERROR_LINES = 20;
 const MAX_TAIL_LINES = 60;
 const MAX_BODY = 60000;
+const MAX_ASSIGNEES = 10; // limite do GitHub por issue
+
+const PRIORITY_LABEL = 'prioridade: alta';
+const PROTECTED_BRANCHES = ['main', 'dev'];
+
+// Área pelo nome do job ("Backend / Testes unitários e de API") ou do workflow; a ordem importa
+const AREAS = [
+  [/E2E Mobile|Maestro|Fluxos de tela/i, 'area: mobile-e2e'],
+  [/^Mobile/i, 'area: mobile'],
+  [/^Agente de IA/i, 'area: ai-agent'],
+  [/^Backend|Testes unitários|Testes End-to-End|^Build/i, 'area: backend'],
+];
+
+const LABEL_STYLES = {
+  [LABEL]: ['d73a4a', 'Falha registrada automaticamente pelo CI'],
+  [PRIORITY_LABEL]: ['b60205', 'Falha em main, dev ou na regressão diária'],
+  'area: backend': ['1d76db', 'Backend'],
+  'area: mobile': ['5319e7', 'App mobile'],
+  'area: mobile-e2e': ['8a63d2', 'Fluxos E2E do app (Maestro)'],
+  'area: ai-agent': ['0e8a16', 'Agente de IA'],
+};
+
+const listFromEnv = (name) =>
+  (process.env[name] || '')
+    .split(',')
+    .map((item) => item.trim().replace(/^@/, ''))
+    .filter(Boolean);
 
 const ANSI = /\x1b\[[0-9;]*m/g;
 const TIMESTAMP = /^\d{4}-\d\d-\d\dT[\d:.]+Z ?/;
@@ -65,6 +96,58 @@ async function describeJob(github, owner, repo, job) {
   return parts.join('\n');
 }
 
+function labelsFor(run, failedJobs) {
+  const labels = new Set([LABEL]);
+  const names = failedJobs.length ? failedJobs.map((job) => job.name) : [run.name];
+  for (const name of names) {
+    const area = AREAS.find(([pattern]) => pattern.test(name));
+    if (area) labels.add(area[1]);
+  }
+  if (PROTECTED_BRANCHES.includes(run.head_branch) || run.event === 'schedule') labels.add(PRIORITY_LABEL);
+  for (const extra of listFromEnv('CI_FAILURE_LABELS')) labels.add(extra);
+  return [...labels];
+}
+
+async function ensureLabels(github, owner, repo, labels) {
+  for (const name of labels) {
+    const [color, description] = LABEL_STYLES[name] || ['ededed', ''];
+    try {
+      await github.rest.issues.createLabel({ owner, repo, name, color, description });
+    } catch (error) {
+      if (error.status !== 422) throw error; // 422: a label já existe
+    }
+  }
+}
+
+// Quem subiu o código (e quem disparou a nova tentativa), o autor do PR e as pessoas fixas da
+// variável CI_FAILURE_ASSIGNEES; fica de fora quem é bot ou não pode receber issues no repositório
+async function resolveAssignees(github, owner, repo, run, core) {
+  const candidates = [run.actor, run.triggering_actor]
+    .filter((user) => user && user.type !== 'Bot')
+    .map((user) => user.login);
+
+  for (const pr of run.pull_requests || []) {
+    try {
+      const { data } = await github.rest.pulls.get({ owner, repo, pull_number: pr.number });
+      if (data.user?.type !== 'Bot') candidates.push(data.user.login);
+    } catch (error) {
+      core.warning(`Não foi possível ler o PR #${pr.number}: ${error.message}`);
+    }
+  }
+  candidates.push(...listFromEnv('CI_FAILURE_ASSIGNEES'));
+
+  const assignees = [];
+  for (const login of new Set(candidates.filter((login) => login && !login.endsWith('[bot]')))) {
+    try {
+      await github.rest.issues.checkUserCanBeAssigned({ owner, repo, assignee: login });
+      assignees.push(login);
+    } catch {
+      core.warning(`${login} não pode receber issues neste repositório; ignorado`);
+    }
+  }
+  return assignees.slice(0, MAX_ASSIGNEES);
+}
+
 module.exports = async ({ github, context, core }) => {
   const run = context.payload.workflow_run;
   const { owner, repo } = context.repo;
@@ -94,18 +177,6 @@ module.exports = async ({ github, context, core }) => {
     return;
   }
 
-  try {
-    await github.rest.issues.createLabel({
-      owner,
-      repo,
-      name: LABEL,
-      color: 'd73a4a',
-      description: 'Falha registrada automaticamente pelo CI',
-    });
-  } catch (error) {
-    if (error.status !== 422) throw error; // 422: a label já existe
-  }
-
   const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
     owner,
     repo,
@@ -114,6 +185,10 @@ module.exports = async ({ github, context, core }) => {
     per_page: 100,
   });
   const failedJobs = jobs.filter((job) => FAILED.includes(job.conclusion));
+
+  const labels = labelsFor(run, failedJobs);
+  await ensureLabels(github, owner, repo, labels);
+  const assignees = await resolveAssignees(github, owner, repo, run, core);
 
   const commitUrl = `${run.repository.html_url}/commit/${run.head_sha}`;
   const commitTitle = (run.head_commit?.message || '').split('\n')[0];
@@ -154,6 +229,10 @@ module.exports = async ({ github, context, core }) => {
       issue_number: sameRun.number,
       body: `## Tentativa ${run.run_attempt} também falhou\n\n${details}`,
     });
+    await github.rest.issues.addLabels({ owner, repo, issue_number: sameRun.number, labels });
+    if (assignees.length) {
+      await github.rest.issues.addAssignees({ owner, repo, issue_number: sameRun.number, assignees });
+    }
     core.info(`Comentário adicionado na issue #${sameRun.number}`);
     return;
   }
@@ -167,7 +246,8 @@ module.exports = async ({ github, context, core }) => {
     owner,
     repo,
     title: `CI falhou: ${run.name} em ${run.head_branch} (${run.head_sha.slice(0, 7)})`,
-    labels: [LABEL],
+    labels,
+    assignees,
     body: `${recurring}${details}\n\n${keyMarker}\n${runMarker}`,
   });
   core.info(`Issue #${issue.number} criada: ${issue.html_url}`);

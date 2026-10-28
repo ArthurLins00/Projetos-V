@@ -19,6 +19,7 @@ permissions:
   actions: read
   contents: read
   issues: write
+  pull-requests: read
 
 concurrency:
   group: ci-failure-issues-${{ github.event.workflow_run.name }}-${{ github.event.workflow_run.head_branch }}
@@ -34,6 +35,10 @@ jobs:
         with:
           sparse-checkout: .github/scripts
       - uses: actions/github-script@v8
+        env:
+          # Opcionais; ver o cabeçalho de .github/scripts/ci-failure-issue.js
+          CI_FAILURE_ASSIGNEES: ${{ vars.CI_FAILURE_ASSIGNEES }}
+          CI_FAILURE_LABELS: ${{ vars.CI_FAILURE_LABELS }}
         with:
           script: |
             const report = require('./.github/scripts/ci-failure-issue.js');
