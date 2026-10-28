@@ -9,6 +9,10 @@ on:
   workflow_dispatch:
   workflow_call:
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: mobile-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

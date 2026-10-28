@@ -14,6 +14,10 @@ on:
         type: boolean
         default: true
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: ai-agent-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

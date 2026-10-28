@@ -5,6 +5,10 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: regressao-diaria
   cancel-in-progress: false
