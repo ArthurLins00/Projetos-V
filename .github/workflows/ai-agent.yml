@@ -44,6 +44,22 @@ jobs:
       - name: Sumário dos testes
         if: ${{ !cancelled() }}
         run: node ../.github/scripts/test-summary.mjs --title "Agente de IA · Testes (sem rede)" reports/junit.xml
+      - name: Testes ao vivo contra o Gemini
+        id: live
+        if: inputs.live
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_RPM: ${{ vars.GEMINI_RPM }}
+        run: npm run test:live:ci
+      # Só quando os testes ao vivo rodaram: falha de cota, modelo ou rede aparece aqui com a mensagem
+      - name: Sumário dos testes ao vivo
+        if: ${{ !cancelled() && steps.live.outcome != 'skipped' }}
+        env:
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          node ../.github/scripts/test-summary.mjs --title "Agente de IA · Testes ao vivo (Gemini)" reports/junit-live.xml
+          echo "<sub>Modelo: \`${GEMINI_MODEL:-padrão do agente}\`</sub>" >> "$GITHUB_STEP_SUMMARY"
       - name: Relatório dos testes
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5
@@ -52,10 +68,3 @@ jobs:
           path: ai-agent/reports
           if-no-files-found: ignore
           retention-days: 7
-      - name: Testes ao vivo contra o Gemini
-        if: inputs.live
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-          GEMINI_RPM: ${{ vars.GEMINI_RPM }}
-        run: npm run test:live

@@ -147,13 +147,15 @@ function render(title, tests, coverageFile, missing) {
   const skipped = tests.filter((t) => t.status === 'skipped').length;
   const duration = tests.reduce((sum, t) => sum + t.time, 0);
   const ok = !failed.length && tests.length > 0 && !missing.length;
+  const allSkipped = ok && passed === 0;
 
-  const out = [`### ${ok ? '✅' : '❌'} ${title}`, ''];
+  const out = [`### ${allSkipped ? '⏭️' : ok ? '✅' : '❌'} ${title}`, ''];
 
   if (missing.length) {
     out.push(`> ⚠️ Relatório não gerado: ${missing.map((f) => `\`${f}\``).join(', ')}. O passo pode ter falhado antes dos testes rodarem.`, '');
   }
   if (!tests.length) return out.join('\n');
+  if (allSkipped) out.push('> ⏭️ Nenhum teste rodou: todos foram pulados (falta alguma chave ou configuração?).', '');
 
   out.push(
     `**${plural(tests.length, 'teste', 'testes')}** · ✅ ${plural(passed, 'passou', 'passaram')} · ` +
