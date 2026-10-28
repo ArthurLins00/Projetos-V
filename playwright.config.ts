@@ -17,6 +17,9 @@ export default defineConfig({
   use: {
     baseURL: API_URL,
     extraHTTPHeaders: { Accept: 'application/json' },
+    // Teste que falhou deixa um trace.zip em test-results/ com cada request e resposta;
+    // abre em https://trace.playwright.dev ou com `npx playwright show-trace`
+    trace: 'retain-on-failure',
   },
   webServer: {
     command: 'npm run dev --prefix backend',

@@ -140,6 +140,17 @@ jobs:
           npx prisma migrate deploy
           npm run seed
 
+      # Sobe o backend antes do Playwright (que reaproveita o servidor já no ar) para guardar o log
+      # em backend.log; pelo webServer do Playwright a saída do servidor é descartada
+      - name: Sobe o backend
+        run: |
+          nohup npm run dev --prefix backend > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf "$E2E_API_URL/health" > /dev/null && exit 0
+            sleep 2
+          done
+          echo "Backend não respondeu em /health"; cat backend.log; exit 1
+
       - name: Testes End-to-End (E2E)
         env:
           E2E_GREP: ${{ inputs.e2e == 'smoke' && '--grep @smoke' || '' }}
@@ -156,10 +167,12 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: e2e-report
+          # test-results traz o trace.zip de cada teste que falhou
           path: |
             e2e-report
             e2e-junit.xml
             test-results
+            backend.log
           retention-days: 7
 
   build:
