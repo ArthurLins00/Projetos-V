@@ -12,7 +12,8 @@
     "demo": "tsx scripts/demo.ts",
     "serve": "tsx src/serve.ts",
     "test": "node --import tsx --test --test-reporter=spec \"tests/*.test.ts\"",
-    "test:live": "node --import tsx --test --test-reporter=spec \"tests/live/*.test.ts\"",
+    "test:ci": "node -e \"require('fs').mkdirSync('reports',{recursive:true})\" && node --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/junit.xml \"tests/*.test.ts\"",
+    "test:live":"node --import tsx --test --test-reporter=spec \"tests/live/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

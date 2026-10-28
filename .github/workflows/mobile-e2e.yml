@@ -137,6 +137,17 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
           script: bash .github/scripts/run-maestro.sh ${{ inputs.flows }}
 
+      - name: Sumário dos fluxos
+        if: ${{ !cancelled() }}
+        env:
+          FLOWS: ${{ inputs.flows }}
+        run: |
+          node .github/scripts/test-summary.mjs --title "Mobile · Fluxos E2E (Maestro)" maestro-report.xml
+          if [ -d maestro-debug/flows-2 ]; then
+            echo "> ⚠️ A 1ª tentativa falhou e os fluxos foram repetidos; os detalhes estão em maestro-debug/flows-1 no artefato." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "<sub>Fluxos: \`$FLOWS\`</sub>" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Relatório do Maestro
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5

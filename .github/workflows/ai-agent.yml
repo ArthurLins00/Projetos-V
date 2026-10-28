@@ -38,7 +38,18 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - name: Testes (cliente roteirizado, sem rede)
-        run: npm test
+        run: npm run test:ci
+      - name: Sumário dos testes
+        if: ${{ !cancelled() }}
+        run: node ../.github/scripts/test-summary.mjs --title "Agente de IA · Testes (sem rede)" reports/junit.xml
+      - name: Relatório dos testes
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: ai-agent-test-reports
+          path: ai-agent/reports
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Testes ao vivo contra o Gemini
         if: inputs.live
         env:

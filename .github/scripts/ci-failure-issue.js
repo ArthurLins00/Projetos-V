@@ -148,6 +148,15 @@ async function resolveAssignees(github, owner, repo, run, core) {
   return assignees.slice(0, MAX_ASSIGNEES);
 }
 
+// Registra no log e no sumário do job, para ver de cara qual issue foi aberta ou fechada
+async function note(core, run, markdown) {
+  core.info(markdown);
+  if (!core.summary) return;
+  await core.summary
+    .addRaw(`### ${run.name} #${run.run_number} · \`${run.head_branch}\`\n\n${markdown}\n`)
+    .write();
+}
+
 module.exports = async ({ github, context, core }) => {
   const run = context.payload.workflow_run;
   const { owner, repo } = context.repo;
@@ -167,8 +176,14 @@ module.exports = async ({ github, context, core }) => {
         body: `✅ [${run.name} #${run.run_number}](${run.html_url}) passou em \`${run.head_branch}\` (commit ${run.head_sha.slice(0, 7)}). Fechando.`,
       });
       await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed', state_reason: 'completed' });
-      core.info(`Issue #${issue.number} fechada`);
     }
+    await note(
+      core,
+      run,
+      openIssues.length
+        ? `✅ Passou; issues fechadas: ${openIssues.map((issue) => `[#${issue.number}](${issue.html_url})`).join(', ')}`
+        : '✅ Passou; nenhuma issue aberta para fechar.'
+    );
     return;
   }
 
@@ -233,7 +248,7 @@ module.exports = async ({ github, context, core }) => {
     if (assignees.length) {
       await github.rest.issues.addAssignees({ owner, repo, issue_number: sameRun.number, assignees });
     }
-    core.info(`Comentário adicionado na issue #${sameRun.number}`);
+    await note(core, run, `🔁 Tentativa ${run.run_attempt} falhou de novo; comentário em [#${sameRun.number}](${sameRun.html_url}).`);
     return;
   }
 
@@ -250,5 +265,10 @@ module.exports = async ({ github, context, core }) => {
     assignees,
     body: `${recurring}${details}\n\n${keyMarker}\n${runMarker}`,
   });
-  core.info(`Issue #${issue.number} criada: ${issue.html_url}`);
+  await note(
+    core,
+    run,
+    `❌ Issue criada: [#${issue.number} ${issue.title}](${issue.html_url})\n\n` +
+      `Responsáveis: ${assignees.join(', ') || '—'} · Labels: ${labels.map((l) => `\`${l}\``).join(' ')}`
+  );
 };

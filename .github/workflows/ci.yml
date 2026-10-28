@@ -44,6 +44,24 @@ jobs:
     needs: [backend, mobile, ai-agent, maestro-smoke]
     if: always()
     steps:
+      - name: Visão geral
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "## Visão geral do CI"
+            echo
+            echo "| | Job | Resultado |"
+            echo "|---|---|---|"
+            echo "$NEEDS" | jq -r '
+              {success: "✅", failure: "❌", cancelled: "🚫", skipped: "⏭️"} as $icon
+              | to_entries[]
+              | "| \($icon[.value.result] // "❔") | \(.key) | `\(.value.result)` |"'
+            echo
+            echo "Detalhes de cada suíte (falhas, cobertura e testes lentos) estão nos sumários abaixo;"
+            echo "relatórios completos ficam nos artefatos da [execução]($RUN_URL)."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Falha se algum job falhou ou foi cancelado
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         env:

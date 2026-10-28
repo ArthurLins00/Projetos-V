@@ -7,7 +7,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'e2e-report' }]],
+  // No CI também anota as falhas no PR (github) e grava o JUnit lido pelo sumário do job;
+  // o JUnit fica fora de e2e-report porque o reporter html limpa essa pasta
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'e2e-report' }],
+    ...(process.env.CI ? ([['github'], ['junit', { outputFile: 'e2e-junit.xml' }]] as const) : []),
+  ],
   use: {
     baseURL: API_URL,
     extraHTTPHeaders: { Accept: 'application/json' },

@@ -17,6 +17,8 @@ e2e-reports/
 test-results/
 playwright-report/
 playwright/.cache/
+e2e-junit.xml
+reports/
 
 coverage/
 
