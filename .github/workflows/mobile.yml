@@ -39,6 +39,21 @@ jobs:
       - run: npm run typecheck
       - name: Valida o app.json e os plugins nativos
         run: npx expo config --type public > /dev/null
+      # Só avisa (não falha o job), mas agora o aviso aparece no sumário e como anotação, não só no log
       - name: Compatibilidade das dependências com o SDK do Expo (aviso)
-        continue-on-error: true
-        run: npx expo install --check
+        run: |
+          if npx expo install --check > expo-check.txt 2>&1; then
+            cat expo-check.txt
+            exit 0
+          fi
+          cat expo-check.txt
+          echo "::warning::Há dependências fora da versão esperada pelo SDK do Expo; veja o sumário da execução"
+          {
+            echo "### ⚠️ Mobile · Dependências fora do SDK do Expo"
+            echo
+            echo "Corrija com \`npx expo install --fix\` na pasta mobile."
+            echo
+            echo '```'
+            cat expo-check.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
