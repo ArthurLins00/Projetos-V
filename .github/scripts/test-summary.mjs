@@ -1,12 +1,14 @@
 // Escreve no sumário do job (GITHUB_STEP_SUMMARY) o resultado de uma suíte de testes: totais,
 // falhas com a mensagem, cobertura, arquivos e testes mais lentos.
 //
-// Uso: node test-summary.mjs --title "Backend · Testes unitários" [--coverage coverage-summary.json] relatorio...
+// Uso: node test-summary.mjs --title "Backend · Testes unitários" [--coverage coverage-summary.json]
+//        [--junit saida.xml] relatorio...
 // Aceita o JSON do Jest (--json --outputFile) e JUnit XML (Node test runner, Playwright, Maestro).
+// --junit grava os resultados também em JUnit XML (o Jest não tem esse formato sem dependência extra).
 // Sem GITHUB_STEP_SUMMARY, imprime na saída padrão. Nunca falha o job: o resultado dos testes já faz isso.
 
-import { appendFileSync, existsSync, readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname } from 'node:path';
 
 const MAX_FAILURES = 15;
 const MAX_MESSAGE_LINES = 30;
@@ -15,10 +17,11 @@ const SLOWEST = 5;
 const ANSI = /\x1b\[[0-9;]*m/g;
 
 function parseArgs(argv) {
-  const args = { title: 'Testes', coverage: null, files: [] };
+  const args = { title: 'Testes', coverage: null, junit: null, files: [] };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--title') args.title = argv[++i];
     else if (argv[i] === '--coverage') args.coverage = argv[++i];
+    else if (argv[i] === '--junit') args.junit = argv[++i];
     else args.files.push(argv[i]);
   }
   return args;
@@ -212,10 +215,61 @@ function render(title, tests, coverageFile, missing) {
   return out.join('\n');
 }
 
+const xmlEscape = (text) =>
+  String(text)
+    // Caracteres de controle (fora tab e quebras de linha) são inválidos em XML 1.0
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+function toJUnit(title, tests) {
+  const bySuite = new Map();
+  for (const t of tests) bySuite.set(t.suite, [...(bySuite.get(t.suite) || []), t]);
+
+  const count = (list, status) => list.filter((t) => t.status === status).length;
+  const time = (list) => list.reduce((sum, t) => sum + t.time, 0).toFixed(3);
+
+  const out = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<testsuites name="${xmlEscape(title)}" tests="${tests.length}" failures="${count(tests, 'failed')}" ` +
+      `skipped="${count(tests, 'skipped')}" time="${time(tests)}">`,
+  ];
+  for (const [suite, list] of bySuite) {
+    out.push(
+      `  <testsuite name="${xmlEscape(suite)}" tests="${list.length}" failures="${count(list, 'failed')}" ` +
+        `skipped="${count(list, 'skipped')}" errors="0" time="${time(list)}">`
+    );
+    for (const t of list) {
+      const open = `    <testcase name="${xmlEscape(t.name)}" classname="${xmlEscape(suite)}" time="${t.time.toFixed(3)}"`;
+      if (t.status === 'passed') out.push(`${open}/>`);
+      else if (t.status === 'skipped') out.push(`${open}>`, '      <skipped/>', '    </testcase>');
+      else {
+        const message = t.message.replace(ANSI, '');
+        out.push(
+          `${open}>`,
+          `      <failure message="${xmlEscape(message.split('\n')[0])}">${xmlEscape(message)}</failure>`,
+          '    </testcase>'
+        );
+      }
+    }
+    out.push('  </testsuite>');
+  }
+  out.push('</testsuites>', '');
+  return out.join('\n');
+}
+
 try {
-  const { title, coverage, files } = parseArgs(process.argv.slice(2));
+  const { title, coverage, junit, files } = parseArgs(process.argv.slice(2));
   const missing = files.filter((file) => !existsSync(file));
   const tests = files.filter((file) => existsSync(file)).flatMap(load);
+
+  if (junit && tests.length) {
+    mkdirSync(dirname(junit), { recursive: true });
+    writeFileSync(junit, toJUnit(title, tests));
+  }
+
   const markdown = `${render(title, tests, coverage, missing)}\n`;
 
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);

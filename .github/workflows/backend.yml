@@ -50,14 +50,15 @@ jobs:
       - run: npm ci
       - name: Gera o Prisma Client (os testes usam o tipo para o mock)
         run: npx prisma generate
-      # Além do log, cada suíte grava o resultado em JSON e a cobertura em reports/ (sumário e artefato)
-      # e o reporter github-actions anota as falhas na linha do teste, no diff do PR
+      # Além do log, cada suíte grava o resultado em JSON e a cobertura em reports/ (HTML para ler e
+      # Cobertura XML para ferramentas) e o reporter github-actions anota as falhas no diff do PR
       - name: Testes Unitários
         run: >-
           npm run test:unit -- --ci
           --json --outputFile=reports/unit.json
           --coverage --coverageDirectory=reports/coverage-unit
-          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=text-summary
+          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=text-summary
           --reporters=default --reporters=github-actions
       - name: Testes de API
         if: ${{ !cancelled() }}
@@ -65,15 +66,17 @@ jobs:
           npm run test:api -- --ci
           --json --outputFile=reports/api.json
           --coverage --coverageDirectory=reports/coverage-api
-          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=text-summary
+          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=text-summary
           --reporters=default --reporters=github-actions
+      # Também converte o JSON do Jest em JUnit XML (reports/*-junit.xml), que vai junto no artefato
       - name: Sumário dos testes
         if: ${{ !cancelled() }}
         run: |
           node ../.github/scripts/test-summary.mjs --title "Backend · Testes unitários" \
-            --coverage reports/coverage-unit/coverage-summary.json reports/unit.json
+            --coverage reports/coverage-unit/coverage-summary.json --junit reports/unit-junit.xml reports/unit.json
           node ../.github/scripts/test-summary.mjs --title "Backend · Testes de API" \
-            --coverage reports/coverage-api/coverage-summary.json reports/api.json
+            --coverage reports/coverage-api/coverage-summary.json --junit reports/api-junit.xml reports/api.json
       - name: Relatórios dos testes
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5
