@@ -34,6 +34,7 @@ jobs:
   unit-api:
     name: Testes unitários e de API
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
@@ -90,6 +91,7 @@ jobs:
     name: Testes End-to-End (E2E)
     if: inputs.e2e == 'full' || inputs.e2e == 'smoke'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16
@@ -164,6 +166,7 @@ jobs:
     name: Build (prisma generate + tsc)
     if: inputs.build
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: unit-api
     defaults:
       run:

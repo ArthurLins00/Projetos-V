@@ -25,6 +25,8 @@ jobs:
   ai-agent:
     name: Agente de IA
     runs-on: ubuntu-24.04
+    # Folga para os testes ao vivo, que respeitam o limite de requisições por minuto do Gemini
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: ai-agent

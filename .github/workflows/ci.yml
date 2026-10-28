@@ -43,6 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [backend, mobile, ai-agent, maestro-smoke]
     if: always()
+    timeout-minutes: 5
     steps:
       - name: Visão geral
         env:
