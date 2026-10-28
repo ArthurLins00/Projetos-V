@@ -1,0 +1,40 @@
+name: Issues de falha do CI
+
+# Cada execução que falhar vira uma issue com a label ci-failure (histórico das falhas);
+# quando o mesmo workflow volta a passar na mesma branch, as issues abertas dele são fechadas.
+# workflow_run só vale para a versão deste arquivo que está na branch padrão (main).
+on:
+  workflow_run:
+    workflows:
+      - CI/CD
+      - Testes (push)
+      - Regressão completa (diária)
+      - Mobile
+      - Backend
+      - Agente de IA
+      - E2E Mobile (Maestro)
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: ci-failure-issues-${{ github.event.workflow_run.name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  issue:
+    name: Registra a falha em uma issue
+    if: contains(fromJSON('["failure", "timed_out", "success"]'), github.event.workflow_run.conclusion)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const report = require('./.github/scripts/ci-failure-issue.js');
+            await report({ github, context, core });
