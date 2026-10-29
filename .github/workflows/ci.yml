@@ -7,6 +7,10 @@ on:
     branches: [main, dev]
   workflow_dispatch:
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -38,12 +42,35 @@ jobs:
       flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/session_persistence.yaml
     secrets: inherit
 
+  dependencias:
+    name: Dependências
+    uses: ./.github/workflows/dependencias.yml
+
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
-    needs: [backend, mobile, ai-agent, maestro-smoke]
+    needs: [backend, mobile, ai-agent, maestro-smoke, dependencias]
     if: always()
+    timeout-minutes: 5
     steps:
+      - name: Visão geral
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "## Visão geral do CI"
+            echo
+            echo "| | Job | Resultado |"
+            echo "|---|---|---|"
+            echo "$NEEDS" | jq -r '
+              {success: "✅", failure: "❌", cancelled: "🚫", skipped: "⏭️"} as $icon
+              | to_entries[]
+              | "| \($icon[.value.result] // "❔") | \(.key) | `\(.value.result)` |"'
+            echo
+            echo "Detalhes de cada suíte (falhas, cobertura e testes lentos) estão nos sumários abaixo;"
+            echo "relatórios completos ficam nos artefatos da [execução]($RUN_URL)."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Falha se algum job falhou ou foi cancelado
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         env:

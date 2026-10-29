@@ -23,6 +23,10 @@ on:
         type: boolean
         default: true
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: backend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -34,6 +38,7 @@ jobs:
   unit-api:
     name: Testes unitários e de API
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
@@ -50,16 +55,47 @@ jobs:
       - run: npm ci
       - name: Gera o Prisma Client (os testes usam o tipo para o mock)
         run: npx prisma generate
+      # Além do log, cada suíte grava o resultado em JSON e a cobertura em reports/ (HTML para ler e
+      # Cobertura XML para ferramentas) e o reporter github-actions anota as falhas no diff do PR
       - name: Testes Unitários
-        run: npm run test:unit -- --ci
+        run: >-
+          npm run test:unit -- --ci
+          --json --outputFile=reports/unit.json
+          --coverage --coverageDirectory=reports/coverage-unit
+          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=text-summary
+          --reporters=default --reporters=github-actions
       - name: Testes de API
         if: ${{ !cancelled() }}
-        run: npm run test:api -- --ci
+        run: >-
+          npm run test:api -- --ci
+          --json --outputFile=reports/api.json
+          --coverage --coverageDirectory=reports/coverage-api
+          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=text-summary
+          --reporters=default --reporters=github-actions
+      # Também converte o JSON do Jest em JUnit XML (reports/*-junit.xml), que vai junto no artefato
+      - name: Sumário dos testes
+        if: ${{ !cancelled() }}
+        run: |
+          node ../.github/scripts/test-summary.mjs --title "Backend · Testes unitários" \
+            --coverage reports/coverage-unit/coverage-summary.json --junit reports/unit-junit.xml reports/unit.json
+          node ../.github/scripts/test-summary.mjs --title "Backend · Testes de API" \
+            --coverage reports/coverage-api/coverage-summary.json --junit reports/api-junit.xml reports/api.json
+      - name: Relatórios dos testes
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-test-reports
+          path: backend/reports
+          if-no-files-found: ignore
+          retention-days: 7
 
   e2e:
     name: Testes End-to-End (E2E)
     if: inputs.e2e == 'full' || inputs.e2e == 'smoke'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16
@@ -108,25 +144,46 @@ jobs:
           npx prisma migrate deploy
           npm run seed
 
+      # Sobe o backend antes do Playwright (que reaproveita o servidor já no ar) para guardar o log
+      # em backend.log; pelo webServer do Playwright a saída do servidor é descartada
+      - name: Sobe o backend
+        run: |
+          nohup npm run dev --prefix backend > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf "$E2E_API_URL/health" > /dev/null && exit 0
+            sleep 2
+          done
+          echo "Backend não respondeu em /health"; cat backend.log; exit 1
+
       - name: Testes End-to-End (E2E)
         env:
           E2E_GREP: ${{ inputs.e2e == 'smoke' && '--grep @smoke' || '' }}
         run: npm run test:e2e -- $E2E_GREP
+
+      - name: Sumário dos testes
+        if: ${{ !cancelled() }}
+        env:
+          E2E_MODE: ${{ inputs.e2e }}
+        run: node .github/scripts/test-summary.mjs --title "Backend · E2E Playwright ($E2E_MODE)" e2e-junit.xml
 
       - name: Relatório do Playwright
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5
         with:
           name: e2e-report
+          # test-results traz o trace.zip de cada teste que falhou
           path: |
             e2e-report
+            e2e-junit.xml
             test-results
+            backend.log
           retention-days: 7
 
   build:
     name: Build (prisma generate + tsc)
     if: inputs.build
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: unit-api
     defaults:
       run:
@@ -141,6 +198,15 @@ jobs:
       - run: npm ci
       - name: Build (prisma generate + tsc)
         run: npm run build
+      - name: Sumário do build
+        run: |
+          {
+            echo "### 📦 Backend · Build"
+            echo
+            echo "| Arquivos JS | Tamanho do dist | Migrações | Node |"
+            echo "|---:|---:|---:|---|"
+            echo "| $(find dist -name '*.js' | wc -l) | $(du -sh dist | cut -f1) | $(find prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l) | $(node --version) |"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Publica o build
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v5

@@ -4,6 +4,10 @@ on:
   push:
     branches-ignore: [main, dev]
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: push-${{ github.ref }}
   cancel-in-progress: true

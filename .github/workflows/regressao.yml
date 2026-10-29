@@ -5,6 +5,10 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
 
+# Só leitura do código; jobs que precisam de mais pedem no próprio job
+permissions:
+  contents: read
+
 concurrency:
   group: regressao-diaria
   cancel-in-progress: false
@@ -33,3 +37,8 @@ jobs:
     name: E2E Mobile (Maestro)
     uses: ./.github/workflows/mobile-e2e.yml
     secrets: inherit
+
+  # Vulnerabilidade nova aparece no dia em que é publicada, mesmo sem mudança no código
+  dependencias:
+    name: Dependências
+    uses: ./.github/workflows/dependencias.yml
