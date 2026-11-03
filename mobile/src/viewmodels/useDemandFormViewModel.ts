@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
-import { demandService } from '../services/demandService';
+import { useDemands } from '../contexts/DemandContext';
 import { categoryService } from '../services/categoryService';
 import { cityService } from '../services/cityService';
 import { getApiErrorMessage, getPhotoUri } from '../services/api';
@@ -27,6 +27,7 @@ const newPhoto = (uri: string, base64: string): FormPhoto => ({ key: `nova-${++p
 export function useDemandFormViewModel(demandId?: string) {
   const router = useRouter();
   const isEditing = !!demandId;
+  const { fetchDemand, createDemand, updateDemand, addDemandPhoto, removeDemandPhoto } = useDemands();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -56,7 +57,7 @@ export function useDemandFormViewModel(demandId?: string) {
       try {
         const [categoryList, demand] = await Promise.all([
           categoryService.list(),
-          demandId ? demandService.getById(demandId) : Promise.resolve(null),
+          demandId ? fetchDemand(demandId) : Promise.resolve(null),
         ]);
         if (!active) return;
         setCategories(categoryList);
@@ -81,7 +82,7 @@ export function useDemandFormViewModel(demandId?: string) {
     return () => {
       active = false;
     };
-  }, [demandId]);
+  }, [demandId, fetchDemand]);
 
   useEffect(() => {
     if (!stateUf) {
@@ -219,11 +220,11 @@ export function useDemandFormViewModel(demandId?: string) {
     try {
       setSubmitting(true);
       const saved = isEditing
-        ? await demandService.update(demandId, payload)
-        : await demandService.create(payload);
+        ? await updateDemand(demandId, payload)
+        : await createDemand(payload);
 
       for (const photoId of removedPhotoIds) {
-        await demandService.removePhoto(saved.id, photoId).catch((error) => {
+        await removeDemandPhoto(saved.id, photoId).catch((error) => {
           console.error('Erro ao remover foto:', error?.response?.data || error);
         });
       }
@@ -232,7 +233,7 @@ export function useDemandFormViewModel(demandId?: string) {
       for (const photo of photos) {
         if (!photo.base64) continue;
         try {
-          await demandService.addPhoto(saved.id, photo.base64);
+          await addDemandPhoto(saved.id, photo.base64);
         } catch (error) {
           console.error('Erro ao enviar foto:', (error as any)?.response?.data || error);
           failedPhotos++;

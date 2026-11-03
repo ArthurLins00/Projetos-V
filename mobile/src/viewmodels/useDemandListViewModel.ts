@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { demandService } from '../services/demandService';
+import { useDemands } from '../contexts/DemandContext';
 import { notificationsService } from '../services/notificationsService';
 import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Demand } from '../models/Demand';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -13,20 +12,16 @@ const SEARCH_DEBOUNCE_MS = 400;
 export function useDemandListViewModel() {
   const router = useRouter();
   const { user } = useAuth();
+  const { demands, page, totalPages, loadDemands } = useDemands();
 
-  const [demands, setDemands] = useState<Demand[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [status, setStatus] = useState<string | undefined>(undefined);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  const requestId = useRef(0);
 
   const refreshUnreadCount = useCallback(() => {
     notificationsService.unreadCount().then(setUnreadCount).catch(() => undefined);
@@ -40,29 +35,24 @@ export function useDemandListViewModel() {
   }, [refreshUnreadCount]);
 
   const fetchPage = useCallback(async (targetPage: number) => {
-    const currentRequest = ++requestId.current;
+    let current = true;
     try {
-      const result = await demandService.list({
+      current = await loadDemands({
         page: targetPage,
         limit: PAGE_SIZE,
         ...(debouncedSearch ? { busca: debouncedSearch } : status && { status }),
       });
-      if (currentRequest !== requestId.current) return;
-      setDemands((prev) => (targetPage === 1 ? result.data : [...prev, ...result.data]));
-      setPage(result.page);
-      setTotalPages(result.totalPages);
-      setError(null);
+      if (current) setError(null);
     } catch (err) {
-      if (currentRequest !== requestId.current) return;
       setError(getApiErrorMessage(err, 'Não foi possível carregar as demandas.'));
     } finally {
-      if (currentRequest === requestId.current) {
+      if (current) {
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);
       }
     }
-  }, [debouncedSearch, status]);
+  }, [debouncedSearch, status, loadDemands]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
