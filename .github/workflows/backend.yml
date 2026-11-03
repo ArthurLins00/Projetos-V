@@ -55,14 +55,15 @@ jobs:
       - run: npm ci
       - name: Gera o Prisma Client (os testes usam o tipo para o mock)
         run: npx prisma generate
-      # Além do log, cada suíte grava o resultado em JSON e a cobertura em reports/ (HTML para ler e
-      # Cobertura XML para ferramentas) e o reporter github-actions anota as falhas no diff do PR
+      # Além do log, cada suíte grava o resultado em JSON e a cobertura em reports/ (HTML para ler,
+      # Cobertura XML para ferramentas e coverage-final.json, que o relatório de qualidade soma para ter a
+      # cobertura combinada das duas suítes) e o reporter github-actions anota as falhas no diff do PR
       - name: Testes Unitários
         run: >-
           npm run test:unit -- --ci
           --json --outputFile=reports/unit.json
           --coverage --coverageDirectory=reports/coverage-unit
-          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=json-summary --coverageReporters=json --coverageReporters=html --coverageReporters=cobertura
           --coverageReporters=text-summary
           --reporters=default --reporters=github-actions
       - name: Testes de API
@@ -71,7 +72,7 @@ jobs:
           npm run test:api -- --ci
           --json --outputFile=reports/api.json
           --coverage --coverageDirectory=reports/coverage-api
-          --coverageReporters=json-summary --coverageReporters=html --coverageReporters=cobertura
+          --coverageReporters=json-summary --coverageReporters=json --coverageReporters=html --coverageReporters=cobertura
           --coverageReporters=text-summary
           --reporters=default --reporters=github-actions
       # Também converte o JSON do Jest em JUnit XML (reports/*-junit.xml), que vai junto no artefato
@@ -175,6 +176,7 @@ jobs:
           path: |
             e2e-report
             e2e-junit.xml
+            e2e-results.json
             test-results
             backend.log
           retention-days: 7
