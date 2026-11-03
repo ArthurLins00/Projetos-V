@@ -35,12 +35,7 @@ jobs:
     with:
       live: false
 
-  maestro-smoke:
-    name: E2E Mobile smoke (Maestro)
-    uses: ./.github/workflows/mobile-e2e.yml
-    with:
-      flows: mobile/e2e/login_invalid_password.yaml mobile/e2e/session_persistence.yaml
-    secrets: inherit
+  # Os fluxos do Maestro levam dezenas de minutos no emulador: rodam só na regressão diária (regressao.yml)
 
   dependencias:
     name: Dependências
@@ -49,7 +44,7 @@ jobs:
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
-    needs: [backend, mobile, ai-agent, maestro-smoke, dependencias]
+    needs: [backend, mobile, ai-agent, dependencias]
     if: always()
     timeout-minutes: 5
     steps:

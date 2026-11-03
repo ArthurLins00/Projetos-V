@@ -94,10 +94,10 @@ Deixe no ar o emulador com o app de debug instalado (`npx expo run:android` em `
 - **CLI:** instale o Maestro (https://maestro.mobile.dev) e rode `npm run test:e2e:mobile`;
 - **Maestro Studio:** abra a pasta `mobile/e2e` e execute cada fluxo.
 
-No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobile-e2e.yml`) roda os 2 fluxos smoke
-em todo PR, todos os fluxos na regressão diária (veja a seção 2.1) e também pode ser disparado pela aba Actions. Ele
+No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobile-e2e.yml`) roda todos os fluxos
+na regressão diária (veja a seção 2.1) e também pode ser disparado pela aba Actions. Ele
 compila o app de debug, sobe o backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as
-capturas como artefato `maestro-report`. Não roda no push de branches de trabalho, porque leva dezenas de minutos.
+capturas como artefato `maestro-report`. Não roda no push nem nos PRs, porque leva dezenas de minutos.
 Se os fluxos falharem, o script `.github/scripts/run-maestro.sh` os repete uma vez (como o `retries: 1` do
 Playwright) e registra um aviso no job; a falha só reprova o job se a segunda tentativa também falhar.
 
@@ -114,7 +114,7 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Evento | Workflow | O que roda |
 |---|---|---|
 | Push em branch de trabalho | `push.yml` | Unitários e de API do backend; testes do agente de IA com cliente roteirizado (e typecheck do mobile, pelo `mobile.yml`, quando `mobile/` muda) |
-| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **3 testes smoke E2E** (1 do Playwright e 2 fluxos Maestro no emulador); build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado |
+| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado |
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
 
@@ -126,8 +126,8 @@ Os workflows `backend.yml`, `ai-agent.yml`, `mobile.yml` e `mobile-e2e.yml` são
 decide o nível. O backend recebe `e2e: none | smoke | full`, o agente recebe `live: true | false` e o Maestro
 recebe `flows` (a pasta inteira ou uma lista de fluxos).
 
-**Testes smoke E2E (antes do merge):** 3 testes, escolhidos por exercitarem o caminho principal sem câmera nem GPS,
-que são instáveis no emulador do CI. O restante dos E2E roda no push em `main`/`dev` e na regressão diária.
+**Testes smoke E2E (antes do merge):** só os testes `@smoke` do Playwright, escolhidos por exercitarem o caminho
+principal. O restante dos E2E do Playwright roda no push em `main`/`dev`, e os fluxos Maestro só na regressão diária.
 
 | Teste | Onde | Por que é smoke |
 |---|---|---|
