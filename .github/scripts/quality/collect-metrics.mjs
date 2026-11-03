@@ -56,11 +56,18 @@ const median = (values) => {
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
+// Número para exibir em português (vírgula decimal); os valores numéricos do JSON continuam com ponto
+const br = (value) => String(value).replace('.', ',');
 const round = (value, digits = 1) => (value == null ? null : Math.round(value * 10 ** digits) / 10 ** digits);
 const ANSI = /\x1b\[[0-9;]*m/g;
+// Caminhos relativos ao repositório e sem as linhas internas do node_modules, como no sumário do job
+const workspace = `${(process.env.GITHUB_WORKSPACE || process.cwd()).replace(/\\/g, '/')}/`;
 const shortMessage = (message) =>
   message
     .replace(ANSI, '')
+    .replace(/\\/g, '/')
+    .split(workspace)
+    .join('')
     .split(/\r?\n/)
     .filter((line) => !/node_modules\//.test(line))
     .join('\n')
@@ -378,7 +385,7 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
       id: 'MQ-01',
       name: 'Taxa de aprovação dos testes',
       value: passRate,
-      display: passRate == null ? '—' : `${passRate}%`,
+      display: passRate == null ? '—' : `${br(passRate)}%`,
       detail: `${passed} de ${passed + failed} testes passaram` + (informativeFailed.length ? `; ${informativeFailed.map((s) => s.name).join(', ')} com falha (informativo)` : ''),
       target: `${TARGETS.passRate}%`,
       status: passRate == null ? 'na' : passRate >= TARGETS.passRate ? (informativeFailed.length ? 'warn' : 'ok') : 'fail',
@@ -387,7 +394,7 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
       id: 'MQ-02',
       name: 'Cobertura do backend',
       value: coverage.combined?.lines ?? null,
-      display: coverage.combined ? `${coverage.combined.lines}% linhas · ${coverage.combined.branches}% branches` : '—',
+      display: coverage.combined ? `${br(coverage.combined.lines)}% linhas · ${br(coverage.combined.branches)}% branches` : '—',
       detail: coverage.combined
         ? `suítes unitária e de API somadas${coverage.combined.partial ? ' (só uma suíte disponível)' : ''}`
         : 'cobertura combinada indisponível nesta execução',
@@ -407,10 +414,10 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
       id: 'MQ-04',
       name: 'Tempo da pipeline',
       value: run?.minutes ?? null,
-      display: run ? `${run.minutes} min` : '—',
+      display: run ? `${br(run.minutes)} min` : '—',
       detail: [
         run ? `esta execução (${run.workflow})` : null,
-        ...durations.map((w) => `mediana ${w.name}: ${w.medianMinutes} min`),
+        ...durations.map((w) => `mediana ${w.name}: ${br(w.medianMinutes)} min`),
       ]
         .filter(Boolean)
         .join(' · '),
@@ -421,7 +428,7 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
       id: 'MQ-05',
       name: 'Taxa de sucesso da pipeline',
       value: pipeline?.successRate ?? null,
-      display: pipeline?.successRate == null ? '—' : `${pipeline.successRate}%`,
+      display: pipeline?.successRate == null ? '—' : `${br(pipeline.successRate)}%`,
       detail: pipeline ? `${pipeline.succeeded} de ${pipeline.runs} execuções em main nos últimos ${WINDOW_DAYS} dias` : 'API do GitHub indisponível',
       target: `≥ ${TARGETS.pipelineSuccessRate}%`,
       status: pipeline?.successRate == null ? 'na' : status(pipeline.successRate >= TARGETS.pipelineSuccessRate),
@@ -430,7 +437,7 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
       id: 'MQ-06',
       name: 'MTTR do CI',
       value: issues?.mttrHours ?? null,
-      display: issues?.mttrHours == null ? '—' : `${issues.mttrHours} h`,
+      display: issues?.mttrHours == null ? '—' : `${br(issues.mttrHours)} h`,
       detail: issues
         ? issues.mttrSample
           ? `média de ${issues.mttrSample} falhas de prioridade alta resolvidas nos últimos ${WINDOW_DAYS} dias`
@@ -546,7 +553,7 @@ async function main() {
 
   const previous = (args.history && readJson(args.history)) || [];
   const entry = {
-    date: metrics.generatedAt,
+    date: run?.startedAt ?? metrics.generatedAt,
     runId: run?.id ?? runId ?? null,
     workflow: run?.workflow ?? null,
     sha: run?.sha?.slice(0, 7) ?? null,
