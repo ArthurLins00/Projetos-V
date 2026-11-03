@@ -1,9 +1,9 @@
 # Métricas de qualidade — Fiscalize
 
 Este documento define as métricas que a pipeline acompanha, por que cada uma foi escolhida e quais foram
-descartadas. Os valores são calculados automaticamente pelo workflow **Relatório de qualidade**
-(`.github/workflows/quality-report.yml`) a cada push em `main` e a cada regressão diária, sem intervenção manual,
-e aparecem nos dois relatórios HTML gerados por ele: o **técnico** e o **de negócio**.
+descartadas. Os valores são calculados automaticamente pelo job **Relatório de qualidade**
+(`.github/workflows/quality-report.yml`), o último do CI/CD e da regressão diária, sem intervenção manual, e
+aparecem nos dois relatórios HTML gerados por ele: o **técnico** e o **de negócio**.
 
 As metas ficam em um único lugar, [`.github/scripts/quality/targets.mjs`](../../.github/scripts/quality/targets.mjs),
 lido tanto pelo cálculo quanto pelos relatórios.
@@ -91,17 +91,17 @@ As áreas do produto são atribuídas pelo arquivo de cada teste (por exemplo, `
 
 | Evento | O que acontece |
 |---|---|
-| Push em `main` (merge de PR) | O CI/CD termina e dispara o Relatório de qualidade, que lê os artefatos daquela execução |
-| Regressão diária (03h de Brasília) | Idem, com a suíte completa (todos os E2E, Maestro e agente ao vivo) |
-| Manual (aba Actions) | *Relatório de qualidade* → *Run workflow*, informando o ID de uma execução do CI/CD ou da regressão |
+| Pull request para `main` ou `dev` | O relatório é gerado com os testes do PR e comparado ao histórico de `main`, sem alterá-lo |
+| Push em `main` (merge de PR) | O relatório é gerado e a execução entra no histórico |
+| Regressão diária (03h de Brasília) ou manual | Idem, com a suíte completa (todos os E2E, Maestro e agente ao vivo) |
 
-Cada relatório guarda o resumo das métricas em `quality-history`, que o relatório seguinte baixa para mostrar a
-tendência (as últimas 60 execuções). Os PRs não entram no histórico, para que ele reflita só o que está em `main`.
+O job roda no fim da própria execução, depois de todos os testes, e lê os artefatos dela. As execuções em `main`
+guardam o resumo das métricas no artefato `quality-history`, que o relatório seguinte baixa para mostrar a tendência
+(as últimas 60 execuções). As métricas de janela (MQ-04 a MQ-06) olham só para `main`, para refletir o que já foi
+integrado.
 
 ## 6. Onde ver
 
-- **Artefato `relatorios-qualidade`** da execução do workflow *Relatório de qualidade*: `relatorio-tecnico.html`,
+- **Artefato `relatorios-qualidade`** de cada execução do CI/CD ou da regressão: `relatorio-tecnico.html`,
   `relatorio-negocio.html` e `metrics.json` (os dados brutos).
 - **Sumário da execução:** um resumo com a saúde da versão e as metas atingidas ou não.
-- **GitHub Pages (opcional):** com a variável do repositório `QUALITY_PAGES=true` e o Pages configurado com a
-  fonte *GitHub Actions*, os dois relatórios são publicados em um endereço fixo para os stakeholders.
