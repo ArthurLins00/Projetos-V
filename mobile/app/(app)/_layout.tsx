@@ -2,13 +2,21 @@ import { Stack } from 'expo-router/stack';
 import { useTheme } from '../../src/theme';
 import { TermsGate } from '../../src/components/TermsGate';
 import { usePushNotifications } from '../../src/hooks/usePushNotifications';
+import { DemandProvider } from '../../src/contexts/DemandContext';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { isStaff } from '../../src/models/User';
 
 export default function AppLayout() {
   const { colors } = useTheme();
+  const { user } = useAuth();
   usePushNotifications();
 
+  // O backend já recusa com 403, mas sem o guard o perfil errado chegaria a abrir a tela; sem permissão, volta para o index
+  const isCitizen = user?.perfil === 'Cidadao';
+  const staff = isStaff(user?.perfil);
+
   return (
-    <>
+    <DemandProvider>
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
@@ -20,17 +28,21 @@ export default function AppLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="create-demand" options={{ title: 'Nova Demanda' }} />
         <Stack.Screen name="demand/[id]/index" options={{ title: 'Detalhes da Demanda' }} />
-        <Stack.Screen name="demand/[id]/edit" options={{ title: 'Editar Demanda' }} />
         <Stack.Screen name="assistant" options={{ title: 'Assistente Fiscalize' }} />
         <Stack.Screen name="profile" options={{ title: 'Meu Perfil' }} />
         <Stack.Screen name="help" options={{ title: 'Ajuda' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notificações' }} />
-        <Stack.Screen name="manage/[id]" options={{ title: 'Gerenciar Chamado' }} />
-        <Stack.Screen name="admin/users" options={{ title: 'Usuários' }} />
+        <Stack.Protected guard={isCitizen}>
+          <Stack.Screen name="create-demand" options={{ title: 'Nova Demanda' }} />
+          <Stack.Screen name="demand/[id]/edit" options={{ title: 'Editar Demanda' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={staff}>
+          <Stack.Screen name="manage/[id]" options={{ title: 'Gerenciar Chamado' }} />
+          <Stack.Screen name="admin/users" options={{ title: 'Usuários' }} />
+        </Stack.Protected>
       </Stack>
       <TermsGate />
-    </>
+    </DemandProvider>
   );
 }

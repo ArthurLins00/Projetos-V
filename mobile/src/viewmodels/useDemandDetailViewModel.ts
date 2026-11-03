@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { demandService } from '../services/demandService';
+import { useDemands } from '../contexts/DemandContext';
 import { getApiErrorMessage } from '../services/api';
 import { geocodingService, ResolvedAddress } from '../services/geocodingService';
 import { Demand, isDemandEditable } from '../models/Demand';
 
 export function useDemandDetailViewModel(demandId: string) {
   const router = useRouter();
+  const { fetchDemand, removeDemand } = useDemands();
   const [demand, setDemand] = useState<Demand | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -39,8 +40,7 @@ export function useDemandDetailViewModel(demandId: string) {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      demandService
-        .getById(demandId)
+      fetchDemand(demandId)
         .then((data) => {
           if (!active) return;
           setDemand(data);
@@ -55,7 +55,7 @@ export function useDemandDetailViewModel(demandId: string) {
       return () => {
         active = false;
       };
-    }, [demandId])
+    }, [demandId, fetchDemand])
   );
 
   const canEdit = !!demand && isDemandEditable(demand);
@@ -65,7 +65,7 @@ export function useDemandDetailViewModel(demandId: string) {
   const remove = async () => {
     try {
       setDeleting(true);
-      await demandService.remove(demandId);
+      await removeDemand(demandId);
       Alert.alert('Sucesso', 'Demanda removida.');
       router.back();
     } catch (err) {

@@ -43,6 +43,8 @@ cidadão acompanha o andamento pelo app até a resolução.
 | Listagem com FlatList | [`DemandListView.tsx`](mobile/src/views/DemandListView.tsx) |
 | Navegação com Expo Router | [`mobile/app`](mobile/app) (grupos `(auth)` e `(app)`, rotas protegidas) |
 | Persistência de estado com `useState` e `useEffect` | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx) |
+| Estado global com `useContext` (sessão e demandas) | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx), [`DemandContext.tsx`](mobile/src/contexts/DemandContext.tsx) |
+| Rotas privadas e por perfil (Cidadão × Gestor/Admin) | [`app/_layout.tsx`](mobile/app/_layout.tsx), [`app/(app)/_layout.tsx`](mobile/app/(app)/_layout.tsx) |
 
 ## Arquitetura do app (MVVM)
 
