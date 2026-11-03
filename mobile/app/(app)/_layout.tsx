@@ -2,13 +2,14 @@ import { Stack } from 'expo-router/stack';
 import { useTheme } from '../../src/theme';
 import { TermsGate } from '../../src/components/TermsGate';
 import { usePushNotifications } from '../../src/hooks/usePushNotifications';
+import { DemandProvider } from '../../src/contexts/DemandContext';
 
 export default function AppLayout() {
   const { colors } = useTheme();
   usePushNotifications();
 
   return (
-    <>
+    <DemandProvider>
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
@@ -31,6 +32,6 @@ export default function AppLayout() {
         <Stack.Screen name="admin/users" options={{ title: 'Usuários' }} />
       </Stack>
       <TermsGate />
-    </>
+    </DemandProvider>
   );
 }

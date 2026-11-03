@@ -1,6 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState, ReactNode } from 'react';
 import { demandService } from '../services/demandService';
-import { useAuth } from './AuthContext';
 import { Demand, DemandListParams, DemandPayload, DemandPhoto } from '../models/Demand';
 
 interface DemandContextData {
@@ -19,20 +18,12 @@ interface DemandContextData {
 
 const DemandContext = createContext<DemandContextData>({} as DemandContextData);
 
+// Montado dentro do grupo (app), que só existe com usuário logado: sair desmonta o provider e descarta a lista
 export function DemandProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
   const [demands, setDemands] = useState<Demand[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const requestId = useRef(0);
-
-  // As demandas são do usuário logado: trocar de conta ou sair não pode deixar a lista anterior visível
-  useEffect(() => {
-    requestId.current++;
-    setDemands([]);
-    setPage(1);
-    setTotalPages(1);
-  }, [user?.id]);
 
   const upsert = useCallback((demand: Demand) => {
     setDemands((prev) => (prev.some((d) => d.id === demand.id) ? prev.map((d) => (d.id === demand.id ? { ...d, ...demand } : d)) : prev));

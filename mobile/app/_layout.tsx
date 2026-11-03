@@ -2,7 +2,6 @@ import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
-import { DemandProvider } from '../src/contexts/DemandContext';
 import { ThemeProvider, useTheme } from '../src/theme';
 
 function InitialLayout() {
@@ -37,9 +36,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <DemandProvider>
-          <InitialLayout />
-        </DemandProvider>
+        <InitialLayout />
       </AuthProvider>
     </ThemeProvider>
   );
