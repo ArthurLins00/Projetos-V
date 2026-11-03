@@ -65,6 +65,7 @@ const workspace = `${(process.env.GITHUB_WORKSPACE || process.cwd()).replace(/\\
 const shortMessage = (message) =>
   message
     .replace(ANSI, '')
+    .replace(/\[cause\]:[\s\S]*$/, '') // o Jest repete o mesmo erro como causa
     .replace(/\\/g, '/')
     .split(workspace)
     .join('')
@@ -298,8 +299,9 @@ async function collectSourceRun(repo, runId) {
     conclusion: run.conclusion,
     url: run.html_url,
     startedAt: run.run_started_at,
-    minutes: round(minutesBetween(run.run_started_at, run.updated_at)),
-    jobs: jobs.map((job) => ({
+    // Chamado de dentro da própria execução (último job), que ainda não terminou: mede até agora
+    minutes: round(minutesBetween(run.run_started_at, run.status === 'completed' ? run.updated_at : new Date().toISOString())),
+    jobs: jobs.filter((job) => job.status === 'completed').map((job) => ({
       name: job.name,
       conclusion: job.conclusion,
       minutes: job.started_at && job.completed_at ? round(minutesBetween(job.started_at, job.completed_at)) : null,

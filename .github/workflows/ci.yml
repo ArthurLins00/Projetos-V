@@ -41,6 +41,20 @@ jobs:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
 
+  # Fora do Quality Gate (ci-ok): o relatório informa, não bloqueia o merge
+  qualidade:
+    name: Relatório de qualidade
+    needs: [backend, mobile, ai-agent, dependencias]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/quality-report.yml
+    permissions:
+      contents: read
+      actions: read
+      issues: read
+    with:
+      # Só o que já está em main entra na tendência; PRs leem o histórico, mas não gravam
+      publish-history: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
