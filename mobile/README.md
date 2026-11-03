@@ -63,6 +63,11 @@ O mesmo ViewModel atende a criação e a edição: sem `demandId`, cria; com `de
 - **Expo Router** com dois grupos: `(auth)` (login e cadastro) e `(app)` (telas logadas, em pilha).
 - **Rotas protegidas** com `Stack.Protected` em [`app/_layout.tsx`](app/_layout.tsx): sem usuário, as
   telas do app nem são montadas; ao fazer login ou logout, o roteador troca de grupo sozinho.
+- **Rotas por perfil** em [`app/(app)/_layout.tsx`](app/(app)/_layout.tsx): criar e editar demanda só para o
+  Cidadão; gerenciar chamados e usuários só para Gestor e Admin. Sem permissão, volta para a tela inicial.
+- **Estado global:** [`AuthContext.tsx`](src/contexts/AuthContext.tsx) para a sessão e
+  [`DemandContext.tsx`](src/contexts/DemandContext.tsx) para a lista e o CRUD de demandas, compartilhado pelas
+  telas de lista, detalhe e formulário. O `DemandProvider` envolve só o grupo `(app)`, então sair descarta a lista.
 - **Persistência da sessão:** [`AuthContext.tsx`](src/contexts/AuthContext.tsx) guarda o token e o
   usuário no **SecureStore** e os restaura ao abrir o app com `useState` e `useEffect`. Fechar e reabrir
   o app mantém o login.
@@ -190,7 +195,7 @@ mobile/
 │   ├── services/               api (axios + token + URL do backend), auth, demandas, categorias
 │   ├── models/                 tipos e regras (Demand, Category, User)
 │   ├── components/             CameraCapture, DemandCard
-│   └── contexts/               AuthContext (sessão persistente)
+│   └── contexts/               AuthContext (sessão persistente), DemandContext (demandas)
 ├── e2e/                        fluxos Maestro
 ├── assets/                     ícones e splash
 └── app.json                    configuração do Expo (plataformas, permissões, identificadores)
