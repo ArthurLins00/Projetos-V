@@ -117,6 +117,7 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado |
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
+| Fim do CI/CD e da regressão | `quality-report.yml` | Métricas de qualidade e relatórios técnico e de negócio em HTML (seção 2.2) |
 
 Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
 estar habilitado no fork (aba Actions → *I understand my workflows, go ahead and enable them*). Os eventos de PR,
@@ -154,6 +155,51 @@ completa (diária)* → *Run workflow*.
 
 O nome do check é o `name` do job (**CI concluído**), não o nome do arquivo `ci.yml`: um check com o nome do arquivo
 nunca é reportado e travaria todos os merges. Com a regra ativa, o botão de merge fica bloqueado até o check passar.
+
+### 2.2 Registro de falhas, artefatos e relatórios de qualidade
+
+**Issues automáticas:** o workflow `ci-failure-issues.yml` abre uma issue com a label `ci-failure` para cada execução
+que falhar (CI/CD, push, regressão, Maestro etc.), com os jobs e passos que falharam e o trecho do log. Ela recebe
+`area: backend | mobile | mobile-e2e | ai-agent` pelo job que falhou e `prioridade: alta` quando a falha é em `main`,
+`dev` ou na regressão diária. Quando o mesmo workflow volta a passar na mesma branch, as issues abertas dele são
+fechadas com um comentário. Essas datas de abertura e fechamento são a base do MTTR (MQ-06).
+
+**Artefatos de cada execução** (aba *Actions* → execução → *Artifacts*):
+
+| Artefato | Conteúdo | Para que serve | Retenção |
+|---|---|---|---|
+| `backend-test-reports` | resultado dos testes unitários e de API em JSON do Jest e JUnit XML; cobertura em HTML, Cobertura XML, `coverage-summary.json` e `coverage-final.json` | investigar falhas, navegar pela cobertura linha a linha e calcular a cobertura combinada (MQ-02) | 7 dias |
+| `e2e-report` | relatório HTML do Playwright, `e2e-junit.xml`, `e2e-results.json` (com o status *flaky*), `trace.zip` de cada teste que falhou e o `backend.log` | reproduzir uma falha do E2E passo a passo e detectar testes instáveis (MQ-03) | 7 dias |
+| `maestro-report` | `maestro-report.xml`, `maestro-report-1.xml` (só quando houve nova tentativa), capturas de tela e árvore de elementos, `logcat.txt`, `backend.log`, `metro.log` | ver em que tela o fluxo parou e o que o app e o backend registraram | 7 dias |
+| `app-debug-x86_64` | o APK testado pelo Maestro | instalar no emulador e reproduzir à mão | 3 dias |
+| `ai-agent-test-reports` | JUnit dos testes do agente (sem rede e, na regressão, ao vivo contra o Gemini) | ver qual caso do agente falhou | 7 dias |
+| `dependencias` | SBOM CycloneDX e `npm audit` em JSON de cada projeto | inventário de dependências e vulnerabilidades (MQ-08) | 30 dias |
+| `relatorios-qualidade` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `metrics.json` | os relatórios de qualidade desta execução | 30 dias |
+| `quality-history` | `history.json` com o resumo das últimas 60 execuções em `main` | tendência dos relatórios seguintes | 90 dias |
+
+**Métricas e relatórios:** o último job do CI/CD e da regressão diária (**Relatório de qualidade**,
+`.github/workflows/quality-report.yml`) lê os artefatos acima e a API do GitHub e calcula as métricas MQ-01 a MQ-08.
+As métricas escolhidas, as descartadas e as justificativas estão em
+[`docs/testes/Metricas_de_Qualidade.md`](docs/testes/Metricas_de_Qualidade.md). O job gera:
+
+- **Relatório técnico** (`relatorio-tecnico.html`): métricas contra as metas, resultado por suíte, falhas com a
+  mensagem, testes instáveis, cobertura e arquivos menos cobertos, jobs e estatísticas da pipeline em 30 dias,
+  issues abertas, pacotes vulneráveis e testes mais lentos;
+- **Relatório de negócio** (`relatorio-negocio.html`): saúde da versão (verde, amarelo ou vermelho), funcionalidades
+  verificadas por área do produto, riscos em linguagem simples com recomendação e a evolução ao longo do tempo;
+- um resumo com as métricas no sumário da execução.
+
+O job fica fora do Quality Gate e nunca falha a execução: o relatório informa, quem decide o merge são os testes.
+Para gerar os relatórios localmente a partir dos artefatos de uma execução:
+
+```bash
+gh run download <id-da-execucao> -D artifacts
+node .github/scripts/quality/collect-metrics.mjs --artifacts artifacts --out quality-report
+node .github/scripts/quality/render-reports.mjs --in quality-report
+```
+
+Com `GITHUB_REPOSITORY`, `GITHUB_TOKEN` e `SOURCE_RUN_ID` definidos, também entram as métricas que dependem da API
+(MQ-04 a MQ-07).
 
 ---
 

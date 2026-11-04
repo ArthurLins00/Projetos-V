@@ -171,6 +171,7 @@ jobs:
           include-hidden-files: true
           path: |
             maestro-report.xml
+            maestro-report-1.xml
             maestro-debug
             logcat.txt
             logcat-warmup-1.txt

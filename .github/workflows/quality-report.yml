@@ -1,0 +1,98 @@
+name: Relatório de qualidade
+
+# Transforma os resultados da execução em métricas (docs/testes/Metricas_de_Qualidade.md) e nos
+# relatórios técnico e de negócio em HTML. Chamado no fim do ci.yml e do regressao.yml, depois de todos
+# os testes; lê os artefatos da própria execução e a API do GitHub (execuções e issues ci-failure).
+# Nunca falha a execução: um erro no relatório vira aviso, não reprova o CI.
+on:
+  workflow_call:
+    inputs:
+      publish-history:
+        description: 'Grava esta execução no histórico de tendência (só execuções em main)'
+        type: boolean
+        default: false
+
+# actions: read para os artefatos, as execuções e o histórico; issues: read para o MTTR
+permissions:
+  contents: read
+  actions: read
+  issues: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  report:
+    name: Métricas e relatórios
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Baixa os artefatos de teste desta execução
+        uses: actions/download-artifact@v5
+        continue-on-error: true
+        with:
+          pattern: '{backend-test-reports,e2e-report,maestro-report,ai-agent-test-reports,dependencias}'
+          path: artifacts
+
+      # O histórico vem sempre de main, mesmo num PR: a tendência compara com o que já foi integrado
+      - name: Baixa o histórico do último relatório em main
+        continue-on-error: true
+        run: |
+          mkdir -p previous
+          RUN=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=quality-history&per_page=50" \
+            --jq '[.artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == "main")][0].workflow_run.id // empty')
+          if [ -n "$RUN" ] && gh run download "$RUN" -R "$GITHUB_REPOSITORY" -n quality-history -D previous; then
+            echo "Histórico da execução $RUN: $(jq length previous/history.json) entradas"
+          else
+            echo "::notice::Nenhum histórico anterior; a tendência começa nesta execução"
+            echo '[]' > previous/history.json
+          fi
+
+      - name: Calcula as métricas
+        id: metrics
+        continue-on-error: true
+        env:
+          SOURCE_RUN_ID: ${{ github.run_id }}
+        run: >-
+          node .github/scripts/quality/collect-metrics.mjs
+          --artifacts artifacts --history previous/history.json --out quality-report
+
+      - name: Gera os relatórios
+        if: steps.metrics.outcome == 'success'
+        continue-on-error: true
+        run: node .github/scripts/quality/render-reports.mjs --in quality-report
+
+      - name: Publica os relatórios
+        if: steps.metrics.outcome == 'success'
+        uses: actions/upload-artifact@v5
+        with:
+          name: relatorios-qualidade
+          path: |
+            quality-report/relatorio-tecnico.html
+            quality-report/relatorio-negocio.html
+            quality-report/index.html
+            quality-report/metrics.json
+          retention-days: 30
+
+      # Guardado à parte e por mais tempo, para o relatório seguinte mostrar a tendência
+      - name: Grava o histórico
+        if: steps.metrics.outcome == 'success' && inputs.publish-history
+        uses: actions/upload-artifact@v5
+        with:
+          name: quality-history
+          path: quality-report/history.json
+          retention-days: 90
+
+      - name: Avisa se o relatório não foi gerado
+        if: steps.metrics.outcome != 'success'
+        run: echo "::warning::Não foi possível calcular as métricas de qualidade; veja o log do passo 'Calcula as métricas'"

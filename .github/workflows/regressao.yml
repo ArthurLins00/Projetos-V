@@ -42,3 +42,15 @@ jobs:
   dependencias:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
+
+  qualidade:
+    name: Relatório de qualidade
+    needs: [backend, ai-agent, mobile, maestro, dependencias]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/quality-report.yml
+    permissions:
+      contents: read
+      actions: read
+      issues: read
+    with:
+      publish-history: ${{ github.ref == 'refs/heads/main' }}
