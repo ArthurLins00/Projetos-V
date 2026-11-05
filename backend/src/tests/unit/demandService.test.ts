@@ -10,9 +10,13 @@ jest.mock('../../config/uploads', () => ({
 }));
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 jest.mock('../../utils/cache', () => ({ invalidateMetricsCache: jest.fn() }));
+// Sem o duplo, a remoção pelo gestor notificaria o cidadão de verdade: com SMTP no .env local o envio
+// tenta conectar e o teste estoura o tempo (a falha intermitente do caso 1 da docs/tas.md, seção 10)
+jest.mock('../../services/notificationService', () => ({ notificationService: { notifyDemandUpdate: jest.fn() } }));
 
 import { prisma } from '../../config/__mocks__/prisma';
 import { demandService } from '../../services/demandService';
+import { notificationService } from '../../services/notificationService';
 
 const CIDADAO_ID = 'cidadao-1';
 const OUTRO_CIDADAO_ID = 'cidadao-2';
@@ -170,6 +174,7 @@ describe('demandService (unitário)', () => {
       await demandService.deleteDemand('chamado-1', 'gestor-1', 'Gestor');
 
       expect(prisma.chamado.update).toHaveBeenCalled();
+      expect(notificationService.notifyDemandUpdate).toHaveBeenCalledWith('chamado-1', expect.objectContaining({ titulo: 'Chamado encerrado' }));
     });
 
     it('retorna 404 para demanda inexistente', async () => {
