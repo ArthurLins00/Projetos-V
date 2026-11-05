@@ -1,0 +1,88 @@
+name: Manutenção da TAS
+
+# Operacionaliza a política de manutenção da automação de testes (docs/tas.md):
+# - todo dia útil: marca issues de manutenção com prazo vencido e cobra a decisão das quarentenas;
+# - dias 1 e 15 de cada mês: abre a issue da revisão periódica com os números da TAS;
+# - manual: qualquer uma das tarefas acima e a sincronização das labels da política.
+# A verificação de PR e push (testes desligados, .only e rastreabilidade) roda no CI/CD, dentro do Quality Gate.
+on:
+  schedule:
+    - cron: '0 12 * * 1-5' # 09h em Brasília, seg a sex
+    - cron: '0 13 1,15 * *' # 10h em Brasília, dias 1 e 15
+  workflow_dispatch:
+    inputs:
+      tarefa:
+        description: Tarefa a executar
+        type: choice
+        options: [prazos-e-quarentena, revisao, labels]
+        default: prazos-e-quarentena
+  push:
+    branches: [main]
+    paths: ['.github/scripts/tas/policy.js']
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: tas-manutencao-${{ github.event.schedule || inputs.tarefa || 'labels' }}
+  cancel-in-progress: false
+
+jobs:
+  labels:
+    name: Labels da política
+    if: github.event_name == 'push' || inputs.tarefa == 'labels'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            await require('./.github/scripts/tas/policy.js').syncLabels({ github, context, core });
+
+  prazos-e-quarentena:
+    name: Prazos e quarentena
+    if: github.event.schedule == '0 12 * * 1-5' || inputs.tarefa == 'prazos-e-quarentena'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Verifica a TAS
+        # Avisos e erros entram no sumário; aqui o job não falha, quem cobra é a issue
+        run: node .github/scripts/tas/check-tas.mjs --json tas-check.json || true
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const policy = require('./.github/scripts/tas/policy.js');
+            await policy.syncLabels({ github, context, core });
+            await policy.prazos({ github, context, core });
+            await policy.quarentena({ github, context, core, checkFile: 'tas-check.json' });
+
+  revisao:
+    name: Revisão periódica
+    if: github.event.schedule == '0 13 1,15 * *' || inputs.tarefa == 'revisao'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Verifica a TAS
+        run: node .github/scripts/tas/check-tas.mjs --json tas-check.json || true
+      - name: Duplicação de código nos testes
+        run: >
+          npx --yes jscpd@4.0.5 backend/src/tests e2e ai-agent/tests
+          --min-lines 8 --reporters json --output jscpd --silent || true
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const policy = require('./.github/scripts/tas/policy.js');
+            await policy.syncLabels({ github, context, core });
+            await policy.revisao({ github, context, core, checkFile: 'tas-check.json', duplicationFile: 'jscpd/jscpd-report.json' });

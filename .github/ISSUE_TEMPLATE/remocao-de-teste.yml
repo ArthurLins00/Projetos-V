@@ -1,0 +1,51 @@
+name: Remoção de teste
+description: Propor descontinuar um teste automatizado, com justificativa, risco e aprovação.
+title: "Remoção de teste: "
+labels: ["remoção de teste", "manutenção da TAS", "prioridade: baixa"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Critérios e aprovação na seção 7 da [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/tas.md). A remoção só é feita
+        depois de **duas aprovações** nesta issue, uma delas do Guardião da TAS, e entra no histórico da seção 9.
+  - type: input
+    id: teste
+    attributes:
+      label: Teste e caso do plano
+      placeholder: "mobile/e2e/pending/register.yaml · M-02 · TC-63"
+    validations:
+      required: true
+  - type: dropdown
+    id: criterio
+    attributes:
+      label: Critério
+      options:
+        - Funcionalidade removida ou fora do escopo
+        - Duplicado por outro teste do mesmo nível ou de nível mais barato
+        - Instável sem correção viável depois da quarentena e da prorrogação
+        - Custo de manutenção maior que o retorno (cálculo da seção 5 do plano)
+    validations:
+      required: true
+  - type: textarea
+    id: justificativa
+    attributes:
+      label: Justificativa
+      description: Dados que sustentam o critério (execuções, custo, teste que passa a cobrir)
+    validations:
+      required: true
+  - type: textarea
+    id: risco
+    attributes:
+      label: Risco assumido
+      description: O que deixa de ser verificado automaticamente e como será coberto (outro teste, roteiro manual, nada)
+    validations:
+      required: true
+  - type: checkboxes
+    id: passos
+    attributes:
+      label: Ao remover
+      options:
+        - label: Caso marcado como removido no plano de testes, com o motivo
+        - label: Linhas do catálogo e da rastreabilidade do TESTES.md atualizadas
+        - label: Registro de quarentena removido (se havia)
+        - label: Linha adicionada ao histórico de remoções (docs/tas.md, seção 9)

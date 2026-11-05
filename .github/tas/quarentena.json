@@ -1,0 +1,24 @@
+[
+  {
+    "arquivo": "mobile/e2e/pending/register.yaml",
+    "teste": "M-02 — cadastro pela tela",
+    "classificacao": "tas",
+    "motivo": "Falha no emulador do CI ao confirmar o alerta de sucesso do cadastro; o app funciona no roteiro assistido.",
+    "desde": "2026-10-15",
+    "expira": "2026-11-15",
+    "prorrogacao": "Mais de 14 dias: o plano de testes (seção 5) rebaixou o fluxo a roteiro assistido no emulador. Corrigir ou propor a remoção na revisão periódica de 15/11/2026.",
+    "responsavel": "Guardião da TAS",
+    "issue": null
+  },
+  {
+    "arquivo": "mobile/e2e/pending/demand_crud.yaml",
+    "teste": "M-05 — criar, pesquisar, editar e excluir demanda pela tela",
+    "classificacao": "ambiente",
+    "motivo": "A câmera virtual do emulador gera foto preta e o GPS simulado oscila; o fluxo falha de forma intermitente no CI.",
+    "desde": "2026-10-15",
+    "expira": "2026-11-15",
+    "prorrogacao": "Mais de 14 dias: TC-46 permanece manual pelo cálculo de retorno (seção 5 do plano), com este fluxo como roteiro assistido. Reavaliar na revisão periódica de 15/11/2026.",
+    "responsavel": "Guardião da TAS",
+    "issue": null
+  }
+]
