@@ -29,7 +29,7 @@ lido tanto pelo cálculo quanto pelos relatórios.
 | ID | Métrica | Como é calculada | Fonte | Meta | Relatório |
 |---|---|---|---|---|---|
 | MQ-01 | **Taxa de aprovação dos testes** | aprovados ÷ executados (pulados não contam), no total e por suíte | JUnit XML / JSON do Jest de cada suíte | 100% | técnico e negócio |
-| MQ-02 | **Cobertura do backend** | linhas e branches cobertos, somando as suítes unitária e de API (`coverage-final.json`) | Jest | linhas ≥ 70%, branches ≥ 60% | técnico e negócio |
+| MQ-02 | **Cobertura do backend** | linhas e branches cobertos, somando as suítes unitária e de API (`coverage-final.json`) | Jest | linhas ≥ 85%, branches ≥ 80% | técnico e negócio |
 | MQ-03 | **Testes instáveis (*flaky*)** | testes que falharam e passaram na nova tentativa da mesma execução | `e2e-results.json` (Playwright) e `maestro-report-1.xml` (Maestro) | 0 | técnico |
 | MQ-04 | **Tempo da pipeline** | duração da execução analisada, mediana das execuções de sucesso nos últimos 30 dias e os testes mais lentos | API de execuções do GitHub e JUnit | CI/CD ≤ 10 min, regressão ≤ 60 min | técnico |
 | MQ-05 | **Taxa de sucesso da pipeline** | execuções com sucesso ÷ execuções concluídas do CI/CD e da regressão em `main`, últimos 30 dias | API de execuções do GitHub | ≥ 95% | técnico e negócio |
@@ -42,9 +42,12 @@ lido tanto pelo cálculo quanto pelos relatórios.
 - **MQ-01 — Taxa de aprovação:** é o indicador mais direto de que a versão funciona. Separar por suíte
   (unitário, API, E2E da API, telas, agente de IA) mostra em que camada está o problema.
 - **MQ-02 — Cobertura do backend:** mostra quanto das regras de negócio os testes realmente exercitam. A soma das
-  suítes unitária e de API é o número honesto: cada uma, sozinha, fica abaixo de 60%, mas elas cobrem partes
-  diferentes do código. A meta de 70% é alcançável sem incentivar teste inútil; 80% ou mais custaria testes de
-  código trivial (configuração, tipos).
+  suítes unitária e de API é o número honesto, porque cada uma cobre partes diferentes do código. A meta era
+  linhas ≥ 70% e branches ≥ 60%; em 05/11/2026 a equipe decidiu manter a média das métricas de cobertura acima de
+  80%. Os módulos que faltavam (órgãos, regras de competência, métricas, cache, health check, fluxos do gestor e
+  validação da autenticação) eram regras de negócio, não código trivial, e os testes deles revelaram um defeito
+  real no cadastro de órgãos. Com esses testes a cobertura chegou a 93% das linhas e 83% dos branches, e a meta
+  subiu para linhas ≥ 85% e branches ≥ 80%, com margem para refatorações sem reprovar o indicador.
 - **MQ-03 — Testes instáveis:** o projeto já perdeu fluxos de tela por instabilidade. Sem a métrica, um teste que
   só passa na segunda tentativa aparece verde e o problema some de vista até virar falha de verdade.
 - **MQ-04 — Tempo da pipeline:** um CI lento atrasa o merge e incentiva pular etapas. A mediana de 30 dias evita
@@ -54,7 +57,9 @@ lido tanto pelo cálculo quanto pelos relatórios.
   único número para a equipe e para os stakeholders. Só conta `main`, porque falhas em PRs e branches de trabalho
   fazem parte do desenvolvimento.
 - **MQ-06 — MTTR:** também já era um KPI do negócio (meta ≤ 2 h). Mede quanto tempo a `main` fica quebrada, o que
-  importa mais do que quantas vezes ela quebra.
+  importa mais do que quantas vezes ela quebra. Desde a política de manutenção da TAS ([`docs/tas.md`](../tas.md)),
+  uma falha que volta a passar no mesmo commit não fecha a issue (vira `teste instável`); o MTTR passa a contar
+  esse tempo até a causa ser tratada, em vez de registrar a instabilidade como recuperação imediata.
 - **MQ-07 — Falhas abertas:** as labels `area:*` traduzem a falha em uma parte do produto (app, backend,
   assistente), o que o relatório de negócio usa para dizer onde está o risco.
 - **MQ-08 — Vulnerabilidades:** por causa da LGPD e de o backend estar exposto na internet. Críticas e altas

@@ -14,6 +14,14 @@ const MAX_BODY = 60000;
 const MAX_ASSIGNEES = 10; // limite do GitHub por issue
 
 const PRIORITY_LABEL = 'prioridade: alta';
+const DEFAULT_PRIORITY_LABEL = 'prioridade: média';
+// Política de manutenção da TAS (docs/tas.md): toda falha nasce com a triagem pendente
+const TRIAGE_LABEL = 'classificação: pendente';
+const FLAKY_LABEL = 'teste instável';
+const DEADLINES = {
+  [PRIORITY_LABEL]: 'classificar em até **2 h úteis** e corrigir, reverter ou quarentenar em até **1 dia útil**',
+  [DEFAULT_PRIORITY_LABEL]: 'classificar em até **1 dia útil** e corrigir em até **3 dias úteis**',
+};
 const PROTECTED_BRANCHES = ['main', 'dev'];
 
 // Área pelo nome do job ("Backend / Testes unitários e de API") ou do workflow; a ordem importa
@@ -26,7 +34,10 @@ const AREAS = [
 
 const LABEL_STYLES = {
   [LABEL]: ['d73a4a', 'Falha registrada automaticamente pelo CI'],
-  [PRIORITY_LABEL]: ['b60205', 'Falha em main, dev ou na regressão diária'],
+  [PRIORITY_LABEL]: ['b60205', 'Falha em main, dev ou na regressão diária; segurança ou smoke'],
+  [DEFAULT_PRIORITY_LABEL]: ['d93f0b', 'Falha em PR ou branch de trabalho; teste instável'],
+  [TRIAGE_LABEL]: ['fbca04', 'Falha ainda não investigada (triagem pendente)'],
+  [FLAKY_LABEL]: ['f9d0c4', 'Passa e falha sem mudança de código'],
   'area: backend': ['1d76db', 'Backend'],
   'area: mobile': ['5319e7', 'App mobile'],
   'area: mobile-e2e': ['8a63d2', 'Fluxos E2E do app (Maestro)'],
@@ -103,7 +114,9 @@ function labelsFor(run, failedJobs) {
     const area = AREAS.find(([pattern]) => pattern.test(name));
     if (area) labels.add(area[1]);
   }
+  labels.add(TRIAGE_LABEL);
   if (PROTECTED_BRANCHES.includes(run.head_branch) || run.event === 'schedule') labels.add(PRIORITY_LABEL);
+  else labels.add(DEFAULT_PRIORITY_LABEL);
   for (const extra of listFromEnv('CI_FAILURE_LABELS')) labels.add(extra);
   return [...labels];
 }
@@ -162,13 +175,31 @@ module.exports = async ({ github, context, core }) => {
   const { owner, repo } = context.repo;
   const keyMarker = `<!-- ci-failure-key:${run.name}|${run.head_branch} -->`;
   const runMarker = `<!-- ci-failure-run:${run.id} -->`;
+  const shaMarker = `<!-- ci-failure-sha:${run.head_sha} -->`;
 
   const openIssues = (
     await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', labels: LABEL, per_page: 100 })
   ).filter((issue) => !issue.pull_request && issue.body?.includes(keyMarker));
 
   if (run.conclusion === 'success') {
-    for (const issue of openIssues) {
+    // Passou no mesmo commit que tinha falhado: nada foi corrigido, então a falha é suspeita de instabilidade.
+    // A issue continua aberta para a triagem (docs/tas.md, seção 5) em vez de sumir com o verde.
+    const flaky = openIssues.filter((issue) => issue.body.includes(shaMarker));
+    if (flaky.length) await ensureLabels(github, owner, repo, [FLAKY_LABEL]);
+    for (const issue of flaky) {
+      await github.rest.issues.addLabels({ owner, repo, issue_number: issue.number, labels: [FLAKY_LABEL] });
+      await github.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: issue.number,
+        body:
+          `⚠️ [${run.name} #${run.run_number}](${run.html_url}) passou no **mesmo commit** (${run.head_sha.slice(0, 7)}) que falhou. ` +
+          'Sem mudança de código, a falha é suspeita de **instabilidade** e a issue continua aberta: investigue a causa, ' +
+          'classifique (`classificação: sut`, `tas` ou `ambiente`) e siga a seção 5 do docs/tas.md antes de fechar.',
+      });
+    }
+    const fixed = openIssues.filter((issue) => !flaky.includes(issue));
+    for (const issue of fixed) {
       await github.rest.issues.createComment({
         owner,
         repo,
@@ -180,9 +211,16 @@ module.exports = async ({ github, context, core }) => {
     await note(
       core,
       run,
-      openIssues.length
-        ? `✅ Passou; issues fechadas: ${openIssues.map((issue) => `[#${issue.number}](${issue.html_url})`).join(', ')}`
-        : '✅ Passou; nenhuma issue aberta para fechar.'
+      [
+        fixed.length
+          ? `✅ Passou; issues fechadas: ${fixed.map((issue) => `[#${issue.number}](${issue.html_url})`).join(', ')}`
+          : '✅ Passou; nenhuma issue fechada.',
+        flaky.length
+          ? `⚠️ Mantidas abertas como suspeita de instabilidade: ${flaky.map((issue) => `[#${issue.number}](${issue.html_url})`).join(', ')}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n\n')
     );
     return;
   }
@@ -230,7 +268,21 @@ module.exports = async ({ github, context, core }) => {
     ? `## Jobs com falha (${failedJobs.length})\n\n${jobSections.join('\n')}`
     : '## Jobs com falha\n\nNenhum job individual falhou; veja a execução para detalhes.';
 
-  let details = `${summary}\n\n${jobsText}`;
+  const priority = labels.includes(PRIORITY_LABEL) ? PRIORITY_LABEL : DEFAULT_PRIORITY_LABEL;
+  const policy = [
+    '## Encaminhamento (política da TAS)',
+    '',
+    `Prazo (\`${priority}\`): ${DEADLINES[priority]}. Veja [docs/tas.md](${run.repository.html_url}/blob/main/docs/tas.md).`,
+    '',
+    '1. **Investigue**: reproduza localmente ou com *Re-run failed jobs* e leia os artefatos da execução.',
+    '2. **Classifique** trocando `classificação: pendente` por `classificação: sut` (defeito do sistema), `tas`',
+    '   (defeito do teste), `ambiente` (CI, emulador, rede) ou `variação esperada` (mudança intencional).',
+    '3. **Encaminhe**: comente a causa, o responsável e a correção (PR, issue de defeito ou quarentena).',
+    '',
+    'Nova tentativa que passa sem mudança de código não fecha esta issue: ela vira `teste instável`.',
+  ].join('\n');
+
+  let details = `${summary}\n\n${jobsText}\n\n${policy}`;
   if (details.length > MAX_BODY) {
     details = `${details.slice(0, MAX_BODY)}\n\n_…conteúdo truncado; veja o log completo na execução._`;
   }
@@ -263,7 +315,7 @@ module.exports = async ({ github, context, core }) => {
     title: `CI falhou: ${run.name} em ${run.head_branch} (${run.head_sha.slice(0, 7)})`,
     labels,
     assignees,
-    body: `${recurring}${details}\n\n${keyMarker}\n${runMarker}`,
+    body: `${recurring}${details}\n\n${keyMarker}\n${runMarker}\n${shaMarker}`,
   });
   await note(
     core,

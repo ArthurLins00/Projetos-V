@@ -41,6 +41,19 @@ jobs:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
 
+  # Política de manutenção da TAS (docs/tas.md, seção 8.3): nenhum teste com .only, nenhum teste desligado
+  # sem quarentena registrada e todo arquivo de teste no catálogo do TESTES.md
+  tas:
+    name: Política da TAS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node .github/scripts/tas/check-tas.mjs
+
   # Fora do Quality Gate (ci-ok): o relatório informa, não bloqueia o merge
   qualidade:
     name: Relatório de qualidade
@@ -58,7 +71,7 @@ jobs:
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
-    needs: [backend, mobile, ai-agent, dependencias]
+    needs: [backend, mobile, ai-agent, dependencias, tas]
     if: always()
     timeout-minutes: 5
     steps:

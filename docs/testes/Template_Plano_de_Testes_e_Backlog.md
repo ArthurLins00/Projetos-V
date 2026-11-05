@@ -197,6 +197,15 @@ O que mudou entre as duas saídas
 | `Pesquisa, filtros, detalhe com prazo e validação de região` | `Integração` | `Dependem da consulta montada pelo demandService e da validação no controller.` |
 | `Fila, aceite e comentários do gestor` | `Integração` | `Rotas do gestor com requireRole e histórico gravado na mesma transação.` |
 | `Telas de login, cadastro, sessão persistida e logout` | `Sistema` | `Só aparecem com o app real no emulador, o Metro e o backend no ar.` |
+| `Cadastro, edição, status e categorias dos órgãos` | `Integração` | `Validação no service e códigos 400/404/409 no controller; só a rota prova o que é gravado e auditado.` |
+| `Regras de competência: validação, duplicidade e edição parcial` | `Integração` | `As checagens consultam categoria, órgão e vínculo no banco; o duplo do Prisma cobre cada combinação.` |
+| `Ativação, desativação e criação de usuários com auditoria` | `Integração` | `Atravessa requireRole, adminService e audit_logs na mesma requisição.` |
+| `Indicadores operacionais (total, categoria, tempo médio) e cache Redis` | `Componente` | `Cálculo puro sobre os dados do repositório; o Redis é trocado por duplo para testar acerto, falha e TTL.` |
+| `Health check do banco e do Redis` | `Integração` | `É a rota que o CI e o monitoramento consultam; o status HTTP depende do banco.` |
+| `Tradução de erros em respostas HTTP` | `Componente` | `Função pura sobre o tipo do erro; cada código do Prisma roda em milissegundos.` |
+| `Painel, fila filtrada e atendimento completo do gestor` | `Integração` | `Rotas do gestor com transação, histórico e notificação; o envio é trocado por duplo.` |
+| `Validação de entrada do controller de autenticação` | `Componente` | `Regras sobre o corpo da requisição; o authService é trocado por duplo e cada ramo roda isolado.` |
+| `Filtros por categoria e região combinados com status e pesquisa` | `Integração` | `A consulta é montada no backend; só a rota prova a combinação e a recusa de valores inválidos.` |
 
 ### 4.4 Tabela intermediária de derivação
 
@@ -247,6 +256,17 @@ O que mudou entre as duas saídas
 | `Login de usuário inativo` | `Partição de equivalência` | `usuário Ativo; Inativo com senha correta` | `TC-61` |
 | `Fila, aceite e comentários do gestor` | `Tabela de decisão` | `perfil (Cidadão, Gestor, Admin) × ação (listar, filtro meus, aceitar, comentar, mudar status) × responsável é gestor ou não` | `TC-62` |
 | `Telas de login, cadastro, sessão e logout` | `Transição de estados` | `deslogado → login inválido → deslogado; cadastro → login → lista vazia; logado → reabrir → logado; logout → reabrir → deslogado` | `TC-63` |
+| `Órgãos` | `Partição de equivalência` | `campos completos; faltando; sigla ou nome duplicado; órgão inexistente; status ativo, inativo ou desconhecido` | `TC-64` |
+| `Regras de competência` | `Tabela de decisão` | `categoria existe × órgão principal existe e ativo × secundário existe × categoria vinculada × regra duplicada` | `TC-65` |
+| `Ciclo de vida dos usuários` | `Transição de estados` | `ativo → desativado → ativo; ativo → ativar (409); admin → ativar/desativar (403); admin → desativar a si mesmo (403)` | `TC-66` |
+| `Indicadores operacionais e cache` | `Partição de equivalência + Valor limite` | `nenhum, um e vários chamados concluídos; categoria sem chamados; total zero; cache presente, vazio, inválido ou fora do ar` | `TC-67` |
+| `Health check` | `Partição de equivalência` | `banco no ar × Redis no ar ou fora` | `TC-68` |
+| `Consulta de usuários e categorias` | `Partição de equivalência` | `ID válido; fora do formato; inexistente; categoria inativa; banco falhando` | `TC-69` |
+| `Tradução de erros` | `Partição de equivalência` | `AppError; cada código conhecido do Prisma; código desconhecido; erros de token, validação, e-mail duplicado e corpo grande` | `TC-70` |
+| `Painel e fila do gestor` | `Partição de equivalência` | `filtro Todos, Atrasados, status válido ou desconhecido; responsável meus ou sem; chamado existente ou não` | `TC-71` |
+| `Atendimento pelo gestor` | `Tabela de decisão` | `ação (status, aceitar, comentar, transferir) × dados completos × chamado existe × status anterior Aberto × órgão destino válido e diferente` | `TC-72` |
+| `Validação da autenticação` | `Partição de equivalência` | `campo ausente, tipo errado, formato inválido, abaixo do mínimo; usuário autenticado ou não` | `TC-73` |
+| `Filtros por categoria e região` | `Partição de equivalência` | `categoria inteira positiva ou não; UF válida, minúscula ou inexistente; zona Urbana, Rural ou outra; combinados com status e pesquisa` | `TC-74` |
 
 ### 4.5 Matriz de rastreabilidade de evidências
 
@@ -317,6 +337,17 @@ O que mudou entre as duas saídas
 | `TC-61` | `HU-01` | `—` | `— (a HU não diz o que acontece com usuário inativo)` | `S` |
 | `TC-62` | `HU-05` | `—` | `"quando um gestor altera o status do meu chamado" (fila, aceite e comentários vêm do código)` | `S` |
 | `TC-63` | `HU-01` | `—` | `— (as telas vêm do código e dos fluxos Maestro)` | `S` |
+| `TC-64` | `—` | `—` | `— (cadastro de órgãos vem do código; incluído para cobertura)` | `S` |
+| `TC-65` | `HU-04` | `—` | `— (a HU trata do roteamento; as regras de competência vêm do código)` | `S` |
+| `TC-66` | `HU-09` | `—` | `— (a HU trata dos perfis; ativação e auditoria vêm do código)` | `S` |
+| `TC-67` | `—` | `—` | `"exibição de métricas e indicadores operacionais no painel do gestor" (acompanhamento de 10/11/2026)` | `N` |
+| `TC-68` | `—` | `—` | `— (health check vem do código e do CI)` | `S` |
+| `TC-69` | `—` | `—` | `— (consultas vêm do código)` | `S` |
+| `TC-70` | `HU-06` | `—` | `"erro sem stack trace" (estendido a todos os tipos de erro)` | `S` |
+| `TC-71` | `HU-05` | `—` | `— (painel e fila vêm do código)` | `S` |
+| `TC-72` | `HU-05` | `—` | `"quando um gestor altera o status do meu chamado" (aceite, comentário e transferência vêm do código)` | `S` |
+| `TC-73` | `HU-01` | `—` | `— (validação de entrada vem do código)` | `S` |
+| `TC-74` | `HU-06` | `—` | `"Filtros funcionais de demandas por categoria/tipo, região e status integrados à API" (acompanhamento de 10/11/2026)` | `N` |
 
 ### 4.6 Casos de teste
 
@@ -324,7 +355,7 @@ Grave a saída íntegra em um arquivo próprio versionado no repositório e refe
 
 Arquivo: [`docs/testes/ia/saida-rodada-2.md`](ia/saida-rodada-2.md)
 
-Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório.
+Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório. TC-64 a TC-74 foram incluídos em 05/11/2026 para elevar a cobertura do backend acima de 80% (estava em 63% das linhas e 53% dos branches) e para cobrir os filtros e as métricas do acompanhamento de 10/11/2026.
 
 | ID | HU | CA | Título | Pré-condições | Passos | Resultado esperado | Pós-condições |
 | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -391,6 +422,17 @@ Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes j
 | TC-61 | HU-01 | — | Login de usuário inativo | Usuário com status Inativo | Login com a senha correta | 403 “Usuário inativo” | — |
 | TC-62 | HU-05 | — | Fila, aceite e comentários do gestor | Gestor, admin e cidadão logados | Listar a fila e o filtro “meus”; aceitar; aceitar indicando responsável que não é gestor; comentar vazio e com texto; admin muda status; cidadão acessa | Fila de todos os órgãos; atribuição a quem aceitou; 400 no responsável inválido e no comentário vazio; comentário no histórico; admin permitido; 403 para cidadão | Histórico registrado |
 | TC-63 | HU-01 | — | Telas de login, cadastro, sessão e logout (assistido) | Emulador, Metro e backend com seed | Fluxos Maestro M-01 a M-04 | Alerta de credenciais inválidas; cadastro e login pela tela; sessão mantida ao reabrir; logout mantido ao reabrir | — |
+| TC-64 | — | — | Órgãos | Admin, gestor e cidadão logados | Listar com e sem filtro; cadastrar completo e sem campos; sigla e nome duplicados; editar; inativar; listar categorias | Lista com SLA e categorias; 201 com auditoria; 400 sem gravar; 409; 404 para inexistente; 403 para gestor no cadastro e cidadão na lista | Órgão e categorias gravados |
+| TC-65 | HU-04 | — | Regras de competência | Admin logado; categoria e órgão cadastrados | Criar sem SLA, com SLA e secundário; criar com dados inválidos ou duplicados; listar filtrando; editar parcial; remover | SLA herdado do órgão; 400/404/409 nos inválidos; filtro por órgão principal ou secundário; só os campos enviados mudam | Regra gravada ou removida |
+| TC-66 | HU-09 | — | Ciclo de vida dos usuários e auditoria | Admin logado | Desativar; reativar; ativar já ativo; desativar admin ou a si mesmo; criar gestor; e-mail duplicado; consultar auditoria | Status anterior registrado; 409 e 403 nos proibidos; gestor ativo com senha criptografada; 409; auditoria filtrada | Auditoria registrada |
+| TC-67 | — | — | Indicadores operacionais e cache | Gestor logado; Redis disponível ou não | Consultar total, distribuição e tempo médio; repetir com cache presente, vazio, inválido e fora do ar | Totais por status, percentual com 1 casa, média em horas (nula sem concluídos); cache usado sem consultar o banco; falha do Redis não derruba a rota; cidadão recebe 403 | Cache gravado por 5 min |
+| TC-68 | — | — | Health check | — | Consultar /health com banco no ar e fora | 200 ok; 503 degraded; Redis informado | — |
+| TC-69 | — | — | Consulta de usuários e categorias | Admin e cidadão logados | Listar usuários; buscar por ID válido, inválido e inexistente; buscar categoria ativa, inativa e com ID texto | Paginação; 400 e 404; categoria inativa como 404 | — |
+| TC-70 | HU-06 | — | Tradução de erros | — | Disparar AppError, erros do Prisma, de token, de validação, de e-mail duplicado e de corpo grande | Status HTTP correto para cada tipo, sem stack nem mensagem interna | — |
+| TC-71 | HU-05 | — | Painel e fila do gestor | Gestor logado | Abrir o painel; filtrar Atrasados, sem responsável, Todos e status desconhecido; abrir detalhe existente e inexistente; listar equipe | Contagens por status; filtros corretos com paginação; 400; 404; equipe com gestores e admins ativos | — |
+| TC-72 | HU-05 | — | Atendimento pelo gestor | Gestor logado; chamado Aberto | Concluir com nota; mudar status sem justificativa; aceitar designando outro gestor; aceitar chamado em andamento; comentar longo; transferir válido e inválido | Nota e evento de conclusão; histórico descritivo; notificação só quando o chamado sai de Aberto; 400/404 sem alterar nada | Histórico e notificação registrados |
+| TC-73 | HU-01 | — | Validação de entrada da autenticação | authService substituído por duplo | Enviar cada campo ausente, de tipo errado ou fora do formato; chamar as rotas da conta sem usuário | 400 com a mensagem do campo; 401 sem usuário; dados normalizados antes do serviço | — |
+| TC-74 | HU-06 | — | Filtros por categoria e região | Cidadão e gestor logados | Listar combinando status, pesquisa, categoria, UF, cidade e zona; enviar categoria, UF e zona inválidas | Filtros combinados; UF em maiúsculas; 400 sem consultar o banco | — |
 
 ---
 
@@ -472,6 +514,19 @@ execuções até o retorno  =  Ti ÷ (Tm − Ta − Mn/F)
 | `TC-61` | `Integração` | `3 min` | `20 min` | `1 s` | `5 min` | `20` | `Sim` |
 | `TC-62` | `Integração` | `12 min` | `90 min` | `3 s` | `15 min` | `15` | `Sim` |
 | `TC-63` | `Sistema` | `15 min` | `240 min` | `120 s` | `40 min` | `4` | `Não, permanece manual` |
+| `TC-64` | `Integração` | `15 min` | `60 min` | `2 s` | `5 min` | `10` | `Sim` |
+| `TC-65` | `Integração` | `20 min` | `90 min` | `2 s` | `10 min` | `10` | `Sim` |
+| `TC-66` | `Integração` | `12 min` | `60 min` | `2 s` | `5 min` | `10` | `Sim` |
+| `TC-67` | `Componente` | `15 min` | `60 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-68` | `Integração` | `3 min` | `15 min` | `1 s` | `2 min` | `20` | `Sim` |
+| `TC-69` | `Integração` | `5 min` | `30 min` | `1 s` | `5 min` | `10` | `Sim` |
+| `TC-70` | `Componente` | `15 min` | `30 min` | `1 s` | `2 min` | `20` | `Sim` |
+| `TC-71` | `Integração` | `10 min` | `45 min` | `2 s` | `5 min` | `20` | `Sim` |
+| `TC-72` | `Integração` | `20 min` | `90 min` | `2 s` | `10 min` | `20` | `Sim` |
+| `TC-73` | `Componente` | `25 min` | `60 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-74` | `Integração` | `10 min` | `45 min` | `1 s` | `5 min` | `20` | `Sim` |
+
+Os onze casos incluídos em 05/11/2026 (TC-64 a TC-74) se pagam em menos de 10 execuções cada (o pior é TC-65: 90 ÷ (20 − 0,03 − 1) ≈ 4,7), dentro das ~12 do horizonte do projeto, porque rodam com o banco mockado em todo push e PR.
 
 Por que os seis `Não`: TC-24, TC-35, TC-45 e TC-46 têm denominador negativo (Mn/F supera o ganho por execução), então nunca se pagam; TC-48 só se paga após ~15 execuções (180 ÷ (20 − 0,08 − 7,5)), acima das ~12 do horizonte do projeto. Todos continuam no plano com execução manual antes de cada release: TC-24 e TC-45 em aparelho físico com gravação de tela, TC-35 e TC-48 com roteiro e print, e TC-46 usando o fluxo Maestro `demand_crud.yaml` como roteiro assistido. TC-63 só se paga após ~80 execuções (240 ÷ (15 − 2 − 10)); mesmo assim, os fluxos Maestro M-01, M-03 e M-04, que ficaram estáveis no emulador do CI, passaram a rodar na pipeline (M-01 e M-03 como smoke em todo PR e os três na regressão diária), sem custo extra de implementação porque já existiam. O M-02 (cadastro pela tela) está em `mobile/e2e/pending/` e continua como roteiro assistido no emulador, assim como o `demand_crud.yaml` do TC-46.
 
@@ -549,6 +604,19 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 46 | `TC-53` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-79 a A-84, E-17b, E-19)` |
 | 47 | `TC-51` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-98 a A-104, E-30)` |
 | 48 | `TC-14` | `HU-03` | `Integração` | `2` | `2` | `1` | `(2×1)÷2 = 1,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-36, E-09; até 5 fotos por chamado, na ordem de envio e sem sobrescrever)` |
+| 49 | `TC-73` | `HU-01` | `Componente` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-51 a U-64)` |
+| 50 | `TC-65` | `HU-04` | `Integração` | `3` | `1` | `2` | `(3×2)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-134 a A-149)` |
+| 51 | `TC-66` | `HU-09` | `Integração` | `3` | `1` | `2` | `(3×2)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-150 a A-159)` |
+| 52 | `TC-67` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-65 a U-80, A-160 a A-164)` |
+| 53 | `TC-68` | `—` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-165, A-166)` |
+| 54 | `TC-70` | `HU-06` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-81 a U-85)` |
+| 55 | `TC-71` | `HU-05` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-174 a A-180)` |
+| 56 | `TC-74` | `HU-06` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-111 a A-114)` |
+| 57 | `TC-72` | `HU-05` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-181 a A-189)` |
+| 58 | `TC-64` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-115 a A-133; revelou o defeito da validação de órgão, seção 5 do TESTES.md)` |
+| 59 | `TC-69` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-167 a A-173)` |
+
+As linhas 49 a 59 foram incluídas em 05/11/2026 depois que o backlog original já estava todo automatizado; estão ordenadas entre si pela mesma regra e não alteram a ordem das 48 anteriores. Com elas, a cobertura do backend passou de 63% para 93% das linhas e de 53% para 83% dos branches.
 
 Verificação
 

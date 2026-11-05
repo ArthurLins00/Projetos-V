@@ -22,6 +22,8 @@ interface Props {
   disabled?: boolean;
   searchPlaceholder?: string;
   testID?: string;
+  /** "chip": gatilho compacto em formato de chip, para barras de filtro. */
+  variant?: 'field' | 'chip';
 }
 
 export function SelectField({
@@ -36,6 +38,7 @@ export function SelectField({
   disabled,
   searchPlaceholder = 'Buscar...',
   testID,
+  variant = 'field',
 }: Props) {
   const { colors } = useTheme();
   const styles = useStyles();
@@ -55,10 +58,31 @@ export function SelectField({
     setQuery('');
   };
 
+  const chip = variant === 'chip';
+  const chipSelected = chip && !!value;
+
   return (
-    <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
-      <Pressable
+    <View style={chip ? undefined : styles.wrapper}>
+      {chip ? (
+        <Pressable
+          testID={testID}
+          accessibilityRole="button"
+          accessibilityLabel={`Filtrar por ${label.toLowerCase()}: ${value ? text : 'todos'}`}
+          accessibilityState={{ selected: chipSelected }}
+          disabled={disabled}
+          onPress={() => setOpen(true)}
+          style={({ pressed }) => [styles.chip, chipSelected && styles.chipSelected, disabled && styles.disabled, pressed && styles.pressed]}
+        >
+          <Ionicons name={icon} size={14} color={chipSelected ? colors.onInverse : colors.textMuted} />
+          <Text style={[styles.chipText, chipSelected && styles.chipTextSelected]} numberOfLines={1}>
+            {value ? text : label}
+          </Text>
+          <Ionicons name="chevron-down" size={14} color={chipSelected ? colors.onInverse : colors.textSubtle} />
+        </Pressable>
+      ) : (
+        <Text style={styles.label}>{label}</Text>
+      )}
+      {!chip && <Pressable
         testID={testID}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${text ?? placeholder}`}
@@ -71,7 +95,7 @@ export function SelectField({
           {text ?? placeholder}
         </Text>
         {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="chevron-down" size={18} color={colors.textSubtle} />}
-      </Pressable>
+      </Pressable>}
 
       <Modal visible={open} animationType="slide" onRequestClose={close}>
         <View style={[styles.modal, { paddingTop: insets.top }]}>
@@ -143,6 +167,21 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
   },
   disabled: { opacity: 0.5 },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: 220,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipSelected: { backgroundColor: colors.inverse, borderColor: colors.inverse },
+  chipText: { flexShrink: 1, fontSize: 13, fontWeight: '600', color: colors.textMuted },
+  chipTextSelected: { color: colors.onInverse },
   pressed: { opacity: 0.7 },
   value: { flex: 1, fontSize: 15, color: colors.text },
   placeholder: { color: colors.textSubtle },

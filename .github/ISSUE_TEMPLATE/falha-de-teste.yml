@@ -1,0 +1,64 @@
+name: Falha de teste
+description: Registrar uma falha de teste encontrada fora do CI (local, revisão ou execução manual) para triagem.
+title: "Falha de teste: "
+labels: ["manutenção da TAS", "classificação: pendente"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Falhas do CI já viram issue sozinhas (label `ci-failure`). Use este formulário para as outras.
+        A triagem segue a [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/tas.md), seções 3 e 4.
+  - type: input
+    id: teste
+    attributes:
+      label: Teste
+      description: Arquivo e nome do caso (ID do catálogo do TESTES.md, se houver)
+      placeholder: "backend/src/tests/unit/demandService.test.ts · U-21"
+    validations:
+      required: true
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidência
+      description: Mensagem de erro, trecho do log, link da execução ou artefato
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: classificacao
+    attributes:
+      label: Classificação inicial
+      description: Se ainda não sabe, deixe "Pendente"; troque a label depois da investigação
+      options:
+        - Pendente (ainda não investigada)
+        - SUT (defeito no sistema)
+        - TAS (defeito no teste ou na automação)
+        - Ambiente (CI, emulador, rede, serviço externo)
+        - Variação esperada (mudança intencional de comportamento)
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      options:
+        - "Alta: main/dev/regressão quebrada, teste de segurança ou smoke"
+        - "Média: PR ou branch de trabalho, teste instável"
+        - "Baixa: melhoria ou dívida técnica"
+    validations:
+      required: true
+  - type: dropdown
+    id: reproducao
+    attributes:
+      label: Reprodução
+      options:
+        - Sempre falha
+        - Falha às vezes (suspeita de instabilidade)
+        - Não consegui reproduzir
+    validations:
+      required: true
+  - type: textarea
+    id: encaminhamento
+    attributes:
+      label: Encaminhamento proposto
+      description: Correção, responsável e prazo segundo a seção 4 da política

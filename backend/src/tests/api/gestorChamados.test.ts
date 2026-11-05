@@ -188,6 +188,31 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(where).toMatchObject({ gestorid: gestor.id, status: 'Em_An_lise' });
   });
 
+  it('GET /gestor/chamados filtra por categoria e região junto com a pesquisa', async () => {
+    prisma.chamado.findMany.mockResolvedValue([]);
+    prisma.chamado.count.mockResolvedValue(0);
+
+    const response = await request(app)
+      .get('/gestor/chamados')
+      .query({ busca: 'buraco', categoria: '2', uf: 'SP', zona: 'Rural' })
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    const where = prisma.chamado.findMany.mock.calls[0]![0]!.where as any;
+    expect(where.OR).toHaveLength(5);
+    expect(where.AND).toEqual([{ categoriaid: 2 }, { uf: 'SP' }, { zona: 'Rural' }]);
+  });
+
+  it('GET /gestor/chamados rejeita UF inválida (400)', async () => {
+    const response = await request(app)
+      .get('/gestor/chamados')
+      .query({ uf: 'ZZ' })
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(400);
+    expect(prisma.chamado.findMany).not.toHaveBeenCalled();
+  });
+
   it('PUT /gestor/chamados/:id/aceitar rejeita responsável que não é gestor', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ id: 'c1', status: 'Aberto', gestorid: null } as any);
     prisma.usuario.findUnique.mockImplementation((async ({ where }: any) =>

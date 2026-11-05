@@ -3,7 +3,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { managementService } from '../services/managementService';
 import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { MANAGEMENT_FILTERS, ManagedTicket, ManagementDashboard, ManagementFilter } from '../models/Management';
+import { MANAGEMENT_FILTERS, ManagedTicket, ManagementDashboard, ManagementFilter, OperationalMetrics } from '../models/Management';
+import { useDemandFilters } from './useDemandFilters';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -23,10 +24,22 @@ export function useManagementDashboardViewModel() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [metrics, setMetrics] = useState<OperationalMetrics | null>(null);
+  const [metricsError, setMetricsError] = useState(false);
+  const filters = useDemandFilters(() => setLoading(true));
+  const filterParams = filters.params;
+
   const requestId = useRef(0);
 
   const loadDashboard = useCallback(() => {
     managementService.dashboard().then(setDashboard).catch(() => undefined);
+    managementService
+      .metrics()
+      .then((result) => {
+        setMetrics(result);
+        setMetricsError(false);
+      })
+      .catch(() => setMetricsError(true));
   }, []);
 
   const fetchPage = useCallback(async (offset: number) => {
@@ -38,6 +51,7 @@ export function useManagementDashboardViewModel() {
         ...(debouncedSearch && { busca: debouncedSearch }),
         ...(filter.status && { status: filter.status }),
         ...(filter.responsavel && { responsavel: filter.responsavel }),
+        ...filterParams,
       });
       if (currentRequest !== requestId.current) return;
       setTickets((prev) => (offset === 0 ? result.chamados : [...prev, ...result.chamados]));
@@ -53,7 +67,7 @@ export function useManagementDashboardViewModel() {
         setLoadingMore(false);
       }
     }
-  }, [debouncedSearch, filter]);
+  }, [debouncedSearch, filter, filterParams]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
@@ -90,6 +104,10 @@ export function useManagementDashboardViewModel() {
     user,
     isAdmin: user?.perfil === 'Admin',
     dashboard,
+    metrics,
+    metricsError,
+    reloadMetrics: loadDashboard,
+    filters,
     tickets,
     total,
     search,

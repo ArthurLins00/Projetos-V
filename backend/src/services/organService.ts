@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { organRepository } from '../repositories/organRepository';
 import { auditLogService, AuditActions } from './auditLogService';
+import { AppError } from '../middlewares/errorMiddleware';
 
 interface CriarOrgaoDTO {
     id: string;
@@ -37,7 +38,8 @@ interface EditarOrgaoDTO {
 }
 
 export const organService = {
-    async validarCamposObrigatorios(dados: CriarOrgaoDTO) {
+    // Síncrona: antes era async e era chamada sem await, então a validação nunca bloqueava o cadastro
+    validarCamposObrigatorios(dados: CriarOrgaoDTO) {
         const camposObrigatorios = ['id', 'nome', 'sigla', 'slahoras', 'responsavel', 'email', 'categorias'];
         const camposFaltantes: string[] = [];
 
@@ -52,7 +54,7 @@ export const organService = {
         });
 
         if (camposFaltantes.length > 0) {
-            throw new Error(`Campos obrigatórios faltando: ${camposFaltantes.join(', ')}`);
+            throw new AppError(400, `Campos obrigatórios faltando: ${camposFaltantes.join(', ')}`);
         }
     },
 

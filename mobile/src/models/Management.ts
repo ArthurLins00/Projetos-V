@@ -54,6 +54,10 @@ export interface ManagedTicketListParams {
   status?: string;
   busca?: string;
   responsavel?: 'meus' | 'sem';
+  categoria?: number;
+  uf?: string;
+  cidade?: string;
+  zona?: Zone;
   limit?: number;
   offset?: number;
 }
@@ -75,6 +79,29 @@ export interface ManagementDashboard {
     atrasados: number;
     meus: number;
   };
+}
+
+export interface CategoryMetric {
+  category: string;
+  total: number;
+  percentage: number;
+}
+
+/** Indicadores operacionais vindos de /metrics (camada de Dados). */
+export interface OperationalMetrics {
+  total: number;
+  resolvidas: number;
+  encerradas: number;
+  mediaHoras: number | null;
+  consideradas: number;
+  porCategoria: CategoryMetric[];
+}
+
+export function formatHours(hours: number | null) {
+  if (hours === null) return '–';
+  if (hours < 1) return `${Math.round(hours * 60)} min`;
+  if (hours < 48) return `${hours.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} h`;
+  return `${(hours / 24).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} dias`;
 }
 
 export interface TeamMember {

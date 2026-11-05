@@ -3,12 +3,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { demandService } from '../services/demandService';
 import { AppError } from '../middlewares/errorMiddleware';
-
-const UFS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
-  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
-];
-const ZONAS = ['Urbana', 'Rural'] as const;
+import { UFS, ZONAS, parseDemandListFilters } from '../utils/demandFilters';
 
 function parseRegion(body: any) {
   const { state, city, zone } = body ?? {};
@@ -61,14 +56,13 @@ export const demandController = {
   },
   async list(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { status, categoria, regiao, busca, page, limit } = req.query;
+      const { status, busca, page, limit } = req.query;
 
       const result = await demandService.list({
         userId: req.user!.id,
         perfil: req.user!.perfil,
         ...(status !== undefined && { status: String(status) }),
-        ...(categoria !== undefined && { categoria: Number(categoria) }),
-        ...(regiao !== undefined && { regiao: String(regiao) }),
+        filters: parseDemandListFilters(req.query),
         ...(busca !== undefined && String(busca).trim() !== '' && { busca: String(busca).trim() }),
         page: page ? Math.max(1, Number(page)) : 1,
         limit: limit ? Math.min(100, Math.max(1, Number(limit))) : 20,

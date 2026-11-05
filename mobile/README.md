@@ -16,10 +16,11 @@ acompanhar o andamento e gerenciar as próprias ocorrências.
 |---|---|---|
 | Login | `/(auth)/login` | Entrar com e-mail e senha. Em modo dev há o botão "Entrar como Cidadão (Teste)" |
 | Cadastro | `/(auth)/register` | Criar conta de cidadão |
-| Minhas Demandas | `/(app)` | Lista (FlatList) com pesquisa, filtros por status, paginação e "puxar para atualizar" |
+| Minhas Demandas | `/(app)` | Lista (FlatList) com pesquisa combinável com os filtros de status, categoria, estado, cidade e zona, paginação e "puxar para atualizar" |
 | Nova Demanda | `/(app)/create-demand` | Formulário com categoria, GPS e câmera |
 | Detalhes da Demanda | `/(app)/demand/[id]` | Foto, dados, coordenadas, histórico e botões de editar e excluir |
 | Editar Demanda | `/(app)/demand/[id]/edit` | Mesmo formulário da criação, já preenchido |
+| Gestão de Chamados (Gestor/Admin) | `/(app)` | Indicadores operacionais (total, concluídas, tempo médio, distribuição por categoria), fila com pesquisa e filtros de status, responsável, categoria e região |
 
 ### Recursos do dispositivo
 
@@ -138,6 +139,31 @@ Android Studio, com solução de problemas, está em [`COMO_RODAR_ANDROID_STUDIO
 | `npm run ios` | Build de desenvolvimento e execução no iOS (requer macOS) |
 | `npm run prebuild` | Gera a pasta nativa `android/` (necessário após mudar o `app.json` ou instalar lib nativa) |
 | `npm run typecheck` | Checagem de tipos do TypeScript |
+| `npm run build:apk` | Gera o APK instalável no EAS (perfil `preview`) |
+
+### Build empacotado (EAS)
+
+O projeto está vinculado ao EAS (`extra.eas.projectId` e `owner` no [`app.json`](app.json)) e os perfis
+de build ficam em [`eas.json`](eas.json):
+
+| Perfil | Saída | Uso |
+|---|---|---|
+| `preview` | APK (Android) / build de simulador (iOS) | Distribuição interna: instalar direto no celular |
+| `production` | AAB (Android) / IPA (iOS) | Publicação nas lojas; versão incrementada automaticamente |
+
+No APK não existe Metro, então a URL do backend **precisa** vir de `EXPO_PUBLIC_API_URL` (sem ela o app
+cai em `10.0.2.2`, que só funciona no emulador). Cadastre a variável no EAS uma vez e gere o build:
+
+```bash
+npx eas-cli login
+npx eas-cli env:create --environment preview --name EXPO_PUBLIC_API_URL --value http://SEU_IP:3000 --visibility plaintext
+npm run build:apk
+```
+
+Ao terminar, o EAS mostra o link e o QR code para baixar o APK; os builds ficam listados em
+`npx eas-cli build:list`. O `usesCleartextTraffic` (plugin `expo-build-properties`) libera HTTP sem TLS
+no Android para o APK falar com o backend local; em produção use uma URL HTTPS e remova essa opção.
+Push remoto também passa a funcionar no APK (no Expo Go do Android não funciona desde o SDK 53).
 
 ### Permissões
 
@@ -172,7 +198,8 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 |---|---|
 | Login | `login-email`, `login-password`, `login-submit`, `login-go-register`, `login-dev` |
 | Cadastro | `register-name`, `register-email`, `register-password`, `register-submit`, `register-go-login` |
-| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
+| Lista | `demand-search`, `status-filter-<status>`, `demand-region-filters-{categoria,uf,cidade,zona,limpar}`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
+| Gestão | `metrics-panel`, `metric-total`, `metric-resolvidas`, `metric-tempo-medio`, `ticket-search`, `ticket-filter-<filtro>`, `ticket-region-filters-{categoria,uf,cidade,zona,limpar}`, `ticket-list` |
 | Formulário | `form-title`, `form-category-<id>`, `form-address`, `form-description`, `form-photo`, `form-gps`, `form-submit` |
 | Câmera | `camera-shutter` |
 | Detalhe | `detail-title`, `detail-edit`, `detail-delete` |

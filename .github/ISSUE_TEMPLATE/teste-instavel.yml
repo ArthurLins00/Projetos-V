@@ -1,0 +1,53 @@
+name: Teste instável
+description: Teste que passa e falha sem mudança de código. Abre o acompanhamento e, se preciso, a quarentena.
+title: "Teste instável: "
+labels: ["teste instável", "manutenção da TAS", "prioridade: média", "classificação: pendente"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Siga a seção 5 da [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/tas.md). Nova tentativa não é correção:
+        o teste só sai desta issue com a causa identificada e corrigida ou com a decisão registrada.
+  - type: input
+    id: teste
+    attributes:
+      label: Teste
+      placeholder: "e2e/gestor-atendimento.spec.ts · E-16"
+    validations:
+      required: true
+  - type: textarea
+    id: ocorrencias
+    attributes:
+      label: Ocorrências
+      description: Links das execuções que falharam e das que passaram no mesmo commit (no mínimo uma de cada)
+    validations:
+      required: true
+  - type: input
+    id: taxa
+    attributes:
+      label: Taxa observada
+      description: Falhas ÷ execuções no período (ex. 1 de 7 nas últimas 2 semanas)
+    validations:
+      required: true
+  - type: textarea
+    id: hipotese
+    attributes:
+      label: Hipótese de causa
+      description: Ordem, tempo de espera, dado compartilhado, recurso externo, carga do runner...
+  - type: dropdown
+    id: decisao
+    attributes:
+      label: Decisão
+      options:
+        - Monitorar (abaixo do limite de quarentena; continua rodando)
+        - Corrigir agora
+        - Quarentena (registrar em .github/tas/quarentena.json com expiração)
+    validations:
+      required: true
+  - type: checkboxes
+    id: riscos
+    attributes:
+      label: Antes de quarentenar
+      options:
+        - label: O teste não é o único que cobre um requisito de segurança ou o smoke (senão, corrigir em vez de quarentenar)
+        - label: Reproduzi manualmente o comportamento do sistema e ele está correto (não é defeito real mascarado)
