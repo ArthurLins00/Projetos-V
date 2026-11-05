@@ -16,7 +16,7 @@ describe('Verificação em duas etapas com DEMO_MODE (API)', () => {
     delete process.env.DEMO_MODE;
   });
 
-  it('devolve o código na resposta do login e ele conclui a autenticação', async () => {
+  it('[TC-75] devolve o código na resposta do login e ele conclui a autenticação', async () => {
     prisma.usuario.findUnique.mockResolvedValue({
       id: 'usuario-2fa-demo',
       nome: 'Usuário Demo',

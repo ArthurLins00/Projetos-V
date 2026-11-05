@@ -216,11 +216,11 @@ function technical(m, history) {
 
   sections.push(`<h2>Testes instáveis (MQ-03)</h2>`);
   sections.push(
-    !m.flaky.measured
-      ? '<p class="muted">Nenhuma suíte com nova tentativa (Playwright ou Maestro) rodou nesta execução.</p>'
+    !m.flaky
+      ? '<p class="muted">API do GitHub indisponível: issues <code>teste instável</code> não consultadas.</p>'
       : m.flaky.tests.length
-        ? table(['Suíte', 'Teste', 'Arquivo'], m.flaky.tests.map((t) => `<tr><td>${esc(t.suite)}</td><td>${esc(t.name)}</td><td><code>${esc(t.file)}</code></td></tr>`))
-        : '<p class="muted">Nenhum teste precisou de nova tentativa para passar.</p>'
+        ? table(['Issue', 'Título', 'Aberta em'], m.flaky.tests.map((t) => `<tr><td><a href="${esc(t.url)}">#${t.number}</a></td><td>${esc(t.name)}</td><td>${dateTime(t.createdAt)}</td></tr>`))
+        : '<p class="muted">Nenhuma issue <code>teste instável</code> aberta. Os testes rodam sem nova tentativa automática, então uma instabilidade aparece como falha e vira issue.</p>'
   );
 
   const cov = m.coverage;
@@ -396,8 +396,8 @@ function risks(m) {
   );
   add(
     'MQ-03',
-    `${plural(m.flaky.count ?? 0, 'verificação instável', 'verificações instáveis')}`,
-    'Alguns testes só passaram na segunda tentativa. Podem esconder um defeito real que aparece só às vezes.',
+    `${plural(m.flaky?.count ?? 0, 'verificação instável', 'verificações instáveis')}`,
+    'Alguns testes passaram e falharam no mesmo código. Podem esconder um defeito real que aparece só às vezes.',
     'Investigar e estabilizar esses testes.'
   );
   add(

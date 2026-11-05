@@ -99,8 +99,9 @@ No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobil
 na regressão diária (veja a seção 2.1) e também pode ser disparado pela aba Actions. Ele
 compila o app de debug, sobe o backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as
 capturas como artefato `maestro-report`. Não roda no push nem nos PRs, porque leva dezenas de minutos.
-Se os fluxos falharem, o script `.github/scripts/run-maestro.sh` os repete uma vez (como o `retries: 1` do
-Playwright) e registra um aviso no job; a falha só reprova o job se a segunda tentativa também falhar.
+Antes dos fluxos, o script `.github/scripts/run-maestro.sh` faz um aquecimento e reinicia o emulador se o Maestro
+não enxergar o app. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
+a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](docs/tas.md)).
 
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
 (configurado em `mobile/e2e/config.yaml`).
@@ -175,8 +176,8 @@ datas de abertura e fechamento são a base do MTTR (MQ-06).
 | Artefato | Conteúdo | Para que serve | Retenção |
 |---|---|---|---|
 | `backend-test-reports` | resultado dos testes unitários e de API em JSON do Jest e JUnit XML; cobertura em HTML, Cobertura XML, `coverage-summary.json` e `coverage-final.json` | investigar falhas, navegar pela cobertura linha a linha e calcular a cobertura combinada (MQ-02) | 7 dias |
-| `e2e-report` | relatório HTML do Playwright, `e2e-junit.xml`, `e2e-results.json` (com o status *flaky*), `trace.zip` de cada teste que falhou e o `backend.log` | reproduzir uma falha do E2E passo a passo e detectar testes instáveis (MQ-03) | 7 dias |
-| `maestro-report` | `maestro-report.xml`, `maestro-report-1.xml` (só quando houve nova tentativa), capturas de tela e árvore de elementos, `logcat.txt`, `backend.log`, `metro.log` | ver em que tela o fluxo parou e o que o app e o backend registraram | 7 dias |
+| `e2e-report` | relatório HTML do Playwright, `e2e-junit.xml`, `trace.zip` de cada teste que falhou e o `backend.log` | reproduzir uma falha do E2E passo a passo | 7 dias |
+| `maestro-report` | `maestro-report.xml`, capturas de tela e árvore de elementos, `logcat.txt`, `backend.log`, `metro.log` | ver em que tela o fluxo parou e o que o app e o backend registraram | 7 dias |
 | `app-debug-x86_64` | o APK testado pelo Maestro | instalar no emulador e reproduzir à mão | 3 dias |
 | `ai-agent-test-reports` | JUnit dos testes do agente (sem rede e, na regressão, ao vivo contra o Gemini) | ver qual caso do agente falhou | 7 dias |
 | `dependencias` | SBOM CycloneDX e `npm audit` em JSON de cada projeto | inventário de dependências e vulnerabilidades (MQ-08) | 30 dias |
@@ -809,6 +810,18 @@ Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído po
 
 ## 4. Rastreabilidade: requisitos × testes
 
+Cada teste automatizado leva no próprio título o caso do plano de testes que ele verifica, entre colchetes no
+início: `it('[TC-01] login gera um JWT ...')`, ou `[TC-42, TC-43]` quando cobre mais de um caso. Nos fluxos
+Maestro, o caso vai no `name:` do cabeçalho do fluxo. O vínculo TC → HU vem da tabela de casos do
+[plano de testes](docs/testes/Template_Plano_de_Testes_e_Backlog.md) (seção 4.6).
+
+A partir dos títulos, `node .github/scripts/tas/test-catalog.mjs --write` gera o catálogo em formato de dados,
+[`docs/testes/catalogo-testes.json`](docs/testes/catalogo-testes.json): cada teste com suíte, arquivo, grupo,
+título, casos (TC) e HUs, e cada caso do plano com a quantidade de testes e as suítes que o verificam. O job
+**Política da TAS** reprova o PR quando um teste não tem o caso no título, cita um TC que não existe no plano ou o
+JSON não foi regenerado. Como o identificador está no título, renomear, mover ou dividir um teste não desfaz o
+vínculo; as tabelas abaixo, com os IDs U-xx, A-xx, E-xx e M-xx, continuam como visão por funcionalidade.
+
 | Requisito / funcionalidade | Unitário | API | E2E (API) | E2E (telas) |
 |---|---|---|---|---|
 | Cadastro | — | A-10 a A-12, A-56, A-57 | E-01, E-22, E-23 | M-02 (pendente) |
@@ -885,6 +898,14 @@ Os testes revelaram defeitos que foram corrigidos no código:
 | Jornada ponta a ponta | `e2e/` | `<jornada>.spec.ts` |
 | Fluxo de tela | `mobile/e2e/` | `<fluxo>.yaml` |
 
+**Título do teste**
+
+- Comece o título com o caso do plano: `it('[TC-50] atualiza o nome sem exigir a senha atual', ...)`. Nos fluxos
+  Maestro, use `name: "[TC-63] M-01 ..."` no cabeçalho. Funcionalidade nova sem caso no plano ganha um TC na
+  seção 4.6 do plano antes do teste.
+- Depois de criar, renomear ou remover testes, rode `node .github/scripts/tas/test-catalog.mjs --write` e faça
+  commit do `docs/testes/catalogo-testes.json`.
+
 **Backend (Jest)**
 
 - Mocke o Prisma com `jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'))` e
@@ -892,6 +913,8 @@ Os testes revelaram defeitos que foram corrigidos no código:
 - Para transações, faça `prisma.$transaction.mockImplementation(async (cb) => cb(prisma))`, que executa o código
   real da transação e permite verificar o que foi gravado.
 - Mocke `../../utils/cache` para não tentar conectar ao Redis.
+- Mocke `../../services/notificationService` (ou o `mailService`) quando o código notifica alguém; senão, com
+  SMTP no `.env` local, o teste tenta enviar e-mail de verdade e estoura o tempo.
 
 **E2E da API (Playwright)**
 
@@ -924,4 +947,5 @@ Os testes revelaram defeitos que foram corrigidos no código:
 - **Maestro:** os fluxos precisam do app de debug instalado e de um emulador ou aparelho conectado;
   por isso eles ficam fora do `npm test`. No CI, 2 fluxos rodam como smoke em todo PR e todos os fluxos de
   `mobile/e2e/` rodam na regressão diária (`regressao.yml`). O emulador do CI às vezes falha sem relação com o
-  app (houve falhas em 15/10 e 16/10); por isso há uma nova tentativa automática (seção 2).
+  app (houve falhas em 15/10 e 16/10); por isso o script faz um aquecimento e reinicia o emulador antes dos
+  fluxos. Os fluxos não têm nova tentativa automática (`docs/tas.md`, seção 5.4).

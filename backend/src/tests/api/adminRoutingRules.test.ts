@@ -43,7 +43,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
   beforeEach(mockAdminSession);
 
   describe('POST', () => {
-    it('cria a regra herdando o SLA do órgão quando não é informado (201)', async () => {
+    it('[TC-65] cria a regra herdando o SLA do órgão quando não é informado (201)', async () => {
       mockRegraValida();
 
       const response = await request(app).post('/admin/routing-rules').set(auth).send(body);
@@ -52,7 +52,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.create.mock.calls[0]![0]!.data).toMatchObject({ slahoras: 72, orgaosecundarioid: null, prioridade: 'Alta' });
     });
 
-    it('usa o SLA e o órgão secundário informados', async () => {
+    it('[TC-65] usa o SLA e o órgão secundário informados', async () => {
       mockRegraValida();
 
       await request(app).post('/admin/routing-rules').set(auth).send({ ...body, slaHoras: 24, orgaosecundarioId: 'COMPESA' });
@@ -63,7 +63,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
     it.each([
       ['sem categoria', { ...body, categoriaId: undefined }, 400, /obrigatórios/],
       ['prioridade inválida', { ...body, prioridade: 'Urgentissima' }, 400, /Prioridade inválida/],
-    ])('recusa %s', async (_caso, payload, status, message) => {
+    ])('[TC-65] recusa %s', async (_caso, payload, status, message) => {
       const response = await request(app).post('/admin/routing-rules').set(auth).send(payload);
 
       expect(response.status).toBe(status);
@@ -71,7 +71,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.create).not.toHaveBeenCalled();
     });
 
-    it('recusa categoria inexistente (404)', async () => {
+    it('[TC-65] recusa categoria inexistente (404)', async () => {
       mockRegraValida();
       prisma.categoria.findUnique.mockResolvedValue(null);
 
@@ -81,7 +81,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(response.body.error).toMatch(/Categoria/);
     });
 
-    it('recusa órgão principal inexistente (404) ou inativo (400)', async () => {
+    it('[TC-65] recusa órgão principal inexistente (404) ou inativo (400)', async () => {
       mockRegraValida();
       prisma.orgao.findUnique.mockResolvedValueOnce(null);
       const inexistente = await request(app).post('/admin/routing-rules').set(auth).send(body);
@@ -94,7 +94,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(inativo.body.error).toMatch(/não está ativo/);
     });
 
-    it('recusa órgão secundário inexistente (404)', async () => {
+    it('[TC-65] recusa órgão secundário inexistente (404)', async () => {
       mockRegraValida();
       prisma.orgao.findUnique.mockResolvedValueOnce(orgaoAtivo as any).mockResolvedValueOnce(null);
 
@@ -104,7 +104,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(response.body.error).toMatch(/secundário/);
     });
 
-    it('recusa categoria que não pertence ao órgão (400)', async () => {
+    it('[TC-65] recusa categoria que não pertence ao órgão (400)', async () => {
       mockRegraValida();
       prisma.orgao_categoria.findUnique.mockResolvedValue(null);
 
@@ -114,7 +114,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(response.body.error).toMatch(/não está vinculada/);
     });
 
-    it('recusa regra duplicada para a mesma categoria e subcategoria (409)', async () => {
+    it('[TC-65] recusa regra duplicada para a mesma categoria e subcategoria (409)', async () => {
       mockRegraValida();
       prisma.regra_competencia.findUnique.mockResolvedValue(regra as any);
 
@@ -124,7 +124,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
     });
   });
 
-  it('GET lista as regras filtrando por órgão (principal ou secundário) e categoria', async () => {
+  it('[TC-65] GET lista as regras filtrando por órgão (principal ou secundário) e categoria', async () => {
     prisma.regra_competencia.findMany.mockResolvedValue([regra] as any);
     prisma.regra_competencia.count.mockResolvedValue(1);
 
@@ -147,7 +147,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       prisma.regra_competencia.update.mockResolvedValue({ ...regra, slahoras: 12 } as any);
     });
 
-    it('atualiza só os campos enviados', async () => {
+    it('[TC-65] atualiza só os campos enviados', async () => {
       const response = await request(app)
         .patch('/admin/routing-rules/regra-1')
         .set(auth)
@@ -158,7 +158,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.update.mock.calls[0]![0]!.data).toEqual({ slahoras: 12, prioridade: 'Critica', orgaosecundarioid: 'COMPESA' });
     });
 
-    it('pode trocar categoria, subcategoria e órgão principal', async () => {
+    it('[TC-65] pode trocar categoria, subcategoria e órgão principal', async () => {
       await request(app)
         .patch('/admin/routing-rules/regra-1')
         .set(auth)
@@ -168,7 +168,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.findFirst.mock.calls[0]![0]!.where).toMatchObject({ NOT: { id: 'regra-1' } });
     });
 
-    it('retorna 404 para regra inexistente', async () => {
+    it('[TC-65] retorna 404 para regra inexistente', async () => {
       prisma.regra_competencia.findUnique.mockResolvedValue(null);
 
       const response = await request(app).patch('/admin/routing-rules/nao-existe').set(auth).send({ slaHoras: 1 });
@@ -182,7 +182,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       ['órgão principal inativo', () => prisma.orgao.findUnique.mockResolvedValue({ ...orgaoAtivo, status: 'Inativo' } as any), 400],
       ['categoria fora do órgão', () => prisma.orgao_categoria.findUnique.mockResolvedValue(null), 400],
       ['outra regra igual', () => prisma.regra_competencia.findFirst.mockResolvedValue({ id: 'regra-2' } as any), 409],
-    ])('recusa %s', async (_caso, arrange, status) => {
+    ])('[TC-65] recusa %s', async (_caso, arrange, status) => {
       arrange();
 
       const response = await request(app).patch('/admin/routing-rules/regra-1').set(auth).send({ slaHoras: 10 });
@@ -191,7 +191,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.update).not.toHaveBeenCalled();
     });
 
-    it('recusa órgão secundário inexistente (404)', async () => {
+    it('[TC-65] recusa órgão secundário inexistente (404)', async () => {
       prisma.orgao.findUnique.mockResolvedValueOnce(orgaoAtivo as any).mockResolvedValueOnce(null);
 
       const response = await request(app).patch('/admin/routing-rules/regra-1').set(auth).send({ orgaosecundarioId: 'NAOEXISTE' });
@@ -201,7 +201,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
   });
 
   describe('DELETE', () => {
-    it('remove a regra', async () => {
+    it('[TC-65] remove a regra', async () => {
       prisma.regra_competencia.findUnique.mockResolvedValue(regra as any);
 
       const response = await request(app).delete('/admin/routing-rules/regra-1').set(auth);
@@ -211,7 +211,7 @@ describe('Regras de competência (/admin/routing-rules)', () => {
       expect(prisma.regra_competencia.delete).toHaveBeenCalledWith({ where: { id: 'regra-1' } });
     });
 
-    it('retorna 404 para regra inexistente', async () => {
+    it('[TC-65] retorna 404 para regra inexistente', async () => {
       prisma.regra_competencia.findUnique.mockResolvedValue(null);
 
       const response = await request(app).delete('/admin/routing-rules/nao-existe').set(auth);
@@ -235,7 +235,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
   });
 
-  it('desativa o usuário e registra o status anterior na auditoria', async () => {
+  it('[TC-66] desativa o usuário e registra o status anterior na auditoria', async () => {
     mockUsuarios(cidadao);
     prisma.usuario.update.mockResolvedValue({ ...cidadao, status: 'Inativo' } as any);
 
@@ -250,7 +250,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     });
   });
 
-  it('reativa um usuário inativo', async () => {
+  it('[TC-66] reativa um usuário inativo', async () => {
     mockUsuarios({ ...cidadao, status: 'Inativo' });
     prisma.usuario.update.mockResolvedValue(cidadao as any);
 
@@ -265,7 +265,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     ['desativar quem já está inativo', 'deactivate', { ...cidadao, status: 'Inativo' }, 409],
     ['ativar outro admin', 'activate', { ...cidadao, perfil: 'Admin', status: 'Inativo' }, 403],
     ['desativar outro admin', 'deactivate', { ...cidadao, perfil: 'Admin' }, 403],
-  ])('não permite %s', async (_caso, acao, usuario, status) => {
+  ])('[TC-66] não permite %s', async (_caso, acao, usuario, status) => {
     mockUsuarios(usuario);
 
     const response = await request(app).patch(`/admin/users/${cidadao.id}/${acao}`).set(auth);
@@ -274,7 +274,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('retorna 404 ao ativar ou desativar usuário inexistente', async () => {
+  it('[TC-66] retorna 404 ao ativar ou desativar usuário inexistente', async () => {
     mockUsuarios();
 
     const ativar = await request(app).patch('/admin/users/nao-existe/activate').set(auth);
@@ -284,7 +284,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(desativar.status).toBe(404);
   });
 
-  it('admin não pode se desativar (403)', async () => {
+  it('[TC-66] admin não pode se desativar (403)', async () => {
     // 1ª consulta: sessão (admin); 2ª: alvo, com perfil não-admin para chegar à regra de autodesativação
     prisma.usuario.findUnique.mockResolvedValueOnce(admin as any).mockResolvedValueOnce({ ...admin, perfil: 'Gestor' } as any);
 
@@ -294,7 +294,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(response.body.error).toMatch(/não pode se desativar/);
   });
 
-  it('cria gestor já ativo, com senha criptografada e registro de gestor (201)', async () => {
+  it('[TC-66] cria gestor já ativo, com senha criptografada e registro de gestor (201)', async () => {
     mockUsuarios();
     prisma.usuario.create.mockResolvedValue({ id: 'uuid-novo', nome: 'Novo', email: 'novo@teste.com', perfil: 'Gestor', status: 'Ativo' } as any);
 
@@ -313,7 +313,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
   it.each([
     ['campos faltando', { name: 'X' }, 400],
     ['perfil Admin', { name: 'X', email: 'x@t.com', password: 'Senha@123', role: 'Admin' }, 400],
-  ])('recusa criação com %s', async (_caso, payload, status) => {
+  ])('[TC-66] recusa criação com %s', async (_caso, payload, status) => {
     mockUsuarios();
 
     const response = await request(app).post('/admin/users').set(auth).send(payload);
@@ -321,7 +321,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(response.status).toBe(status);
   });
 
-  it('recusa e-mail já cadastrado (409)', async () => {
+  it('[TC-66] recusa e-mail já cadastrado (409)', async () => {
     mockUsuarios(cidadao);
 
     const response = await request(app)
@@ -333,7 +333,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(prisma.usuario.create).not.toHaveBeenCalled();
   });
 
-  it('PATCH role recusa perfil fora de Cidadao/Gestor e mudança para o mesmo perfil', async () => {
+  it('[TC-66] PATCH role recusa perfil fora de Cidadao/Gestor e mudança para o mesmo perfil', async () => {
     mockUsuarios(cidadao);
 
     const invalido = await request(app).patch(`/admin/users/${cidadao.id}/role`).set(auth).send({ role: 'Root' });
@@ -347,7 +347,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
     expect(inexistente.status).toBe(404);
   });
 
-  it('GET /admin/audit-logs filtra por ação e admin, com paginação', async () => {
+  it('[TC-66] GET /admin/audit-logs filtra por ação e admin, com paginação', async () => {
     mockUsuarios();
     prisma.audit_logs.findMany.mockResolvedValue([{ id: 'log-1', action: 'role_change' }] as any);
     prisma.audit_logs.count.mockResolvedValue(1);

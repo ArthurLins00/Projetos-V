@@ -38,13 +38,13 @@ describe('API de Demandas (/demands)', () => {
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
   });
 
-  it('exige autenticação (401 sem token)', async () => {
+  it('[TC-06] exige autenticação (401 sem token)', async () => {
     const response = await request(app).get('/demands');
 
     expect(response.status).toBe(401);
   });
 
-  it('GET /demands lista com paginação e repassa a pesquisa para o banco', async () => {
+  it('[TC-25] GET /demands lista com paginação e repassa a pesquisa para o banco', async () => {
     prisma.chamado.findMany.mockResolvedValue([chamado] as any);
     prisma.chamado.count.mockResolvedValue(1);
 
@@ -62,7 +62,7 @@ describe('API de Demandas (/demands)', () => {
     expect(where.OR).toHaveLength(5);
   });
 
-  it('GET /demands ignora pesquisa vazia', async () => {
+  it('[TC-57] GET /demands ignora pesquisa vazia', async () => {
     prisma.chamado.findMany.mockResolvedValue([]);
     prisma.chamado.count.mockResolvedValue(0);
 
@@ -72,7 +72,7 @@ describe('API de Demandas (/demands)', () => {
     expect(where.OR).toBeUndefined();
   });
 
-  it('GET /demands combina status, pesquisa, categoria e região (UF, cidade e zona)', async () => {
+  it('[TC-74] GET /demands combina status, pesquisa, categoria e região (UF, cidade e zona)', async () => {
     prisma.chamado.findMany.mockResolvedValue([]);
     prisma.chamado.count.mockResolvedValue(0);
 
@@ -97,14 +97,14 @@ describe('API de Demandas (/demands)', () => {
     [{ categoria: 'abc' }, /Categoria inválida/],
     [{ uf: 'XX' }, /Estado inválido/],
     [{ zona: 'Litoral' }, /Zona inválida/],
-  ])('GET /demands rejeita filtro inválido %j (400)', async (query, message) => {
+  ])('[TC-74] GET /demands rejeita filtro inválido %j (400)', async (query, message) => {
     const response = await request(app).get('/demands').query(query).set(auth);
 
     expect(response.status).toBe(400);
     expect(JSON.stringify(response.body)).toMatch(message);
   });
 
-  it('GET /demands/:id retorna a demanda com histórico', async () => {
+  it('[TC-58] GET /demands/:id retorna a demanda com histórico', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
 
     const response = await request(app).get('/demands/chamado-1').set(auth);
@@ -113,7 +113,7 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body).toMatchObject({ id: 'chamado-1', protocolo: 'DEM-20260101-ABCD', logs: [] });
   });
 
-  it('GET /demands/:id bloqueia acesso à demanda de outro cidadão (403)', async () => {
+  it('[TC-43] GET /demands/:id bloqueia acesso à demanda de outro cidadão (403)', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ ...chamado, cidadaoid: 'outro-cidadao' } as any);
 
     const response = await request(app).get('/demands/chamado-1').set(auth);
@@ -121,7 +121,7 @@ describe('API de Demandas (/demands)', () => {
     expect(response.status).toBe(403);
   });
 
-  it('POST /demands valida campos obrigatórios (400)', async () => {
+  it('[TC-30] POST /demands valida campos obrigatórios (400)', async () => {
     const response = await request(app).post('/demands').set(auth).send({ title: 'Sem descrição' });
 
     expect(response.status).toBe(400);
@@ -129,7 +129,7 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado.create).not.toHaveBeenCalled();
   });
 
-  it('POST /demands rejeita categoria inexistente ou inativa (400)', async () => {
+  it('[TC-44] POST /demands rejeita categoria inexistente ou inativa (400)', async () => {
     prisma.categoria.findUnique.mockResolvedValue(null);
 
     const response = await request(app).post('/demands').set(auth).send({
@@ -149,7 +149,7 @@ describe('API de Demandas (/demands)', () => {
     [{ state: 'XX' }, /Estado inválido/i],
     [{ state: 'PE', city: '   ' }, /Cidade/i],
     [{ state: 'PE', city: 'Recife', zone: 'Litoral' }, /Zona inválida/i],
-  ])('POST /demands valida estado, cidade e zona %j (400)', async (region, mensagem) => {
+  ])('[TC-59] POST /demands valida estado, cidade e zona %j (400)', async (region, mensagem) => {
     const response = await request(app).post('/demands').set(auth).send({
       title: 'Poste apagado',
       description: 'Rua escura',
@@ -163,7 +163,7 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado.create).not.toHaveBeenCalled();
   });
 
-  it('DELETE /demands/:id: cidadão remove a própria demanda (204)', async () => {
+  it('[TC-42] DELETE /demands/:id: cidadão remove a própria demanda (204)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
 
     const response = await request(app).delete('/demands/chamado-1').set(auth);
@@ -172,7 +172,7 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado.update).toHaveBeenCalledWith({ where: { id: 'chamado-1' }, data: { status: 'Fechado' } });
   });
 
-  it('DELETE /demands/:id: cidadão não remove demanda de outra pessoa (403)', async () => {
+  it('[TC-42, TC-43] DELETE /demands/:id: cidadão não remove demanda de outra pessoa (403)', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ ...chamado, cidadaoid: 'outro-cidadao' } as any);
 
     const response = await request(app).delete('/demands/chamado-1').set(auth);
@@ -181,14 +181,14 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado.update).not.toHaveBeenCalled();
   });
 
-  it('POST /demands/:id/photos exige o campo photo (400)', async () => {
+  it('[TC-10] POST /demands/:id/photos exige o campo photo (400)', async () => {
     const response = await request(app).post('/demands/chamado-1/photos').set(auth).send({});
 
     expect(response.status).toBe(400);
     expect(response.body.error).toMatch(/photo/i);
   });
 
-  it('POST /demands/:id/photos recusa arquivo que não é imagem (422)', async () => {
+  it('[TC-11] POST /demands/:id/photos recusa arquivo que não é imagem (422)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
     prisma.chamado_foto.count.mockResolvedValue(0);
 
@@ -201,7 +201,7 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/Formato de imagem inválido/i);
   });
 
-  it('POST /demands/:id/photos aceita corpo maior que o limite padrão de 100kb', async () => {
+  it('[TC-12] POST /demands/:id/photos aceita corpo maior que o limite padrão de 100kb', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
     prisma.chamado_foto.count.mockResolvedValue(0);
     const grande = Buffer.alloc(300 * 1024, 1).toString('base64');
@@ -213,7 +213,7 @@ describe('API de Demandas (/demands)', () => {
     expect(response.body.error).toMatch(/Formato de imagem inválido/i);
   });
 
-  it('DELETE /demands/:id/photos/:photoId remove a foto (204)', async () => {
+  it('[TC-60] DELETE /demands/:id/photos/:photoId remove a foto (204)', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
     prisma.chamado_foto.findFirst.mockResolvedValue({ id: 'foto-1', chamadoid: 'chamado-1', url: '/uploads/nao-existe.jpg' } as any);
 
@@ -223,7 +223,7 @@ describe('API de Demandas (/demands)', () => {
     expect(prisma.chamado_foto.delete).toHaveBeenCalledWith({ where: { id: 'foto-1' } });
   });
 
-  it('GET /categories lista as categorias ativas', async () => {
+  it('[TC-44] GET /categories lista as categorias ativas', async () => {
     prisma.categoria.findMany.mockResolvedValue([{ id: 1, nome: 'Infraestrutura', descricao: null }] as any);
 
     const response = await request(app).get('/categories').set(auth);
@@ -242,7 +242,7 @@ describe('API de Demandas (/demands)', () => {
       prisma.chamado_foto.count.mockResolvedValue(0);
     });
 
-    it('corpo exatamente no limite de 15 MB passa pelo parser e chega à validação da imagem', async () => {
+    it('[TC-12] corpo exatamente no limite de 15 MB passa pelo parser e chega à validação da imagem', async () => {
       const response = await request(app)
         .post('/demands/chamado-1/photos')
         .set(auth)
@@ -252,7 +252,7 @@ describe('API de Demandas (/demands)', () => {
       expect(response.status).toBe(422);
     });
 
-    it('1 byte acima do limite retorna 413 e nada é gravado', async () => {
+    it('[TC-12] 1 byte acima do limite retorna 413 e nada é gravado', async () => {
       const response = await request(app)
         .post('/demands/chamado-1/photos')
         .set(auth)
@@ -265,7 +265,7 @@ describe('API de Demandas (/demands)', () => {
     });
   });
 
-  it('TC-13: POST /demands/:id/photos em demanda inexistente retorna 404 e nada é gravado', async () => {
+  it('[TC-13] POST /demands/:id/photos em demanda inexistente retorna 404 e nada é gravado', async () => {
     prisma.chamado.findUnique.mockResolvedValue(null);
 
     const response = await request(app)
@@ -292,7 +292,7 @@ describe('API de Demandas (/demands)', () => {
       })) as any);
     });
 
-    it('TC-17: chamado sem coordenadas é aceito e roteado pela categoria', async () => {
+    it('[TC-16, TC-17] chamado sem coordenadas é aceito e roteado pela categoria', async () => {
       prisma.regra_competencia.findFirst.mockResolvedValue(null);
       prisma.orgao_categoria.findFirst.mockResolvedValue({ orgaoid: 'EMLURB', orgao: { id: 'EMLURB', slahoras: 72 } } as any);
 
@@ -305,7 +305,7 @@ describe('API de Demandas (/demands)', () => {
       expect(data.slahoras).toBe(72);
     });
 
-    it('TC-44: órgão inativo nunca recebe o chamado, nem pela regra de competência nem pelo vínculo com a categoria', async () => {
+    it('[TC-44] órgão inativo nunca recebe o chamado, nem pela regra de competência nem pelo vínculo com a categoria', async () => {
       // O banco só tem regra e vínculo apontando para um órgão inativo: quem filtra por órgão ativo não encontra nada
       const filtraOrgaoAtivo = (where: any) =>
         where?.orgao_regra_competencia_orgaoprincipalidToorgao?.status === 'Ativo' || where?.orgao?.status === 'Ativo';
@@ -323,7 +323,7 @@ describe('API de Demandas (/demands)', () => {
     });
   });
 
-  it('TC-28: listagem devolve payload enxuto, sem relacionamentos completos do Prisma', async () => {
+  it('[TC-28] listagem devolve payload enxuto, sem relacionamentos completos do Prisma', async () => {
     prisma.chamado.findMany.mockResolvedValue([
       { ...chamado, categoriaid: 3, orgaoid: 'EMLURB', uf: 'PE', cidade: 'Recife', zona: 'Urbana', chamado_foto: [{ url: '/uploads/a.jpg' }], slahoras: 48, sladeadline: new Date() },
     ] as any);

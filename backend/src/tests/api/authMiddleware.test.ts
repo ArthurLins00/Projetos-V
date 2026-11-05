@@ -20,7 +20,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     jest.clearAllMocks();
   });
 
-  it('deve retornar 401 quando nenhum token for enviado', async () => {
+  it('[TC-06] deve retornar 401 quando nenhum token for enviado', async () => {
     const response = await request(app).get(PROTECTED_ROUTE);
 
     expect(response.status).toBe(401);
@@ -28,7 +28,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     expect(response.body.error).toMatch(/Token não fornecido/i);
   });
 
-  it('deve retornar 401 quando o token enviado for inválido', async () => {
+  it('[TC-06] deve retornar 401 quando o token enviado for inválido', async () => {
     const response = await request(app)
       .get(PROTECTED_ROUTE)
       .set('Authorization', 'Bearer token-totalmente-invalido');
@@ -38,7 +38,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     expect(response.body.error).toMatch(/Token inválido/i);
   });
 
-  it('deve retornar 401 com o código token_expired quando o token estiver expirado', async () => {
+  it('[TC-06] deve retornar 401 com o código token_expired quando o token estiver expirado', async () => {
     const tokenExpirado = jwt.sign(
       { id: mockUsuarioBase.id, email: mockUsuarioBase.email, perfil: mockUsuarioBase.perfil },
       JWT_SECRET,
@@ -55,7 +55,7 @@ describe('Middleware de Autenticação (Rotas Protegidas)', () => {
     expect(response.body.code).toBe('token_expired');
   });
 
-  it('deve permitir acesso (200) com token válido e usuário ativo', async () => {
+  it('[TC-06] deve permitir acesso (200) com token válido e usuário ativo', async () => {
     prisma.usuario.findUnique.mockResolvedValue({
         id: mockUsuarioBase.id,
         nome: 'Teste',

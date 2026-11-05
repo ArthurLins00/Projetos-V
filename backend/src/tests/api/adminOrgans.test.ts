@@ -43,7 +43,7 @@ describe('Órgãos (/admin/organs)', () => {
   });
 
   describe('GET /admin/organs', () => {
-    it('lista os órgãos com o SLA padrão e os nomes das categorias, também para gestor', async () => {
+    it('[TC-64] lista os órgãos com o SLA padrão e os nomes das categorias, também para gestor', async () => {
       prisma.orgao.findMany.mockResolvedValue([orgao] as any);
 
       const response = await request(app).get('/admin/organs').set('Authorization', `Bearer ${tokenOf(gestor)}`);
@@ -55,7 +55,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao.findMany.mock.calls[0]![0]).not.toHaveProperty('where');
     });
 
-    it('filtra por status ativo ou inativo', async () => {
+    it('[TC-64] filtra por status ativo ou inativo', async () => {
       prisma.orgao.findMany.mockResolvedValue([]);
 
       await request(app).get('/admin/organs?status=inativo').set(asAdmin);
@@ -63,14 +63,14 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao.findMany.mock.calls[0]![0]).toMatchObject({ where: { status: 'Inativo' } });
     });
 
-    it('recusa filtro de status desconhecido (400)', async () => {
+    it('[TC-64] recusa filtro de status desconhecido (400)', async () => {
       const response = await request(app).get('/admin/organs?status=suspenso').set(asAdmin);
 
       expect(response.status).toBe(400);
       expect(prisma.orgao.findMany).not.toHaveBeenCalled();
     });
 
-    it('não é acessível para cidadão (403)', async () => {
+    it('[TC-64] não é acessível para cidadão (403)', async () => {
       const cidadao = { ...gestor, id: 'uuid-cidadao', perfil: 'Cidadao' };
       prisma.usuario.findUnique.mockResolvedValue(cidadao as any);
 
@@ -81,7 +81,7 @@ describe('Órgãos (/admin/organs)', () => {
   });
 
   describe('POST /admin/organs', () => {
-    it('cadastra o órgão com as categorias, tipo Municipal por padrão, e registra a auditoria (201)', async () => {
+    it('[TC-64] cadastra o órgão com as categorias, tipo Municipal por padrão, e registra a auditoria (201)', async () => {
       prisma.orgao.findFirst.mockResolvedValue(null);
       prisma.orgao.create.mockResolvedValue({ ...orgao, orgao_categoria: undefined } as any);
       prisma.orgao.findUnique.mockResolvedValue(orgao as any);
@@ -95,7 +95,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.audit_logs.create.mock.calls[0]![0]!.data).toMatchObject({ action: 'organ_created', admin_id: admin.id });
     });
 
-    it('recusa cadastro sem os campos obrigatórios e não grava nada (400)', async () => {
+    it('[TC-64] recusa cadastro sem os campos obrigatórios e não grava nada (400)', async () => {
       const response = await request(app).post('/admin/organs').set(asAdmin).send({ nome: 'Sem sigla', categorias: [] });
 
       expect(response.status).toBe(400);
@@ -103,7 +103,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao.create).not.toHaveBeenCalled();
     });
 
-    it('recusa sigla já cadastrada (409)', async () => {
+    it('[TC-64] recusa sigla já cadastrada (409)', async () => {
       prisma.orgao.findFirst.mockResolvedValueOnce(orgao as any);
 
       const response = await request(app).post('/admin/organs').set(asAdmin).send(novoOrgao);
@@ -113,7 +113,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao.create).not.toHaveBeenCalled();
     });
 
-    it('recusa nome já cadastrado (409)', async () => {
+    it('[TC-64] recusa nome já cadastrado (409)', async () => {
       prisma.orgao.findFirst
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(null)
@@ -125,7 +125,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(response.body.message).toMatch(/nome/);
     });
 
-    it('é exclusivo do admin (403 para gestor)', async () => {
+    it('[TC-64] é exclusivo do admin (403 para gestor)', async () => {
       const response = await request(app).post('/admin/organs').set('Authorization', `Bearer ${tokenOf(gestor)}`).send(novoOrgao);
 
       expect(response.status).toBe(403);
@@ -133,7 +133,7 @@ describe('Órgãos (/admin/organs)', () => {
   });
 
   describe('PUT /admin/organs/:id', () => {
-    it('edita os dados, substitui as categorias e registra a auditoria', async () => {
+    it('[TC-64] edita os dados, substitui as categorias e registra a auditoria', async () => {
       prisma.orgao.findUnique.mockResolvedValue(orgao as any);
       prisma.orgao.findFirst.mockResolvedValue(null);
 
@@ -150,7 +150,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.audit_logs.create.mock.calls[0]![0]!.data).toMatchObject({ action: 'organ_edited', entity_id: 'EMLURB' });
     });
 
-    it('remover todas as categorias não cria vínculos novos', async () => {
+    it('[TC-64] remover todas as categorias não cria vínculos novos', async () => {
       prisma.orgao.findUnique.mockResolvedValue(orgao as any);
 
       const response = await request(app).put('/admin/organs/EMLURB').set(asAdmin).send({ categorias: [] });
@@ -160,7 +160,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao_categoria.createMany).not.toHaveBeenCalled();
     });
 
-    it('retorna 404 para órgão inexistente', async () => {
+    it('[TC-64] retorna 404 para órgão inexistente', async () => {
       prisma.orgao.findUnique.mockResolvedValue(null);
 
       const response = await request(app).put('/admin/organs/XYZ').set(asAdmin).send({ nome: 'X' });
@@ -168,7 +168,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(response.status).toBe(404);
     });
 
-    it('recusa nome em uso por outro órgão (409)', async () => {
+    it('[TC-64] recusa nome em uso por outro órgão (409)', async () => {
       prisma.orgao.findUnique.mockResolvedValue(orgao as any);
       prisma.orgao.findFirst.mockResolvedValue({ id: 'OUTRO' } as any);
 
@@ -181,7 +181,7 @@ describe('Órgãos (/admin/organs)', () => {
   });
 
   describe('PUT /admin/organs/:id/:status', () => {
-    it('inativa o órgão e devolve o novo status', async () => {
+    it('[TC-64] inativa o órgão e devolve o novo status', async () => {
       prisma.orgao.findUnique.mockResolvedValueOnce(orgao as any).mockResolvedValueOnce({ ...orgao, status: 'Inativo' } as any);
 
       const response = await request(app).put('/admin/organs/EMLURB/inativo').set(asAdmin);
@@ -191,13 +191,13 @@ describe('Órgãos (/admin/organs)', () => {
       expect(prisma.orgao.update).toHaveBeenCalledWith({ where: { id: 'EMLURB' }, data: { status: 'Inativo' } });
     });
 
-    it('recusa status desconhecido (400)', async () => {
+    it('[TC-64] recusa status desconhecido (400)', async () => {
       const response = await request(app).put('/admin/organs/EMLURB/suspenso').set(asAdmin);
 
       expect(response.status).toBe(400);
     });
 
-    it('retorna 404 para órgão inexistente', async () => {
+    it('[TC-64] retorna 404 para órgão inexistente', async () => {
       prisma.orgao.findUnique.mockResolvedValue(null);
 
       const response = await request(app).put('/admin/organs/XYZ/ativo').set(asAdmin);
@@ -207,7 +207,7 @@ describe('Órgãos (/admin/organs)', () => {
   });
 
   describe('GET /admin/organs/:id/categories', () => {
-    it('lista as categorias vinculadas ao órgão', async () => {
+    it('[TC-64] lista as categorias vinculadas ao órgão', async () => {
       prisma.orgao.findUnique.mockResolvedValue(orgao as any);
 
       const response = await request(app).get('/admin/organs/EMLURB/categories').set(asAdmin);
@@ -216,7 +216,7 @@ describe('Órgãos (/admin/organs)', () => {
       expect(response.body).toEqual([{ id: 1, nome: 'Infraestrutura' }, { id: 3, nome: 'Iluminação Pública' }]);
     });
 
-    it('retorna 404 para órgão inexistente', async () => {
+    it('[TC-64] retorna 404 para órgão inexistente', async () => {
       prisma.orgao.findUnique.mockResolvedValue(null);
 
       const response = await request(app).get('/admin/organs/XYZ/categories').set(asAdmin);
@@ -225,7 +225,7 @@ describe('Órgãos (/admin/organs)', () => {
     });
   });
 
-  it('erro inesperado do banco vira 500 sem expor detalhes', async () => {
+  it('[TC-64] erro inesperado do banco vira 500 sem expor detalhes', async () => {
     prisma.orgao.findMany.mockRejectedValue(new Error('conexão perdida'));
 
     const response = await request(app).get('/admin/organs').set(asAdmin);

@@ -6,6 +6,7 @@
 
 - [ ] Testes novos ou alterados para o comportamento desta mudança
 - [ ] Casos registrados no catálogo do `TESTES.md` (o job **Política da TAS** confere os arquivos)
+- [ ] Todo teste novo ou renomeado começa com o caso do plano (`[TC-xx]`) e o `docs/testes/catalogo-testes.json` foi regenerado (`node .github/scripts/tas/test-catalog.mjs --write`)
 - [ ] Novos casos com TC no plano de testes (`docs/testes/Template_Plano_de_Testes_e_Backlog.md`), quando for funcionalidade nova
 
 ## Manutenção da TAS (docs/tas.md)

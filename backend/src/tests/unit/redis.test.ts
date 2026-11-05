@@ -32,7 +32,7 @@ describe('config/redis (unitário)', () => {
     jest.restoreAllMocks();
   });
 
-  it('sem REDIS_URL o cliente é nulo e o Redis aparece como indisponível', async () => {
+  it('[TC-67] sem REDIS_URL o cliente é nulo e o Redis aparece como indisponível', async () => {
     delete process.env.REDIS_URL;
     const { getRedisClient, isRedisAvailable } = loadRedis();
 
@@ -41,7 +41,7 @@ describe('config/redis (unitário)', () => {
     expect(RedisMock).not.toHaveBeenCalled();
   });
 
-  it('com REDIS_URL cria um único cliente, sem fila offline e com poucas tentativas', () => {
+  it('[TC-67] com REDIS_URL cria um único cliente, sem fila offline e com poucas tentativas', () => {
     process.env.REDIS_URL = 'redis://localhost:6379';
     const { getRedisClient } = loadRedis();
 
@@ -60,7 +60,7 @@ describe('config/redis (unitário)', () => {
     expect(console.warn).toHaveBeenCalledWith('[Redis] Connection error:', 'falhou');
   });
 
-  it('falha na conexão inicial só gera aviso', async () => {
+  it('[TC-67] falha na conexão inicial só gera aviso', async () => {
     process.env.REDIS_URL = 'redis://localhost:6379';
     instance.connect.mockRejectedValue(new Error('recusada'));
     const { getRedisClient } = loadRedis();
@@ -71,7 +71,7 @@ describe('config/redis (unitário)', () => {
     expect(console.warn).toHaveBeenCalledWith('[Redis] Initial connection failed:', 'recusada');
   });
 
-  it('isRedisAvailable responde ao PING e trata erro como indisponível', async () => {
+  it('[TC-67] isRedisAvailable responde ao PING e trata erro como indisponível', async () => {
     process.env.REDIS_URL = 'redis://localhost:6379';
     const { isRedisAvailable } = loadRedis();
 

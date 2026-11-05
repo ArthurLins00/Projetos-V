@@ -1,0 +1,4744 @@
+{
+  "descricao": "Catálogo de testes automatizados do Fiscalize, gerado a partir dos títulos dos testes por .github/scripts/tas/test-catalog.mjs. Não edite à mão.",
+  "plano": "docs/testes/Template_Plano_de_Testes_e_Backlog.md",
+  "suites": {
+    "unit": {
+      "nome": "Unitários (Jest)",
+      "pasta": "backend/src/tests/unit",
+      "testes": 87
+    },
+    "api": {
+      "nome": "API (Jest + Supertest)",
+      "pasta": "backend/src/tests/api",
+      "testes": 201
+    },
+    "e2e-api": {
+      "nome": "E2E da API (Playwright)",
+      "pasta": "e2e",
+      "testes": 36
+    },
+    "e2e-telas": {
+      "nome": "E2E de telas (Maestro)",
+      "pasta": "mobile/e2e",
+      "testes": 5
+    },
+    "agente-ia": {
+      "nome": "Agente de IA (node --test)",
+      "pasta": "ai-agent/tests",
+      "testes": 33
+    }
+  },
+  "total": 362,
+  "testes": [
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "%s recusa entrada inválida (400): %j",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "%s sem usuário autenticado retorna 401",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "register cria o cidadão e devolve 201 sem a senha",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "login com 2FA devolve o desafio e, em demonstração, o código",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "login sem 2FA abre a sessão com cookie httpOnly que expira junto com o token",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "verifyTwoFactor aceita o código com espaços e abre a sessão",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "resendTwoFactor só inclui o código quando o serviço o devolve",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "refresh renova o cookie e devolve o novo par de tokens",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "forgotPassword e resetPassword normalizam o e-mail e o código",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "logout revoga o token do header e o refresh token da sessão",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "logout sem token nenhum só limpa o cookie",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "me devolve o perfil do usuário logado",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "ações da conta repassam ao serviço com os dados normalizados",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authController.test.ts",
+      "grupo": "authController (unitário)",
+      "titulo": "erro do serviço é repassado ao middleware de erro",
+      "casos": [
+        "TC-73"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário)",
+      "titulo": "login gera um JWT com id, e-mail e perfil do usuário",
+      "casos": [
+        "TC-01"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário)",
+      "titulo": "dois logins seguidos geram tokens diferentes (sessões independentes)",
+      "casos": [
+        "TC-08"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário)",
+      "titulo": "login com senha errada falha com 401 sem revelar se o e-mail existe",
+      "casos": [
+        "TC-02"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário)",
+      "titulo": "logout revoga apenas o token informado",
+      "casos": [
+        "TC-07"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário)",
+      "titulo": "token inválido não é adicionado à blocklist",
+      "casos": [
+        "TC-09"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "login grava só o hash do refresh token, nunca o token em si",
+      "casos": [
+        "TC-01"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "duas renovações simultâneas com o mesmo token: a segunda falha com 401 e não emite novo token",
+      "casos": [
+        "TC-05"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "token já trocado por rotação sendo reutilizado: revoga todas as sessões ativas do usuário",
+      "casos": [
+        "TC-05"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "token revogado por logout: recusa com 401 sem derrubar as outras sessões",
+      "casos": [
+        "TC-05"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "logout só revoga refresh token do próprio usuário",
+      "casos": [
+        "TC-07"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authService.test.ts",
+      "grupo": "authService (unitário) › refresh token",
+      "titulo": "recuperar a senha revoga todas as sessões do usuário",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Admin",
+      "titulo": "deve permitir acesso à rota exclusiva de Admin",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Admin",
+      "titulo": "deve permitir acesso à rota de Gestor (herdado)",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Admin",
+      "titulo": "deve permitir acesso à rota de Cidadão (herdado)",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Gestor",
+      "titulo": "deve BLOQUEAR (403) acesso à rota de Admin",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Gestor",
+      "titulo": "deve permitir acesso à rota exclusiva de Gestor",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Gestor",
+      "titulo": "deve permitir acesso à rota de Cidadão (herdado)",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Cidadão",
+      "titulo": "deve BLOQUEAR (403) acesso à rota de Admin",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Cidadão",
+      "titulo": "deve BLOQUEAR (403) acesso à rota de Gestor",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Perfil: Cidadão",
+      "titulo": "deve permitir acesso à rota exclusiva de Cidadão",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/authorizationMatrix.test.ts",
+      "grupo": "Prioridade 1: Matriz de Autorização por Perfil › Cenários sem perfil definido",
+      "titulo": "deve BLOQUEAR (401) acesso quando o usuário não estiver autenticado (sem perfil)",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › list",
+      "titulo": "cidadão vê só as próprias demandas e, sem filtro, as removidas (Fechado) ficam ocultas",
+      "casos": [
+        "TC-43",
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › list",
+      "titulo": "filtro de status explícito substitui a regra padrão (permite ver \"Removidas\")",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › list",
+      "titulo": "gestor não fica restrito às próprias demandas",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › list",
+      "titulo": "pesquisa textual busca em título, descrição, endereço, protocolo e categoria (sem diferenciar maiúsculas)",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › list",
+      "titulo": "aplica paginação e converte o registro para o formato da API",
+      "casos": [
+        "TC-25",
+        "TC-28"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › create",
+      "titulo": "grava estado, cidade e zona e devolve no formato da API",
+      "casos": [
+        "TC-59"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › deleteDemand",
+      "titulo": "cidadão dono remove a demanda aberta: status vira Fechado e o histórico é registrado",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › deleteDemand",
+      "titulo": "cidadão não pode remover demanda de outra pessoa (403)",
+      "casos": [
+        "TC-42",
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › deleteDemand",
+      "titulo": "cidadão não pode remover demanda com status %s (403)",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › deleteDemand",
+      "titulo": "gestor pode remover demanda de qualquer cidadão",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › deleteDemand",
+      "titulo": "retorna 404 para demanda inexistente",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › update",
+      "titulo": "cidadão não pode editar demanda de outra pessoa (403)",
+      "casos": [
+        "TC-42",
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › update",
+      "titulo": "não permite editar demanda já em andamento (403)",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › update",
+      "titulo": "atualiza os campos enviados e registra o histórico com dados antigos e novos",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "salva um JPEG válido no disco e registra a foto",
+      "casos": [
+        "TC-10"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "aceita o prefixo data URI (data:image/jpeg;base64,...)",
+      "casos": [
+        "TC-10"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "rejeita conteúdo que não é imagem, mesmo em base64 (422)",
+      "casos": [
+        "TC-11"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "recusa a foto quando o limite de 5 foi atingido (400)",
+      "casos": [
+        "TC-14"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "cidadão não pode enviar foto para demanda de outra pessoa (403)",
+      "casos": [
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › addPhoto",
+      "titulo": "não permite alterar fotos de demanda em andamento (403)",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › removePhoto",
+      "titulo": "apaga o registro e o arquivo da foto",
+      "casos": [
+        "TC-60"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/demandService.test.ts",
+      "grupo": "demandService (unitário) › removePhoto",
+      "titulo": "remover foto inexistente retorna 404",
+      "casos": [
+        "TC-60"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/errorMiddleware.test.ts",
+      "grupo": "errorMiddleware (unitário)",
+      "titulo": "AppError usa o status e inclui details quando há",
+      "casos": [
+        "TC-70"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/errorMiddleware.test.ts",
+      "grupo": "errorMiddleware (unitário)",
+      "titulo": "erro conhecido do Prisma %s vira %i",
+      "casos": [
+        "TC-70"
+      ],
+      "hus": [
+        "HU-06"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/errorMiddleware.test.ts",
+      "grupo": "errorMiddleware (unitário)",
+      "titulo": "erro desconhecido do Prisma vira 500 genérico",
+      "casos": [
+        "TC-70"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/errorMiddleware.test.ts",
+      "grupo": "errorMiddleware (unitário)",
+      "titulo": "%s vira %i",
+      "casos": [
+        "TC-70"
+      ],
+      "hus": [
+        "HU-06"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/errorMiddleware.test.ts",
+      "grupo": "errorMiddleware (unitário)",
+      "titulo": "asyncHandler encaminha a rejeição para o next",
+      "casos": [
+        "TC-70"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/mailFrom.test.ts",
+      "grupo": "resolveMailFrom",
+      "titulo": "mantém o MAIL_FROM quando ele já tem endereço",
+      "casos": [
+        "TC-76"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/mailFrom.test.ts",
+      "grupo": "resolveMailFrom",
+      "titulo": "usa a conta do SMTP quando o MAIL_FROM tem só o nome",
+      "casos": [
+        "TC-76"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/mailFrom.test.ts",
+      "grupo": "resolveMailFrom",
+      "titulo": "usa o nome padrão com a conta do SMTP quando o MAIL_FROM está vazio",
+      "casos": [
+        "TC-76"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/mailFrom.test.ts",
+      "grupo": "resolveMailFrom",
+      "titulo": "cai no endereço no-reply quando não há conta do SMTP",
+      "casos": [
+        "TC-76"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "tempo médio considera só chamados com evento de resolução e arredonda para 1 casa",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "tempo médio é nulo quando nenhum chamado foi concluído",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "distribuição por categoria inclui categorias sem chamados e calcula o percentual",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "distribuição sem nenhum chamado fica em 0%, sem divisão por zero",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "total de demandas conta por status",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "com Redis, devolve o valor em cache sem consultar o banco",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService (unitário)",
+      "titulo": "com Redis vazio, calcula e grava no cache com TTL de 5 minutos",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "utils/cache (unitário)",
+      "titulo": "sem Redis configurado, todas as operações viram no-op",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "utils/cache (unitário)",
+      "titulo": "falha do Redis nunca derruba a requisição",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "utils/cache (unitário)",
+      "titulo": "valor ausente ou JSON inválido no cache retorna null",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "utils/cache (unitário)",
+      "titulo": "invalidação apaga as chaves da plataforma e, com gestor, também as dele",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "utils/cache (unitário)",
+      "titulo": "monta as chaves de escopo e de snapshot",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/notificationService.test.ts",
+      "grupo": "notificationService (unitário)",
+      "titulo": "registra a notificação e envia e-mail para o cidadão",
+      "casos": [
+        "TC-22"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/notificationService.test.ts",
+      "grupo": "notificationService (unitário)",
+      "titulo": "envia push para os aparelhos do cidadão e remove tokens que não existem mais",
+      "casos": [
+        "TC-21"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/notificationService.test.ts",
+      "grupo": "notificationService (unitário)",
+      "titulo": "falha no e-mail ou no push não interrompe o fluxo",
+      "casos": [
+        "TC-23"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/notificationService.test.ts",
+      "grupo": "notificationService (unitário)",
+      "titulo": "não faz nada se o chamado não existir",
+      "casos": [
+        "TC-21"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/notificationService.test.ts",
+      "grupo": "notificationService (unitário)",
+      "titulo": "registra token de push válido e recusa token em formato inválido",
+      "casos": [
+        "TC-20"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/redis.test.ts",
+      "grupo": "config/redis (unitário)",
+      "titulo": "sem REDIS_URL o cliente é nulo e o Redis aparece como indisponível",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/redis.test.ts",
+      "grupo": "config/redis (unitário)",
+      "titulo": "com REDIS_URL cria um único cliente, sem fila offline e com poucas tentativas",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/redis.test.ts",
+      "grupo": "config/redis (unitário)",
+      "titulo": "falha na conexão inicial só gera aviso",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/redis.test.ts",
+      "grupo": "config/redis (unitário)",
+      "titulo": "isRedisAvailable responde ao PING e trata erro como indisponível",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs",
+      "titulo": "lista os órgãos com o SLA padrão e os nomes das categorias, também para gestor",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs",
+      "titulo": "filtra por status ativo ou inativo",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs",
+      "titulo": "recusa filtro de status desconhecido (400)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs",
+      "titulo": "não é acessível para cidadão (403)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › POST /admin/organs",
+      "titulo": "cadastra o órgão com as categorias, tipo Municipal por padrão, e registra a auditoria (201)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › POST /admin/organs",
+      "titulo": "recusa cadastro sem os campos obrigatórios e não grava nada (400)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › POST /admin/organs",
+      "titulo": "recusa sigla já cadastrada (409)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › POST /admin/organs",
+      "titulo": "recusa nome já cadastrado (409)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › POST /admin/organs",
+      "titulo": "é exclusivo do admin (403 para gestor)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id",
+      "titulo": "edita os dados, substitui as categorias e registra a auditoria",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id",
+      "titulo": "remover todas as categorias não cria vínculos novos",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id",
+      "titulo": "retorna 404 para órgão inexistente",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id",
+      "titulo": "recusa nome em uso por outro órgão (409)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id/:status",
+      "titulo": "inativa o órgão e devolve o novo status",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id/:status",
+      "titulo": "recusa status desconhecido (400)",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › PUT /admin/organs/:id/:status",
+      "titulo": "retorna 404 para órgão inexistente",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs/:id/categories",
+      "titulo": "lista as categorias vinculadas ao órgão",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs) › GET /admin/organs/:id/categories",
+      "titulo": "retorna 404 para órgão inexistente",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminOrgans.test.ts",
+      "grupo": "Órgãos (/admin/organs)",
+      "titulo": "erro inesperado do banco vira 500 sem expor detalhes",
+      "casos": [
+        "TC-64"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "cria a regra herdando o SLA do órgão quando não é informado (201)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "usa o SLA e o órgão secundário informados",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa %s",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa categoria inexistente (404)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa órgão principal inexistente (404) ou inativo (400)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa órgão secundário inexistente (404)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa categoria que não pertence ao órgão (400)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › POST",
+      "titulo": "recusa regra duplicada para a mesma categoria e subcategoria (409)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules)",
+      "titulo": "GET lista as regras filtrando por órgão (principal ou secundário) e categoria",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › PATCH",
+      "titulo": "atualiza só os campos enviados",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › PATCH",
+      "titulo": "pode trocar categoria, subcategoria e órgão principal",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › PATCH",
+      "titulo": "retorna 404 para regra inexistente",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › PATCH",
+      "titulo": "recusa %s",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › PATCH",
+      "titulo": "recusa órgão secundário inexistente (404)",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › DELETE",
+      "titulo": "remove a regra",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Regras de competência (/admin/routing-rules) › DELETE",
+      "titulo": "retorna 404 para regra inexistente",
+      "casos": [
+        "TC-65"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "desativa o usuário e registra o status anterior na auditoria",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "reativa um usuário inativo",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "não permite %s",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "retorna 404 ao ativar ou desativar usuário inexistente",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "admin não pode se desativar (403)",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "cria gestor já ativo, com senha criptografada e registro de gestor (201)",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "recusa criação com %s",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "recusa e-mail já cadastrado (409)",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "PATCH role recusa perfil fora de Cidadao/Gestor e mudança para o mesmo perfil",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminRoutingRules.test.ts",
+      "grupo": "Ciclo de vida dos usuários e auditoria (/admin)",
+      "titulo": "GET /admin/audit-logs filtra por ação e admin, com paginação",
+      "casos": [
+        "TC-66"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "GET lista os usuários com busca por nome ou e-mail",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "GET retorna 403 para gestor",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "PATCH promove cidadão a gestor e cria o registro de gestor",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "PATCH rebaixa gestor a cidadão e garante o registro de cidadão",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "PATCH não permite alterar o perfil de outro admin",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "PATCH rejeita perfil Admin",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/adminUsers.test.ts",
+      "grupo": "Gestão de usuários pelo admin (/admin/users)",
+      "titulo": "a mudança de perfil vale sem novo login: o token antigo de cidadão passa a acessar /gestor",
+      "casos": [
+        "TC-54"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/aiChat.test.ts",
+      "grupo": "API do Assistente (/ai/chat)",
+      "titulo": "exige autenticação (401 sem token)",
+      "casos": [
+        "TC-55"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/aiChat.test.ts",
+      "grupo": "API do Assistente (/ai/chat)",
+      "titulo": "valida a mensagem e o sessionId (400)",
+      "casos": [
+        "TC-55"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/aiChat.test.ts",
+      "grupo": "API do Assistente (/ai/chat)",
+      "titulo": "repassa o token do usuário e prende a sessão ao id dele",
+      "casos": [
+        "TC-55"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/aiChat.test.ts",
+      "grupo": "API do Assistente (/ai/chat)",
+      "titulo": "retorna 503 quando o serviço do agente está fora do ar",
+      "casos": [
+        "TC-55"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/aiChat.test.ts",
+      "grupo": "API do Assistente (/ai/chat)",
+      "titulo": "retorna 502 quando o agente falha ao consultar o modelo",
+      "casos": [
+        "TC-55"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/auth.test.ts",
+      "grupo": "POST /auth/login",
+      "titulo": "deve retornar 200 e um token/cookie quando as credenciais forem válidas",
+      "casos": [
+        "TC-01"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/auth.test.ts",
+      "grupo": "POST /auth/login",
+      "titulo": "deve retornar 401 quando a senha estiver incorreta",
+      "casos": [
+        "TC-02"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/auth.test.ts",
+      "grupo": "POST /auth/login",
+      "titulo": "deve retornar 401 quando o e-mail não existir",
+      "casos": [
+        "TC-02"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/auth.test.ts",
+      "grupo": "POST /auth/login",
+      "titulo": "deve retornar 403 se o usuário estiver com status inativo",
+      "casos": [
+        "TC-61"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authMiddleware.test.ts",
+      "grupo": "Middleware de Autenticação (Rotas Protegidas)",
+      "titulo": "deve retornar 401 quando nenhum token for enviado",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authMiddleware.test.ts",
+      "grupo": "Middleware de Autenticação (Rotas Protegidas)",
+      "titulo": "deve retornar 401 quando o token enviado for inválido",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authMiddleware.test.ts",
+      "grupo": "Middleware de Autenticação (Rotas Protegidas)",
+      "titulo": "deve retornar 401 com o código token_expired quando o token estiver expirado",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authMiddleware.test.ts",
+      "grupo": "Middleware de Autenticação (Rotas Protegidas)",
+      "titulo": "deve permitir acesso (200) com token válido e usuário ativo",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authRegister.test.ts",
+      "grupo": "POST /auth/register",
+      "titulo": "deve registrar o usuário com sucesso (201) e forçar o perfil como Cidadão",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authRegister.test.ts",
+      "grupo": "POST /auth/register",
+      "titulo": "deve IGNORAR tentativa de injeção e registrar o usuário como Cidadão mesmo enviando perfil de Admin",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authRegister.test.ts",
+      "grupo": "POST /auth/register",
+      "titulo": "deve retornar 409 quando tentar registrar um e-mail já existente",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authRegister.test.ts",
+      "grupo": "POST /auth/register › TC-41 | validação dos campos do cadastro",
+      "titulo": "recusa %j com 400 e não grava nada",
+      "casos": [
+        "TC-41"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/authRegister.test.ts",
+      "grupo": "POST /auth/register › TC-41 | validação dos campos do cadastro",
+      "titulo": "aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)",
+      "casos": [
+        "TC-41"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/cors.test.ts",
+      "grupo": "HU-09 | CORS para o app nativo e whitelist do painel (API)",
+      "titulo": "requisição do app nativo (sem header Origin) é processada normalmente",
+      "casos": [
+        "TC-36"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/cors.test.ts",
+      "grupo": "HU-09 | CORS para o app nativo e whitelist do painel (API)",
+      "titulo": "Origin da whitelist é processada e recebe Access-Control-Allow-Origin",
+      "casos": [
+        "TC-37"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/cors.test.ts",
+      "grupo": "HU-09 | CORS para o app nativo e whitelist do painel (API)",
+      "titulo": "preflight da Origin da whitelist libera método e headers",
+      "casos": [
+        "TC-37"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/cors.test.ts",
+      "grupo": "HU-09 | CORS para o app nativo e whitelist do painel (API)",
+      "titulo": "Origin fora da whitelist não recebe Access-Control-Allow-Origin (o navegador bloqueia)",
+      "casos": [
+        "TC-38"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "exige autenticação (401 sem token)",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands lista com paginação e repassa a pesquisa para o banco",
+      "casos": [
+        "TC-25"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands ignora pesquisa vazia",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands combina status, pesquisa, categoria e região (UF, cidade e zona)",
+      "casos": [
+        "TC-74"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands rejeita filtro inválido %j (400)",
+      "casos": [
+        "TC-74"
+      ],
+      "hus": [
+        "HU-06"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands/:id retorna a demanda com histórico",
+      "casos": [
+        "TC-58"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /demands/:id bloqueia acesso à demanda de outro cidadão (403)",
+      "casos": [
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands valida campos obrigatórios (400)",
+      "casos": [
+        "TC-30"
+      ],
+      "hus": [
+        "HU-07"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands rejeita categoria inexistente ou inativa (400)",
+      "casos": [
+        "TC-44"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands valida estado, cidade e zona %j (400)",
+      "casos": [
+        "TC-59"
+      ],
+      "hus": [
+        "HU-04"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "DELETE /demands/:id: cidadão remove a própria demanda (204)",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "DELETE /demands/:id: cidadão não remove demanda de outra pessoa (403)",
+      "casos": [
+        "TC-42",
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands/:id/photos exige o campo photo (400)",
+      "casos": [
+        "TC-10"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands/:id/photos recusa arquivo que não é imagem (422)",
+      "casos": [
+        "TC-11"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands/:id/photos aceita corpo maior que o limite padrão de 100kb",
+      "casos": [
+        "TC-12"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "DELETE /demands/:id/photos/:photoId remove a foto (204)",
+      "casos": [
+        "TC-60"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "GET /categories lista as categorias ativas",
+      "casos": [
+        "TC-44"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands) › limite de tamanho da foto (TC-12)",
+      "titulo": "corpo exatamente no limite de 15 MB passa pelo parser e chega à validação da imagem",
+      "casos": [
+        "TC-12"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands) › limite de tamanho da foto (TC-12)",
+      "titulo": "1 byte acima do limite retorna 413 e nada é gravado",
+      "casos": [
+        "TC-12"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "POST /demands/:id/photos em demanda inexistente retorna 404 e nada é gravado",
+      "casos": [
+        "TC-13"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands) › roteamento na criação",
+      "titulo": "chamado sem coordenadas é aceito e roteado pela categoria",
+      "casos": [
+        "TC-16",
+        "TC-17"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands) › roteamento na criação",
+      "titulo": "órgão inativo nunca recebe o chamado, nem pela regra de competência nem pelo vínculo com a categoria",
+      "casos": [
+        "TC-44"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/demands.test.ts",
+      "grupo": "API de Demandas (/demands)",
+      "titulo": "listagem devolve payload enxuto, sem relacionamentos completos do Prisma",
+      "casos": [
+        "TC-28"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/errorHandling.test.ts",
+      "grupo": "TC-27 | Erro inesperado não expõe detalhes internos (API)",
+      "titulo": "com NODE_ENV=%s a resposta 500 tem mensagem padrão, sem stack nem mensagem interna",
+      "casos": [
+        "TC-27"
+      ],
+      "hus": [
+        "HU-06"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/errorHandling.test.ts",
+      "grupo": "TC-27 | Erro inesperado não expõe detalhes internos (API)",
+      "titulo": "só em desenvolvimento a resposta inclui o stack, para depuração local",
+      "casos": [
+        "TC-27"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve retornar 200 ao alterar o chamado para um status válido",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve retornar 400 quando o status enviado não estiver na lista permitida",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve gravar \"%s\" no banco como %s",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve retornar 404 ao tentar atualizar um chamado que não existe",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve permitir atualizar chamado de qualquer órgão (gestor não é vinculado a órgão)",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve permitir que um admin atualize o status de um chamado",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "PUT /gestor/chamados/:id/status",
+      "titulo": "deve retornar 403 para cidadão",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "GET /gestor/chamados lista chamados de todos os órgãos e aplica o filtro \"meus\"",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "GET /gestor/chamados filtra por categoria e região junto com a pesquisa",
+      "casos": [
+        "TC-74"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "GET /gestor/chamados rejeita UF inválida (400)",
+      "casos": [
+        "TC-74"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "PUT /gestor/chamados/:id/aceitar rejeita responsável que não é gestor",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "PUT /gestor/chamados/:id/aceitar atribui o chamado a quem aceitou",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "POST /gestor/chamados/:id/comentarios exige mensagem",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorChamados.test.ts",
+      "grupo": "Gestão de chamados (/gestor)",
+      "titulo": "POST /gestor/chamados/:id/comentarios registra a mensagem no histórico",
+      "casos": [
+        "TC-62"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/dashboard conta os chamados por status, atrasados e do próprio gestor",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/dashboard retorna 404 se o usuário sumiu entre a sessão e a consulta",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/chamados com \"Atrasados\" filtra prazo vencido e não encerrado; \"sem\" filtra sem responsável",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/chamados com \"Todos\" não filtra status e recusa status desconhecido (400)",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/chamados/:id devolve o detalhe com status de exibição",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/equipe lista gestores e admins ativos",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Painel e fila do gestor (/gestor)",
+      "titulo": "GET /gestor/chamados/:id retorna 404 para chamado inexistente",
+      "casos": [
+        "TC-71"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "concluir com nota de resolução grava a nota, registra a conclusão e notifica o cidadão",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "mudar status sem justificativa descreve a transição no histórico",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "exige o status (400)",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "aceitar indicando outro gestor ativo designa o responsável e notifica, pois o chamado estava Aberto",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "aceitar chamado que já está em andamento mantém o status e não notifica de novo",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "aceitar chamado inexistente retorna 404",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor",
+      "titulo": "comentário acima de 1000 caracteres (400) e em chamado inexistente (404)",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor › PUT /gestor/chamados/:id/transferir",
+      "titulo": "transfere para outro órgão e registra o motivo no histórico",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/gestorFluxos.test.ts",
+      "grupo": "Atendimento do chamado pelo gestor › PUT /gestor/chamados/:id/transferir",
+      "titulo": "recusa %s",
+      "casos": [
+        "TC-72"
+      ],
+      "hus": [
+        "HU-05"
+      ],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/loginValido.test.ts",
+      "grupo": "AUT-01 | Realizar login com credenciais válidas | RF04 (API)",
+      "titulo": "deve autenticar o usuário e retornar um token de acesso",
+      "casos": [
+        "TC-01"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/logout.test.ts",
+      "grupo": "AUT-10 | Realizar logout e revogar o token | RF04 (API)",
+      "titulo": "deve realizar o logout com sucesso (200) e limpar o cookie",
+      "casos": [
+        "TC-07"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/logout.test.ts",
+      "grupo": "AUT-10 | Realizar logout e revogar o token | RF04 (API)",
+      "titulo": "o token deve funcionar antes do logout e ser rejeitado (401) depois",
+      "casos": [
+        "TC-08"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/logout.test.ts",
+      "grupo": "AUT-10 | Realizar logout e revogar o token | RF04 (API)",
+      "titulo": "logout sem token ou com token expirado retorna 401, nunca 500",
+      "casos": [
+        "TC-09"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/logout.test.ts",
+      "grupo": "AUT-10 | Realizar logout e revogar o token | RF04 (API)",
+      "titulo": "logout repetido com o mesmo token já revogado retorna 401",
+      "casos": [
+        "TC-09"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "GET /metrics/total-demands devolve os totais por status no escopo da plataforma",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "GET /metrics/demands-by-category devolve a distribuição",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "GET /metrics/average-response-time devolve a média em horas",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "cidadão não acessa as métricas (403)",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "falha do banco em %s vira 500",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "GET /health",
+      "titulo": "banco no ar: 200 ok, com o Redis marcado como indisponível quando não responde",
+      "casos": [
+        "TC-68"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "GET /health",
+      "titulo": "banco fora do ar: 503 degraded",
+      "casos": [
+        "TC-68"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /users lista com paginação e nomes de campo da API",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /users/:id devolve o usuário",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /users/:id recusa ID fora do formato UUID (400) e informa inexistente (404)",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /users repassa erro do banco (500)",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /categories/:id devolve a categoria ativa",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /categories/:id: ID não numérico (400), inexistente ou inativa (404)",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Usuários (/users) e categorias (/categories)",
+      "titulo": "GET /categories repassa erro do banco (500)",
+      "casos": [
+        "TC-69"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "lista as notificações do usuário, da mais recente para a mais antiga, com o total de não lidas",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "filtra só as não lidas com ?unread=true",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "marca uma notificação como lida, só se for do próprio usuário",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "retorna 404 para notificação de outra pessoa ou id inválido",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "marca todas como lidas",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/notifications.test.ts",
+      "grupo": "Notificações (/notifications)",
+      "titulo": "exige autenticação (401)",
+      "casos": [
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/passwordReset.test.ts",
+      "grupo": "Recuperação de senha (API)",
+      "titulo": "envia o código e redefine a senha com o código correto",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/passwordReset.test.ts",
+      "grupo": "Recuperação de senha (API)",
+      "titulo": "responde 200 sem enviar e-mail quando o usuário não existe",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/passwordReset.test.ts",
+      "grupo": "Recuperação de senha (API)",
+      "titulo": "rejeita código incorreto e não permite reutilizar o código",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/passwordReset.test.ts",
+      "grupo": "Recuperação de senha (API)",
+      "titulo": "invalida o código após exceder o limite de tentativas",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/passwordReset.test.ts",
+      "grupo": "Recuperação de senha (API)",
+      "titulo": "valida o tamanho mínimo da nova senha",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "atualiza o nome sem exigir a senha atual",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "atualiza o e-mail quando a senha atual está correta",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "troca a senha gravando o novo hash",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "exige a senha atual para alterar o e-mail (400)",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "recusa senha atual incorreta (401)",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "recusa e-mail já usado por outra conta (409)",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "valida os dados (400): %s",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profile.test.ts",
+      "grupo": "PUT /auth/me",
+      "titulo": "exige autenticação (401)",
+      "casos": [
+        "TC-50"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "salva a nova foto, retorna a fotourl e apaga a anterior",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "recusa arquivo que não é imagem (422)",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "exige o campo photo (400)",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "aceita corpo maior que o limite padrão de 100kb",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "exige autenticação (401)",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "DELETE remove a foto e apaga o arquivo",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/profilePhoto.test.ts",
+      "grupo": "Foto de perfil (/auth/me/photo)",
+      "titulo": "GET /auth/me inclui a fotourl",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "login devolve access token de curta duração e refresh token de longa duração",
+      "casos": [
+        "TC-01"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "refresh válido devolve um novo par e o novo access token é aceito em rota protegida",
+      "casos": [
+        "TC-03"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "refresh expirado retorna 401 (1 s antes do vencimento ainda é aceito)",
+      "casos": [
+        "TC-04"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "refresh token reutilizado depois do logout retorna 401",
+      "casos": [
+        "TC-05"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "logout de uma sessão não revoga o refresh token de outra, nem quando o refresh da sessão encerrada é reutilizado",
+      "casos": [
+        "TC-08"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "reutilizar um refresh token já trocado revoga todas as sessões do usuário",
+      "casos": [
+        "TC-05"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "usuário inativado não consegue renovar a sessão (403)",
+      "casos": [
+        "TC-61"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/refreshToken.test.ts",
+      "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
+      "titulo": "refresh sem o campo refreshToken retorna 400 e com token desconhecido retorna 401",
+      "casos": [
+        "TC-03"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/registerDemo.test.ts",
+      "grupo": "Cadastro com DEMO_MODE: senha já usada por outra conta (API)",
+      "titulo": "avisa qual conta já usa a senha e não cria o usuário",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/registerDemo.test.ts",
+      "grupo": "Cadastro com DEMO_MODE: senha já usada por outra conta (API)",
+      "titulo": "cria o usuário quando a pessoa decide prosseguir assim mesmo",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/registerDemo.test.ts",
+      "grupo": "Cadastro com DEMO_MODE: senha já usada por outra conta (API)",
+      "titulo": "cria o usuário direto quando a senha não se repete",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "login retorna termosversao nula para quem nunca aceitou",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "registra o aceite com a versão e a data",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "não regride nem regrava quando a versão já foi aceita",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "rejeita versão inválida %j (400)",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "exige autenticação (401)",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/terms.test.ts",
+      "grupo": "Termos de uso (/auth/me/terms)",
+      "titulo": "GET /auth/me inclui a termosversao",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "não entrega tokens no login e envia o código por e-mail",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "autentica com o código correto e não permite reutilizá-lo",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "rejeita código incorreto e invalida o desafio após 5 tentativas",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "rejeita desafio desconhecido",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "limita o reenvio do código a um por minuto",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API)",
+      "titulo": "mantém o login direto para quem não ativou a verificação",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API) › PUT /auth/me/two-factor",
+      "titulo": "ativa a verificação com a senha atual",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API) › PUT /auth/me/two-factor",
+      "titulo": "recusa a alteração com senha incorreta",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactor.test.ts",
+      "grupo": "Verificação em duas etapas por e-mail (API) › PUT /auth/me/two-factor",
+      "titulo": "exige o campo ativo booleano",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/twoFactorDemo.test.ts",
+      "grupo": "Verificação em duas etapas com DEMO_MODE (API)",
+      "titulo": "devolve o código na resposta do login e ele conclui a autenticação",
+      "casos": [
+        "TC-75"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "cadastro e login de um novo cidadão",
+      "casos": [
+        "TC-01",
+        "TC-40"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "lista de ocorrências começa vazia para um cidadão novo",
+      "casos": [
+        "TC-25"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "registra uma ocorrência com categoria, endereço, região e coordenadas do GPS",
+      "casos": [
+        "TC-30",
+        "TC-59"
+      ],
+      "hus": [
+        "HU-07",
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "a ocorrência aparece na listagem com status Aberto",
+      "casos": [
+        "TC-25"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "pesquisa por título, endereço, protocolo e categoria encontra a ocorrência; termo inexistente não",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "filtro por status: aparece em \"Aberto\" e não em \"Resolvido\"",
+      "casos": [
+        "TC-57"
+      ],
+      "hus": [
+        "HU-06"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "detalhe mostra os dados, a região, o prazo (SLA) e o histórico da ocorrência",
+      "casos": [
+        "TC-58"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "edita título, descrição e categoria; a alteração fica no histórico",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "anexa duas fotos, elas ficam disponíveis no app e uma pode ser removida",
+      "casos": [
+        "TC-10",
+        "TC-14",
+        "TC-60"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "remove a ocorrência: some da lista padrão e aparece em \"Removidas\"",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "ocorrência removida não pode mais ser editada",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/cidadao-ocorrencia.spec.ts",
+      "grupo": "Jornada do cidadão: ciclo de vida de uma ocorrência",
+      "titulo": "logout encerra a sessão: o token deixa de funcionar",
+      "casos": [
+        "TC-07"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/conta.spec.ts",
+      "grupo": "Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha",
+      "titulo": "conta nova ainda não aceitou os termos de uso",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/conta.spec.ts",
+      "grupo": "Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha",
+      "titulo": "aceite dos termos fica gravado e não regride para uma versão anterior",
+      "casos": [
+        "TC-52"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/conta.spec.ts",
+      "grupo": "Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha",
+      "titulo": "envia a foto de perfil, ela fica disponível e pode ser removida",
+      "casos": [
+        "TC-51"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/conta.spec.ts",
+      "grupo": "Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha",
+      "titulo": "registra e remove o token de push do aparelho; token inválido é recusado",
+      "casos": [
+        "TC-20"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/conta.spec.ts",
+      "grupo": "Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha",
+      "titulo": "recuperação de senha responde igual para e-mail existente e inexistente e recusa código errado",
+      "casos": [
+        "TC-49"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "cidadão registra um vazamento (categoria Água e Esgoto → COMPESA)",
+      "casos": [
+        "TC-16"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "a ocorrência chega à fila de gestão de chamados",
+      "casos": [
+        "TC-16",
+        "TC-62"
+      ],
+      "hus": [
+        "HU-04",
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "cidadão não tem acesso às rotas do gestor",
+      "casos": [
+        "TC-39"
+      ],
+      "hus": [
+        "HU-09"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "gestor move a ocorrência para \"Em Andamento\"",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "cidadão vê o novo status e o registro no histórico",
+      "casos": [
+        "TC-47"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "cidadão recebe a notificação da mudança e pode marcá-la como lida",
+      "casos": [
+        "TC-21",
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "com a ocorrência em andamento, o cidadão não pode mais editar nem remover",
+      "casos": [
+        "TC-42"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/gestor-atendimento.spec.ts",
+      "grupo": "Jornada do gestor: atendimento de uma ocorrência",
+      "titulo": "gestor conclui a ocorrência e ela aparece como Resolvido para o cidadão",
+      "casos": [
+        "TC-47",
+        "TC-53"
+      ],
+      "hus": [
+        "HU-05"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Autenticação",
+      "titulo": "rotas protegidas exigem login (401 sem token)",
+      "casos": [
+        "TC-06"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Autenticação",
+      "titulo": "login com senha errada é recusado com mensagem genérica",
+      "casos": [
+        "TC-02"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Autenticação",
+      "titulo": "não permite cadastrar o mesmo e-mail duas vezes (409)",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Autenticação",
+      "titulo": "cadastro ignora tentativa de se registrar como Admin",
+      "casos": [
+        "TC-40"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Isolamento entre cidadãos",
+      "titulo": "um cidadão não vê, não edita, não anexa foto e não remove a ocorrência de outro",
+      "casos": [
+        "TC-43"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Isolamento entre cidadãos",
+      "titulo": "o logout de uma sessão não derruba outra sessão do mesmo usuário",
+      "casos": [
+        "TC-08"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Validação de dados",
+      "titulo": "ocorrência sem campos obrigatórios ou com categoria inválida é recusada",
+      "casos": [
+        "TC-30",
+        "TC-44"
+      ],
+      "hus": [
+        "HU-07",
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/seguranca.spec.ts",
+      "grupo": "Validação de dados",
+      "titulo": "arquivo que não é imagem é recusado como foto",
+      "casos": [
+        "TC-11"
+      ],
+      "hus": [
+        "HU-03"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/sessao.spec.ts",
+      "grupo": "Sessão com refresh token",
+      "titulo": "refresh troca o par de tokens, o novo access token funciona e o refresh antigo deixa de valer",
+      "casos": [
+        "TC-03"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/sessao.spec.ts",
+      "grupo": "Sessão com refresh token",
+      "titulo": "logout revoga o refresh token daquela sessão sem derrubar a outra",
+      "casos": [
+        "TC-05",
+        "TC-08"
+      ],
+      "hus": [
+        "HU-02"
+      ]
+    },
+    {
+      "suite": "e2e-api",
+      "arquivo": "e2e/sessao.spec.ts",
+      "grupo": "Sessão com refresh token",
+      "titulo": "refresh sem o campo retorna 400 e com token desconhecido retorna 401",
+      "casos": [
+        "TC-03"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/login_invalid_password.yaml",
+      "grupo": null,
+      "titulo": "M-01 Login com senha errada mostra o alerta e fica na tela de login",
+      "casos": [
+        "TC-63"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/logout.yaml",
+      "grupo": null,
+      "titulo": "M-04 Logout pelo perfil continua valendo ao reabrir o app",
+      "casos": [
+        "TC-63"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/pending/demand_crud.yaml",
+      "grupo": null,
+      "titulo": "M-05 Ciclo completo de uma demanda pelas telas",
+      "casos": [
+        "TC-46"
+      ],
+      "hus": [
+        "HU-04"
+      ],
+      "desligado": true
+    },
+    {
+      "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/pending/register.yaml",
+      "grupo": null,
+      "titulo": "M-02 Cadastro pela tela e login com a conta nova",
+      "casos": [
+        "TC-63"
+      ],
+      "hus": [
+        "HU-01"
+      ],
+      "desligado": true
+    },
+    {
+      "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/session_persistence.yaml",
+      "grupo": null,
+      "titulo": "M-03 Sessão continua aberta ao reabrir o app",
+      "casos": [
+        "TC-63"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — regra de acesso",
+      "titulo": "cidadão lista apenas os próprios chamados",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — regra de acesso",
+      "titulo": "cidadão consulta vários protocolos; o de outro cidadão volta como não encontrado",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — regra de acesso",
+      "titulo": "admin enxerga chamados de qualquer cidadão",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — regra de acesso",
+      "titulo": "não devolve dados de quem abriu o chamado",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — regra de acesso",
+      "titulo": "valida status e quantidade de protocolos",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — prazos",
+      "titulo": "calcula a situação do prazo de cada chamado",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — prazos",
+      "titulo": "chamado resolvido não tem prazo em aberto",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "consultar_status_chamados — prazos",
+      "titulo": "chamado sem data limite fica como sem_prazo",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "BackendChamadosSource — consulta GET /demands com o JWT do usuário",
+      "titulo": "repassa o token, converte o filtro de status e descarta o creator",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "BackendChamadosSource — consulta GET /demands com o JWT do usuário",
+      "titulo": "token inválido vira erro amigável",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "Servidor do agente (POST /chat)",
+      "titulo": "exige o segredo compartilhado e o token do usuário",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "Servidor do agente (POST /chat)",
+      "titulo": "responde usando a fonte de dados do token recebido e mantém a sessão",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/acompanhamento.test.ts",
+      "grupo": "Agente — perfil acompanhamento",
+      "titulo": "encadeia mensagem → ferramenta → resposta com os protocolos pedidos",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/agente.test.ts",
+      "grupo": "CT-01 — fiação exposta na Av. Boa Viagem",
+      "titulo": "classifica como Iluminação Pública/CELPE com prioridade Crítica e encontra 2 chamados similares",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/agente.test.ts",
+      "grupo": "CT-02 — esgoto em via na Rua da Aurora",
+      "titulo": "roteia para a COMPESA com prioridade Crítica e ignora chamado já Fechado",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/agente.test.ts",
+      "grupo": "CT-03 — buraco no asfalto na Madalena",
+      "titulo": "roteia para a EMLURB com prioridade Alta e não encontra similares",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "classificar_e_rotear_ocorrencia",
+      "titulo": "reconhece gatilhos de emergência mesmo sem acento (RN-03)",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "classificar_e_rotear_ocorrencia",
+      "titulo": "poste apagado comum tem prioridade Média",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "classificar_e_rotear_ocorrencia",
+      "titulo": "texto não reconhecido cai em Outros Problemas → SEMC",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "classificar_e_rotear_ocorrencia",
+      "titulo": "rejeita coordenadas inválidas (RF-02)",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "buscar_chamados_similares",
+      "titulo": "rejeita categoria inativa",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "buscar_chamados_similares",
+      "titulo": "filtra por categoria: Infraestrutura no mesmo ponto não traz chamados de Iluminação",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "executarFerramenta",
+      "titulo": "converte exceções em { error } para o modelo poder se corrigir",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo",
+      "titulo": "${CT01.id}: chama as 2 ferramentas e responde com CELPE / Crítica / protocolos",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo",
+      "titulo": "${CT02.id}: roteia para COMPESA com prioridade Crítica",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo",
+      "titulo": "${CT03.id}: EMLURB / Alta sem chamados similares",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo",
+      "titulo": "sem coordenadas, o agente pede a localização em vez de chamar ferramentas",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "cidadão consulta dois protocolos e não vê o chamado de outro cidadão",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "admin consulta o mesmo protocolo de outro cidadão",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "pergunta sobre atraso consulta a ferramenta e cita o chamado com prazo vencido",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "dúvida de uso do app é respondida pelo guia, sem consultar chamados",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "relato de emergência orienta a ligar para os números de emergência primeiro",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/live/gemini.test.ts",
+      "grupo": "Gemini ao vivo — perfil acompanhamento",
+      "titulo": "assunto fora do escopo é recusado sem chamar ferramentas",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    }
+  ],
+  "casos": {
+    "TC-01": {
+      "hu": "HU-01",
+      "titulo": "Login válido",
+      "testes": 6,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-02": {
+      "hu": "HU-01",
+      "titulo": "Login inválido",
+      "testes": 4,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-03": {
+      "hu": "HU-01",
+      "titulo": "Refresh válido",
+      "testes": 4,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-04": {
+      "hu": "HU-01",
+      "titulo": "Refresh expirado",
+      "testes": 1,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-05": {
+      "hu": "HU-02",
+      "titulo": "Refresh reutilizado após logout",
+      "testes": 6,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-06": {
+      "hu": "HU-01",
+      "titulo": "Access token expirado",
+      "testes": 6,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-07": {
+      "hu": "HU-02",
+      "titulo": "Logout bem-sucedido",
+      "testes": 4,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-08": {
+      "hu": "HU-02",
+      "titulo": "Uso pós-logout",
+      "testes": 5,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-09": {
+      "hu": "HU-02",
+      "titulo": "Logout sem token válido",
+      "testes": 3,
+      "suites": [
+        "unit",
+        "api"
+      ]
+    },
+    "TC-10": {
+      "hu": "HU-03",
+      "titulo": "Upload de imagem válida",
+      "testes": 4,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-11": {
+      "hu": "HU-03",
+      "titulo": "Upload de tipo inválido",
+      "testes": 3,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-12": {
+      "hu": "HU-03",
+      "titulo": "Upload acima do limite",
+      "testes": 3,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-13": {
+      "hu": "HU-03",
+      "titulo": "Upload em chamado inexistente",
+      "testes": 1,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-14": {
+      "hu": "HU-03",
+      "titulo": "Upload múltiplo",
+      "testes": 2,
+      "suites": [
+        "unit",
+        "e2e-api"
+      ]
+    },
+    "TC-15": {
+      "hu": "HU-03",
+      "titulo": "URL assinada expira",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-16": {
+      "hu": "HU-04",
+      "titulo": "Coordenadas válidas",
+      "testes": 3,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-17": {
+      "hu": "HU-04",
+      "titulo": "Chamado sem coordenadas",
+      "testes": 1,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-18": {
+      "hu": "HU-04",
+      "titulo": "Coordenadas fora da área",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-19": {
+      "hu": "HU-04",
+      "titulo": "Busca por proximidade",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-20": {
+      "hu": "HU-05",
+      "titulo": "Registro de device token",
+      "testes": 2,
+      "suites": [
+        "unit",
+        "e2e-api"
+      ]
+    },
+    "TC-21": {
+      "hu": "HU-05",
+      "titulo": "Notificação disparada",
+      "testes": 3,
+      "suites": [
+        "unit",
+        "e2e-api"
+      ]
+    },
+    "TC-22": {
+      "hu": "HU-05",
+      "titulo": "Usuário sem token",
+      "testes": 1,
+      "suites": [
+        "unit"
+      ]
+    },
+    "TC-23": {
+      "hu": "HU-05",
+      "titulo": "FCM fora do ar",
+      "testes": 1,
+      "suites": [
+        "unit"
+      ]
+    },
+    "TC-24": {
+      "hu": "HU-05",
+      "titulo": "Múltiplos dispositivos (manual)",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-25": {
+      "hu": "HU-06",
+      "titulo": "Primeira página",
+      "testes": 4,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-26": {
+      "hu": "HU-06",
+      "titulo": "Página seguinte",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-27": {
+      "hu": "HU-06",
+      "titulo": "Cursor inválido",
+      "testes": 2,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-28": {
+      "hu": "HU-06",
+      "titulo": "Payload enxuto",
+      "testes": 2,
+      "suites": [
+        "unit",
+        "api"
+      ]
+    },
+    "TC-29": {
+      "hu": "HU-06",
+      "titulo": "Cache condicional",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-30": {
+      "hu": "HU-07",
+      "titulo": "Criação única",
+      "testes": 3,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-31": {
+      "hu": "HU-07",
+      "titulo": "Reenvio idempotente",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-32": {
+      "hu": "HU-07",
+      "titulo": "Sincronização incremental",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-33": {
+      "hu": "HU-08",
+      "titulo": "Acesso à v1",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-34": {
+      "hu": "HU-08",
+      "titulo": "Rota legada",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-35": {
+      "hu": "HU-08",
+      "titulo": "Versão mínima do app (manual)",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-36": {
+      "hu": "HU-09",
+      "titulo": "Chamada do app mobile",
+      "testes": 1,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-37": {
+      "hu": "HU-09",
+      "titulo": "Domínio autorizado",
+      "testes": 2,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-38": {
+      "hu": "HU-09",
+      "titulo": "Domínio não autorizado",
+      "testes": 1,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-39": {
+      "hu": "HU-09",
+      "titulo": "Perfil errado",
+      "testes": 11,
+      "suites": [
+        "unit",
+        "e2e-api"
+      ]
+    },
+    "TC-40": {
+      "hu": null,
+      "titulo": "Cadastro",
+      "testes": 9,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-41": {
+      "hu": null,
+      "titulo": "Validação de campos do cadastro",
+      "testes": 2,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-42": {
+      "hu": null,
+      "titulo": "Editar/remover por dono e status",
+      "testes": 15,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-43": {
+      "hu": null,
+      "titulo": "Isolamento entre cidadãos",
+      "testes": 7,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-44": {
+      "hu": "HU-04",
+      "titulo": "Categoria e órgão ativos",
+      "testes": 4,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-45": {
+      "hu": "HU-04",
+      "titulo": "GPS desligado ou sem permissão (manual)",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-46": {
+      "hu": "HU-04",
+      "titulo": "Fluxo completo nas telas",
+      "testes": 1,
+      "suites": [
+        "e2e-telas"
+      ]
+    },
+    "TC-47": {
+      "hu": "HU-05",
+      "titulo": "Gestor muda status",
+      "testes": 8,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-48": {
+      "hu": null,
+      "titulo": "Banco indisponível",
+      "testes": 0,
+      "suites": []
+    },
+    "TC-49": {
+      "hu": null,
+      "titulo": "Recuperação de senha",
+      "testes": 7,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-50": {
+      "hu": null,
+      "titulo": "Edição do perfil",
+      "testes": 8,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-51": {
+      "hu": null,
+      "titulo": "Foto de perfil",
+      "testes": 8,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-52": {
+      "hu": null,
+      "titulo": "Termos de uso",
+      "testes": 8,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-53": {
+      "hu": "HU-05",
+      "titulo": "Notificações na tela",
+      "testes": 8,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-54": {
+      "hu": "HU-09",
+      "titulo": "Gestão de perfis pelo admin",
+      "testes": 7,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-55": {
+      "hu": null,
+      "titulo": "Assistente de IA no backend",
+      "testes": 5,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-56": {
+      "hu": null,
+      "titulo": "Agente de IA",
+      "testes": 33,
+      "suites": [
+        "agente-ia"
+      ]
+    },
+    "TC-57": {
+      "hu": "HU-06",
+      "titulo": "Pesquisa e filtros",
+      "testes": 7,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-58": {
+      "hu": null,
+      "titulo": "Detalhe com prazo",
+      "testes": 2,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-59": {
+      "hu": "HU-04",
+      "titulo": "Região do chamado",
+      "testes": 3,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-60": {
+      "hu": "HU-03",
+      "titulo": "Remoção de foto",
+      "testes": 4,
+      "suites": [
+        "unit",
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-61": {
+      "hu": "HU-01",
+      "titulo": "Login de usuário inativo",
+      "testes": 2,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-62": {
+      "hu": "HU-05",
+      "titulo": "Fila, aceite e comentários do gestor",
+      "testes": 8,
+      "suites": [
+        "api",
+        "e2e-api"
+      ]
+    },
+    "TC-63": {
+      "hu": "HU-01",
+      "titulo": "Telas de login, cadastro, sessão e logout (assistido)",
+      "testes": 4,
+      "suites": [
+        "e2e-telas"
+      ]
+    },
+    "TC-64": {
+      "hu": null,
+      "titulo": "Órgãos",
+      "testes": 19,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-65": {
+      "hu": "HU-04",
+      "titulo": "Regras de competência",
+      "testes": 16,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-66": {
+      "hu": "HU-09",
+      "titulo": "Ciclo de vida dos usuários e auditoria",
+      "testes": 10,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-67": {
+      "hu": null,
+      "titulo": "Indicadores operacionais e cache",
+      "testes": 21,
+      "suites": [
+        "unit",
+        "api"
+      ]
+    },
+    "TC-68": {
+      "hu": null,
+      "titulo": "Health check",
+      "testes": 2,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-69": {
+      "hu": null,
+      "titulo": "Consulta de usuários e categorias",
+      "testes": 7,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-70": {
+      "hu": "HU-06",
+      "titulo": "Tradução de erros",
+      "testes": 5,
+      "suites": [
+        "unit"
+      ]
+    },
+    "TC-71": {
+      "hu": "HU-05",
+      "titulo": "Painel e fila do gestor",
+      "testes": 7,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-72": {
+      "hu": "HU-05",
+      "titulo": "Atendimento pelo gestor",
+      "testes": 9,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-73": {
+      "hu": "HU-01",
+      "titulo": "Validação de entrada da autenticação",
+      "testes": 14,
+      "suites": [
+        "unit"
+      ]
+    },
+    "TC-74": {
+      "hu": "HU-06",
+      "titulo": "Filtros por categoria e região",
+      "testes": 4,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-75": {
+      "hu": "HU-01",
+      "titulo": "Verificação em duas etapas",
+      "testes": 10,
+      "suites": [
+        "api"
+      ]
+    },
+    "TC-76": {
+      "hu": null,
+      "titulo": "Remetente dos e-mails",
+      "testes": 4,
+      "suites": [
+        "unit"
+      ]
+    }
+  }
+}

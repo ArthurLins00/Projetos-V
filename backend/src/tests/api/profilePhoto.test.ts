@@ -38,7 +38,7 @@ describe('Foto de perfil (/auth/me/photo)', () => {
     }) as any);
   });
 
-  it('salva a nova foto, retorna a fotourl e apaga a anterior', async () => {
+  it('[TC-51] salva a nova foto, retorna a fotourl e apaga a anterior', async () => {
     const res = await request(app).put('/auth/me/photo').set(auth).send({ photo: `data:image/jpeg;base64,${jpeg}` });
 
     expect(res.status).toBe(200);
@@ -47,7 +47,7 @@ describe('Foto de perfil (/auth/me/photo)', () => {
     expect(fs.unlink).toHaveBeenCalledWith(expect.stringContaining('avatar-cidadao-foto-1.jpg'));
   });
 
-  it('recusa arquivo que não é imagem (422)', async () => {
+  it('[TC-51] recusa arquivo que não é imagem (422)', async () => {
     const res = await request(app)
       .put('/auth/me/photo')
       .set(auth)
@@ -57,23 +57,23 @@ describe('Foto de perfil (/auth/me/photo)', () => {
     expect(fs.writeFile).not.toHaveBeenCalled();
   });
 
-  it('exige o campo photo (400)', async () => {
+  it('[TC-51] exige o campo photo (400)', async () => {
     const res = await request(app).put('/auth/me/photo').set(auth).send({});
     expect(res.status).toBe(400);
   });
 
-  it('aceita corpo maior que o limite padrão de 100kb', async () => {
+  it('[TC-51] aceita corpo maior que o limite padrão de 100kb', async () => {
     const grande = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(300 * 1024)]).toString('base64');
     const res = await request(app).put('/auth/me/photo').set(auth).send({ photo: grande });
     expect(res.status).toBe(200);
   });
 
-  it('exige autenticação (401)', async () => {
+  it('[TC-51] exige autenticação (401)', async () => {
     const res = await request(app).put('/auth/me/photo').send({ photo: jpeg });
     expect(res.status).toBe(401);
   });
 
-  it('DELETE remove a foto e apaga o arquivo', async () => {
+  it('[TC-51] DELETE remove a foto e apaga o arquivo', async () => {
     const res = await request(app).delete('/auth/me/photo').set(auth);
 
     expect(res.status).toBe(200);
@@ -81,7 +81,7 @@ describe('Foto de perfil (/auth/me/photo)', () => {
     expect(fs.unlink).toHaveBeenCalledWith(expect.stringContaining('avatar-cidadao-foto-1.jpg'));
   });
 
-  it('GET /auth/me inclui a fotourl', async () => {
+  it('[TC-51] GET /auth/me inclui a fotourl', async () => {
     prisma.usuario.findUnique.mockResolvedValue({ ...usuario } as any);
     const res = await request(app).get('/auth/me').set(auth);
 

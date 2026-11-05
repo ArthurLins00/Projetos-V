@@ -1,4 +1,5 @@
 appId: com.projetosv.fiscalize
+name: "[TC-63] M-04 Logout pelo perfil continua valendo ao reabrir o app"
 ---
 - runFlow: subflows/login.yaml
 

@@ -9,7 +9,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fromJUnit, load } from '../lib/test-results.mjs';
+import { load } from '../lib/test-results.mjs';
 import { HISTORY_LIMIT, TARGETS, TRACKED_WORKFLOWS, WINDOW_DAYS } from './targets.mjs';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -110,42 +110,24 @@ function collectSuites(dir) {
 
 // ---------- Testes instáveis (MQ-03) ----------
 
-function collectFlaky(dir) {
-  const flaky = [];
-  let measured = false;
+// Sem nova tentativa automática (docs/tas.md, seção 5.4), a instabilidade aparece como issue `teste instável`:
+// o script de issues de falha aplica a label quando o workflow passa no mesmo commit que falhou, e o
+// formulário "Teste instável" registra as que não se reproduzem. Conta as que seguem abertas, sem decisão.
+const FLAKY_LABEL = 'teste instável';
 
-  // Playwright: o JSON marca como "flaky" quem falhou e passou na nova tentativa
-  const playwright = readJson(join(dir, 'e2e-report/e2e-results.json'));
-  if (playwright) {
-    measured = true;
-    const walk = (suite, file) => {
-      for (const spec of suite.specs || []) {
-        for (const test of spec.tests || []) {
-          if (test.status === 'flaky') flaky.push({ suite: 'E2E da API (Playwright)', file: spec.file || file, name: spec.title });
-        }
-      }
-      for (const child of suite.suites || []) walk(child, child.file || file);
-    };
-    for (const suite of playwright.suites || []) walk(suite, suite.file);
-  }
-
-  // Maestro: a 1ª tentativa fica em maestro-report-1.xml quando os fluxos são repetidos
-  const finalReport = join(dir, 'maestro-report/maestro-report.xml');
-  const firstAttempt = join(dir, 'maestro-report/maestro-report-1.xml');
-  if (existsSync(finalReport)) {
-    measured = true;
-    if (existsSync(firstAttempt)) {
-      const before = fromJUnit(readFileSync(firstAttempt, 'utf8'));
-      const after = new Map(fromJUnit(readFileSync(finalReport, 'utf8')).map((t) => [t.name, t.status]));
-      for (const t of before) {
-        if (t.status === 'failed' && after.get(t.name) === 'passed') {
-          flaky.push({ suite: 'E2E de telas (Maestro)', file: `mobile/e2e/${t.name}.yaml`, name: t.name });
-        }
-      }
-    }
-  }
-
-  return { measured, count: measured ? flaky.length : null, tests: flaky };
+async function collectFlaky(repo, since) {
+  const issues = (await paginate(`/repos/${repo}/issues?labels=${encodeURIComponent(FLAKY_LABEL)}&state=all&since=${since}`)).filter(
+    (issue) => !issue.pull_request
+  );
+  const tests = issues
+    .filter((issue) => issue.state === 'open')
+    .map((issue) => ({ number: issue.number, name: issue.title, url: issue.html_url, createdAt: issue.created_at }));
+  return {
+    measured: true,
+    count: tests.length,
+    detectedInWindow: issues.filter((issue) => issue.created_at >= since).length,
+    tests,
+  };
 }
 
 // ---------- Cobertura do backend (MQ-02) ----------
@@ -406,11 +388,13 @@ function evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, 
     {
       id: 'MQ-03',
       name: 'Testes instáveis (flaky)',
-      value: flaky.count,
-      display: flaky.count == null ? '—' : String(flaky.count),
-      detail: flaky.measured ? 'passaram só na nova tentativa (Playwright e Maestro)' : 'nenhuma suíte com nova tentativa rodou nesta execução',
+      value: flaky?.count ?? null,
+      display: flaky?.count == null ? '—' : String(flaky.count),
+      detail: flaky
+        ? `issues \`teste instável\` abertas · ${flaky.detectedInWindow} detectadas nos últimos ${WINDOW_DAYS} dias`
+        : 'API do GitHub indisponível',
       target: String(TARGETS.flaky),
-      status: flaky.count == null ? 'na' : status(flaky.count <= TARGETS.flaky),
+      status: flaky?.count == null ? 'na' : status(flaky.count <= TARGETS.flaky),
     },
     {
       id: 'MQ-04',
@@ -506,7 +490,6 @@ async function main() {
   const warnings = [];
 
   const suites = collectSuites(args.artifacts);
-  const flaky = collectFlaky(args.artifacts);
   const coverage = collectCoverage(args.artifacts);
   const vulnerabilities = collectVulnerabilities(args.artifacts);
 
@@ -523,6 +506,7 @@ async function main() {
   const run = runId ? await attempt('execução analisada', () => collectSourceRun(repo, runId)) : null;
   const pipeline = await attempt('execuções da pipeline', () => collectPipeline(repo, since));
   const issues = await attempt('issues ci-failure', () => collectIssues(repo, since));
+  const flaky = await attempt('issues teste instável', () => collectFlaky(repo, since));
 
   const evaluation = evaluate({ suites, flaky, coverage, vulnerabilities, pipeline, issues, run });
   const allTests = suites.flatMap((s) => s.tests.map((t) => ({ ...t, suiteName: s.name, informative: s.informative })));
@@ -564,7 +548,7 @@ async function main() {
     passRate: evaluation.passRate,
     tests: evaluation.passed + evaluation.failed,
     failed: evaluation.failed,
-    flaky: flaky.count,
+    flaky: flaky?.count ?? null,
     coverageLines: coverage.combined?.lines ?? null,
     coverageBranches: coverage.combined?.branches ?? null,
     pipelineSuccessRate: pipeline?.successRate ?? null,

@@ -26,21 +26,21 @@ describe('API do Assistente (/ai/chat)', () => {
     fetchSpy.mockRestore();
   });
 
-  it('exige autenticação (401 sem token)', async () => {
+  it('[TC-55] exige autenticação (401 sem token)', async () => {
     const response = await request(app).post('/ai/chat').send({ message: 'oi' });
 
     expect(response.status).toBe(401);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('valida a mensagem e o sessionId (400)', async () => {
+  it('[TC-55] valida a mensagem e o sessionId (400)', async () => {
     expect((await request(app).post('/ai/chat').set(auth).send({})).status).toBe(400);
     expect((await request(app).post('/ai/chat').set(auth).send({ message: 'x'.repeat(1001) })).status).toBe(400);
     expect((await request(app).post('/ai/chat').set(auth).send({ message: 'oi', sessionId: '../outro' })).status).toBe(400);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('repassa o token do usuário e prende a sessão ao id dele', async () => {
+  it('[TC-55] repassa o token do usuário e prende a sessão ao id dele', async () => {
     agentRespondsWith(200, {
       sessionId: 'cidadao-1:sessao-abc',
       reply: 'O chamado DEM-20261005-ABCD está Em Andamento.',
@@ -73,7 +73,7 @@ describe('API do Assistente (/ai/chat)', () => {
     expect(JSON.parse(init.body)).toEqual({ sessionId: 'cidadao-1:sessao-abc', message: 'Qual o status do DEM-20261005-ABCD?' });
   });
 
-  it('retorna 503 quando o serviço do agente está fora do ar', async () => {
+  it('[TC-55] retorna 503 quando o serviço do agente está fora do ar', async () => {
     fetchSpy.mockRejectedValue(new TypeError('fetch failed'));
 
     const response = await request(app).post('/ai/chat').set(auth).send({ message: 'Como estão meus chamados?' });
@@ -82,7 +82,7 @@ describe('API do Assistente (/ai/chat)', () => {
     expect(response.body.error).toMatch(/indisponível/);
   });
 
-  it('retorna 502 quando o agente falha ao consultar o modelo', async () => {
+  it('[TC-55] retorna 502 quando o agente falha ao consultar o modelo', async () => {
     agentRespondsWith(502, { error: 'Falha ao consultar o modelo de IA.' });
 
     const response = await request(app).post('/ai/chat').set(auth).send({ message: 'Como estão meus chamados?' });

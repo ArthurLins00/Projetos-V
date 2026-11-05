@@ -24,7 +24,7 @@ function saidaDe(reply: AgentReply, nome: string): any {
 }
 
 describe('Gemini ao vivo', { skip, timeout: 600_000 }, () => {
-  it(`${CT01.id}: chama as 2 ferramentas e responde com CELPE / Crítica / protocolos`, async () => {
+  it(`[TC-56] ${CT01.id}: chama as 2 ferramentas e responde com CELPE / Crítica / protocolos`, async () => {
     const reply = await perguntar(CT01.prompt);
     assert.equal(saidaDe(reply, 'classificar_e_rotear_ocorrencia').prioridade, 'Crítica');
     assert.equal(saidaDe(reply, 'buscar_chamados_similares').total_encontrado, 2);
@@ -32,14 +32,14 @@ describe('Gemini ao vivo', { skip, timeout: 600_000 }, () => {
     assert.match(reply.text, /DEM-20260921-A7K2/);
   });
 
-  it(`${CT02.id}: roteia para COMPESA com prioridade Crítica`, async () => {
+  it(`[TC-56] ${CT02.id}: roteia para COMPESA com prioridade Crítica`, async () => {
     const reply = await perguntar(CT02.prompt);
     assert.equal(saidaDe(reply, 'classificar_e_rotear_ocorrencia').orgao_sigla, 'COMPESA');
     assert.equal(saidaDe(reply, 'buscar_chamados_similares').total_encontrado, 1);
     assert.match(reply.text, /DEM-20261003-E8SG/);
   });
 
-  it(`${CT03.id}: EMLURB / Alta sem chamados similares`, async () => {
+  it(`[TC-56] ${CT03.id}: EMLURB / Alta sem chamados similares`, async () => {
     const reply = await perguntar(CT03.prompt);
     const c = saidaDe(reply, 'classificar_e_rotear_ocorrencia');
     assert.equal(c.orgao_sigla, 'EMLURB');
@@ -47,7 +47,7 @@ describe('Gemini ao vivo', { skip, timeout: 600_000 }, () => {
     assert.equal(saidaDe(reply, 'buscar_chamados_similares').total_encontrado, 0);
   });
 
-  it('sem coordenadas, o agente pede a localização em vez de chamar ferramentas', async () => {
+  it('[TC-56] sem coordenadas, o agente pede a localização em vez de chamar ferramentas', async () => {
     const reply = await perguntar('Tem um poste apagado na minha rua.');
     assert.equal(reply.toolCalls.length, 0);
     assert.match(reply.text, /latitude|localiza|coordenad/i);
@@ -61,7 +61,7 @@ describe('Gemini ao vivo — perfil acompanhamento', { skip, timeout: 600_000 },
       contexto: { chamados: new MockChamadosSource(usuario) },
     });
 
-  it('cidadão consulta dois protocolos e não vê o chamado de outro cidadão', async () => {
+  it('[TC-56] cidadão consulta dois protocolos e não vê o chamado de outro cidadão', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.cidadao).send(
       'Qual o status do DEM-20260921-A7K2 e do DEM-20261003-E8SG?',
     );
@@ -72,12 +72,12 @@ describe('Gemini ao vivo — perfil acompanhamento', { skip, timeout: 600_000 },
     assert.doesNotMatch(reply.text, /Em Análise/);
   });
 
-  it('admin consulta o mesmo protocolo de outro cidadão', async () => {
+  it('[TC-56] admin consulta o mesmo protocolo de outro cidadão', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.admin).send('Qual o status do DEM-20261003-E8SG?');
     assert.equal(saidaDe(reply, 'consultar_status_chamados').chamados[0].status, 'Em Análise');
   });
 
-  it('pergunta sobre atraso consulta a ferramenta e cita o chamado com prazo vencido', async () => {
+  it('[TC-56] pergunta sobre atraso consulta a ferramenta e cita o chamado com prazo vencido', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Algum dos meus chamados está atrasado?');
     const r = saidaDe(reply, 'consultar_status_chamados');
     assert.equal(r.chamados.find((c: any) => c.protocolo === 'DEM-20260921-A7K2')?.situacao_prazo, 'vencido');
@@ -85,19 +85,19 @@ describe('Gemini ao vivo — perfil acompanhamento', { skip, timeout: 600_000 },
     assert.match(reply.text, /prazo/i);
   });
 
-  it('dúvida de uso do app é respondida pelo guia, sem consultar chamados', async () => {
+  it('[TC-56] dúvida de uso do app é respondida pelo guia, sem consultar chamados', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Como faço para anexar fotos da galeria em um chamado?');
     assert.equal(reply.toolCalls.length, 0);
     assert.match(reply.text, /galeria/i);
   });
 
-  it('relato de emergência orienta a ligar para os números de emergência primeiro', async () => {
+  it('[TC-56] relato de emergência orienta a ligar para os números de emergência primeiro', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Tem um fio de alta tensão caído soltando faísca na minha rua!');
     assert.equal(reply.toolCalls.length, 0);
     assert.match(reply.text, /193|190|192/);
   });
 
-  it('assunto fora do escopo é recusado sem chamar ferramentas', async () => {
+  it('[TC-56] assunto fora do escopo é recusado sem chamar ferramentas', async () => {
     const reply = await novoAgente(USUARIOS_DEMO.cidadao).send('Qual a derivada de x ao quadrado?');
     assert.equal(reply.toolCalls.length, 0);
     assert.doesNotMatch(reply.text, /2x/);

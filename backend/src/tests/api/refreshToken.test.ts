@@ -71,7 +71,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     }) as any);
   });
 
-  it('TC-01: login devolve access token de curta duração e refresh token de longa duração', async () => {
+  it('[TC-01] login devolve access token de curta duração e refresh token de longa duração', async () => {
     const { token, refreshToken } = await login();
 
     const payload = jwt.decode(token) as { iat: number; exp: number };
@@ -86,7 +86,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(dias).toBeLessThanOrEqual(30);
   });
 
-  it('TC-03: refresh válido devolve um novo par e o novo access token é aceito em rota protegida', async () => {
+  it('[TC-03] refresh válido devolve um novo par e o novo access token é aceito em rota protegida', async () => {
     const sessao = await login();
 
     const response = await request(app).post('/auth/refresh').send({ refreshToken: sessao.refreshToken });
@@ -101,7 +101,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(me.status).toBe(200);
   });
 
-  it('TC-04: refresh expirado retorna 401 (1 s antes do vencimento ainda é aceito)', async () => {
+  it('[TC-04] refresh expirado retorna 401 (1 s antes do vencimento ainda é aceito)', async () => {
     const quaseVencendo = await login();
     linhaDo(quaseVencendo.refreshToken)!.expiraem = new Date(Date.now() + 1000);
 
@@ -116,7 +116,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(recusado.body.error).toMatch(/Faça login novamente/i);
   });
 
-  it('TC-05: refresh token reutilizado depois do logout retorna 401', async () => {
+  it('[TC-05] refresh token reutilizado depois do logout retorna 401', async () => {
     const sessao = await login();
 
     const logout = await request(app)
@@ -129,7 +129,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(response.status).toBe(401);
   });
 
-  it('logout de uma sessão não revoga o refresh token de outra, nem quando o refresh da sessão encerrada é reutilizado', async () => {
+  it('[TC-08] logout de uma sessão não revoga o refresh token de outra, nem quando o refresh da sessão encerrada é reutilizado', async () => {
     const sessaoA = await login();
     const sessaoB = await login();
 
@@ -145,7 +145,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(response.status).toBe(200);
   });
 
-  it('reutilizar um refresh token já trocado revoga todas as sessões do usuário', async () => {
+  it('[TC-05] reutilizar um refresh token já trocado revoga todas as sessões do usuário', async () => {
     const sessao = await login();
     const outroAparelho = await login();
 
@@ -161,7 +161,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     }
   });
 
-  it('usuário inativado não consegue renovar a sessão (403)', async () => {
+  it('[TC-61] usuário inativado não consegue renovar a sessão (403)', async () => {
     const sessao = await login();
     prisma.refresh_token.findUnique.mockImplementation((async ({ where }: any) => {
       const row = tabela.find((r) => r.tokenhash === where.tokenhash);
@@ -174,7 +174,7 @@ describe('HU-01 / HU-02 | Sessão com access token e refresh token (API)', () =>
     expect(linhaDo(sessao.refreshToken)!.revogadoem).toBeNull();
   });
 
-  it('refresh sem o campo refreshToken retorna 400 e com token desconhecido retorna 401', async () => {
+  it('[TC-03] refresh sem o campo refreshToken retorna 400 e com token desconhecido retorna 401', async () => {
     const semCampo = await request(app).post('/auth/refresh').send({});
     expect(semCampo.status).toBe(400);
 

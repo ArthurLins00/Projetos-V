@@ -34,7 +34,7 @@ describe('PUT /auth/me', () => {
     }) as any);
   });
 
-  it('atualiza o nome sem exigir a senha atual', async () => {
+  it('[TC-50] atualiza o nome sem exigir a senha atual', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ nome: '  Novo Nome  ' });
 
     expect(res.status).toBe(200);
@@ -45,14 +45,14 @@ describe('PUT /auth/me', () => {
     );
   });
 
-  it('atualiza o e-mail quando a senha atual está correta', async () => {
+  it('[TC-50] atualiza o e-mail quando a senha atual está correta', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ email: 'novo@example.com', senhaAtual });
 
     expect(res.status).toBe(200);
     expect(res.body.email).toBe('novo@example.com');
   });
 
-  it('troca a senha gravando o novo hash', async () => {
+  it('[TC-50] troca a senha gravando o novo hash', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ senhaAtual, novaSenha: 'NovaSenha@1' });
 
     expect(res.status).toBe(200);
@@ -60,21 +60,21 @@ describe('PUT /auth/me', () => {
     expect(await bcrypt.compare('NovaSenha@1', data.senha)).toBe(true);
   });
 
-  it('exige a senha atual para alterar o e-mail (400)', async () => {
+  it('[TC-50] exige a senha atual para alterar o e-mail (400)', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ email: 'novo@example.com' });
 
     expect(res.status).toBe(400);
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('recusa senha atual incorreta (401)', async () => {
+  it('[TC-50] recusa senha atual incorreta (401)', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ senhaAtual: 'errada', novaSenha: 'NovaSenha@1' });
 
     expect(res.status).toBe(401);
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('recusa e-mail já usado por outra conta (409)', async () => {
+  it('[TC-50] recusa e-mail já usado por outra conta (409)', async () => {
     const res = await request(app).put('/auth/me').set(auth).send({ email: outro.email, senhaAtual });
 
     expect(res.status).toBe(409);
@@ -86,14 +86,14 @@ describe('PUT /auth/me', () => {
     [{ nome: '   ' }, 'nome vazio'],
     [{ email: 'invalido', senhaAtual }, 'e-mail inválido'],
     [{ novaSenha: '123', senhaAtual }, 'senha curta'],
-  ])('valida os dados (400): %s', async (body) => {
+  ])('[TC-50] valida os dados (400): %s', async (body) => {
     const res = await request(app).put('/auth/me').set(auth).send(body);
 
     expect(res.status).toBe(400);
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('exige autenticação (401)', async () => {
+  it('[TC-50] exige autenticação (401)', async () => {
     const res = await request(app).put('/auth/me').send({ nome: 'X' });
 
     expect(res.status).toBe(401);

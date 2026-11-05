@@ -2,21 +2,21 @@ import { test, expect } from '@playwright/test';
 import { JPEG_BASE64, SEED, createDemand, login, registerAndLogin, uniqueSuffix } from './helpers';
 
 test.describe('Autenticação', () => {
-  test('rotas protegidas exigem login (401 sem token)', async ({ request }) => {
+  test('[TC-06] rotas protegidas exigem login (401 sem token)', async ({ request }) => {
     for (const path of ['/demands', '/categories', '/auth/me']) {
       const response = await request.get(path);
       expect(response.status(), path).toBe(401);
     }
   });
 
-  test('login com senha errada é recusado com mensagem genérica', async ({ request }) => {
+  test('[TC-02] login com senha errada é recusado com mensagem genérica', async ({ request }) => {
     const response = await request.post('/auth/login', { data: { email: SEED.cidadao.email, senha: 'senha-incorreta' } });
 
     expect(response.status()).toBe(401);
     expect((await response.json()).error).toMatch(/Credenciais inválidas/i);
   });
 
-  test('não permite cadastrar o mesmo e-mail duas vezes (409)', async ({ request }) => {
+  test('[TC-40] não permite cadastrar o mesmo e-mail duas vezes (409)', async ({ request }) => {
     const { email } = await registerAndLogin(request, 'duplicado');
 
     const response = await request.post('/auth/register', { data: { nome: 'Outro', email, senha: 'Outra@123' } });
@@ -24,7 +24,7 @@ test.describe('Autenticação', () => {
     expect(response.status()).toBe(409);
   });
 
-  test('cadastro ignora tentativa de se registrar como Admin', async ({ request }) => {
+  test('[TC-40] cadastro ignora tentativa de se registrar como Admin', async ({ request }) => {
     const email = `escalada.${uniqueSuffix()}@teste.fiscalize`;
     const response = await request.post('/auth/register', {
       data: { nome: 'Invasor', email, senha: 'Invasor@123', perfil: 'Admin' },
@@ -37,7 +37,7 @@ test.describe('Autenticação', () => {
 
 test.describe('Isolamento entre cidadãos', () => {
   // Smoke de PR: cadastro, login, criação de ocorrência e isolamento em um único teste independente
-  test('um cidadão não vê, não edita, não anexa foto e não remove a ocorrência de outro', { tag: '@smoke' }, async ({ request }) => {
+  test('[TC-43] um cidadão não vê, não edita, não anexa foto e não remove a ocorrência de outro', { tag: '@smoke' }, async ({ request }) => {
     const dono = await registerAndLogin(request, 'dono');
     const intruso = await registerAndLogin(request, 'intruso');
     const demand = await createDemand(request, dono);
@@ -58,7 +58,7 @@ test.describe('Isolamento entre cidadãos', () => {
     expect(detail).toMatchObject({ title: demand.title, status: 'Aberto' });
   });
 
-  test('o logout de uma sessão não derruba outra sessão do mesmo usuário', async ({ request }) => {
+  test('[TC-08] o logout de uma sessão não derruba outra sessão do mesmo usuário', async ({ request }) => {
     const celular = await registerAndLogin(request, 'multisessao');
     const computador = await login(request, celular.email, celular.senha);
 
@@ -70,7 +70,7 @@ test.describe('Isolamento entre cidadãos', () => {
 });
 
 test.describe('Validação de dados', () => {
-  test('ocorrência sem campos obrigatórios ou com categoria inválida é recusada', async ({ request }) => {
+  test('[TC-30, TC-44] ocorrência sem campos obrigatórios ou com categoria inválida é recusada', async ({ request }) => {
     const session = await registerAndLogin(request, 'validacao');
 
     const semCampos = await request.post('/demands', { headers: session.headers, data: { title: 'Só título' } });
@@ -83,7 +83,7 @@ test.describe('Validação de dados', () => {
     expect(categoriaInvalida.status()).toBe(400);
   });
 
-  test('arquivo que não é imagem é recusado como foto', async ({ request }) => {
+  test('[TC-11] arquivo que não é imagem é recusado como foto', async ({ request }) => {
     const session = await registerAndLogin(request, 'foto');
     const demand = await createDemand(request, session);
 

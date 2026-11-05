@@ -22,7 +22,7 @@ function saida(reply: Awaited<ReturnType<FiscalizeAgent['send']>>, idx: number):
 }
 
 describe('CT-01 — fiação exposta na Av. Boa Viagem', () => {
-  it('classifica como Iluminação Pública/CELPE com prioridade Crítica e encontra 2 chamados similares', async () => {
+  it('[TC-56] classifica como Iluminação Pública/CELPE com prioridade Crítica e encontra 2 chamados similares', async () => {
     const { reply, client } = await executar(CT01.prompt, PONTOS.boaViagem);
 
     assert.deepEqual(reply.toolCalls.map((c) => c.name), ['classificar_e_rotear_ocorrencia', 'buscar_chamados_similares']);
@@ -48,7 +48,7 @@ describe('CT-01 — fiação exposta na Av. Boa Viagem', () => {
 });
 
 describe('CT-02 — esgoto em via na Rua da Aurora', () => {
-  it('roteia para a COMPESA com prioridade Crítica e ignora chamado já Fechado', async () => {
+  it('[TC-56] roteia para a COMPESA com prioridade Crítica e ignora chamado já Fechado', async () => {
     const { reply } = await executar(CT02.prompt, PONTOS.ruaDaAurora);
 
     const classificacao = saida(reply, 0);
@@ -65,7 +65,7 @@ describe('CT-02 — esgoto em via na Rua da Aurora', () => {
 });
 
 describe('CT-03 — buraco no asfalto na Madalena', () => {
-  it('roteia para a EMLURB com prioridade Alta e não encontra similares', async () => {
+  it('[TC-56] roteia para a EMLURB com prioridade Alta e não encontra similares', async () => {
     const { reply } = await executar(CT03.prompt, PONTOS.madalena);
 
     const classificacao = saida(reply, 0);

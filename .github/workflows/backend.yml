@@ -176,7 +176,6 @@ jobs:
           path: |
             e2e-report
             e2e-junit.xml
-            e2e-results.json
             test-results
             backend.log
           retention-days: 7

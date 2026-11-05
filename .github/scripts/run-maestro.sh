@@ -25,19 +25,9 @@ if ! warmup 1; then
   warmup 2
 fi
 
-# Uma nova tentativa, como o retries: 1 do Playwright: o emulador do CI às vezes falha sem relação com o app.
-# A falha da primeira tentativa fica registrada como aviso, em maestro-report-1.xml e em maestro-debug/flows-1.
-for tentativa in 1 2; do
-  if maestro test "$@" \
-    --format junit \
-    --output maestro-report.xml \
-    --debug-output "maestro-debug/flows-$tentativa"; then
-    exit 0
-  fi
-  if [ "$tentativa" = 1 ]; then
-    echo "::warning::Fluxos do Maestro falharam na 1ª tentativa; repetindo uma vez"
-    # A 2ª tentativa sobrescreve o relatório; a cópia mostra quais fluxos só passaram na repetição (instáveis)
-    cp maestro-report.xml maestro-report-1.xml 2>/dev/null || true
-  fi
-done
-exit 1
+# Os fluxos rodam uma vez só, sem nova tentativa (docs/tas.md, seção 5.4): o aquecimento acima já garante
+# que o emulador enxerga o app, então uma falha daqui em diante reprova o job e vira issue.
+maestro test "$@" \
+  --format junit \
+  --output maestro-report.xml \
+  --debug-output maestro-debug/flows

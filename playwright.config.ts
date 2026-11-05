@@ -6,14 +6,15 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
-  // No CI também anota as falhas no PR (github), grava o JUnit lido pelo sumário do job e o JSON com o
-  // status "flaky" de quem só passou na nova tentativa (o JUnit não guarda isso), lido pelo relatório de
-  // qualidade; os dois ficam fora de e2e-report porque o reporter html limpa essa pasta
+  // Sem nova tentativa automática, nem no CI: falha na primeira execução reprova o job e vira issue
+  // (docs/tas.md, seção 5.4). Instabilidade se detecta pelo re-run no mesmo commit, não pelo retry.
+  retries: 0,
+  // No CI também anota as falhas no PR (github) e grava o JUnit lido pelo sumário do job, fora de
+  // e2e-report porque o reporter html limpa essa pasta
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'e2e-report' }],
-    ...(process.env.CI ? ([['github'], ['junit', { outputFile: 'e2e-junit.xml' }], ['json', { outputFile: 'e2e-results.json' }]] as const) : []),
+    ...(process.env.CI ? ([['github'], ['junit', { outputFile: 'e2e-junit.xml' }]] as const) : []),
   ],
   use: {
     baseURL: API_URL,

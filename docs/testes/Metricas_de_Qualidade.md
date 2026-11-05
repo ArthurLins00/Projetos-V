@@ -30,7 +30,7 @@ lido tanto pelo cálculo quanto pelos relatórios.
 |---|---|---|---|---|---|
 | MQ-01 | **Taxa de aprovação dos testes** | aprovados ÷ executados (pulados não contam), no total e por suíte | JUnit XML / JSON do Jest de cada suíte | 100% | técnico e negócio |
 | MQ-02 | **Cobertura do backend** | linhas e branches cobertos, somando as suítes unitária e de API (`coverage-final.json`) | Jest | linhas ≥ 85%, branches ≥ 80% | técnico e negócio |
-| MQ-03 | **Testes instáveis (*flaky*)** | testes que falharam e passaram na nova tentativa da mesma execução | `e2e-results.json` (Playwright) e `maestro-report-1.xml` (Maestro) | 0 | técnico |
+| MQ-03 | **Testes instáveis (*flaky*)** | issues `teste instável` abertas: falhas que voltaram a passar no mesmo commit, sem mudança de código (não há nova tentativa automática; [política da TAS, seção 5.4](../tas.md)) | API de issues | 0 | técnico |
 | MQ-04 | **Tempo da pipeline** | duração da execução analisada, mediana das execuções de sucesso nos últimos 30 dias e os testes mais lentos | API de execuções do GitHub e JUnit | CI/CD ≤ 10 min, regressão ≤ 60 min | técnico |
 | MQ-05 | **Taxa de sucesso da pipeline** | execuções com sucesso ÷ execuções concluídas do CI/CD e da regressão em `main`, últimos 30 dias | API de execuções do GitHub | ≥ 95% | técnico e negócio |
 | MQ-06 | **MTTR do CI** (tempo médio de recuperação) | média de (fechamento − abertura) das issues `ci-failure` fechadas nos últimos 30 dias | API de issues | ≤ 2 h | técnico e negócio |
@@ -48,8 +48,9 @@ lido tanto pelo cálculo quanto pelos relatórios.
   validação da autenticação) eram regras de negócio, não código trivial, e os testes deles revelaram um defeito
   real no cadastro de órgãos. Com esses testes a cobertura chegou a 93% das linhas e 83% dos branches, e a meta
   subiu para linhas ≥ 85% e branches ≥ 80%, com margem para refatorações sem reprovar o indicador.
-- **MQ-03 — Testes instáveis:** o projeto já perdeu fluxos de tela por instabilidade. Sem a métrica, um teste que
-  só passa na segunda tentativa aparece verde e o problema some de vista até virar falha de verdade.
+- **MQ-03 — Testes instáveis:** o projeto já perdeu fluxos de tela por instabilidade. Até 05/11/2026 a métrica
+  contava os testes que só passavam na nova tentativa automática; com a nova tentativa removida, ela conta as
+  issues `teste instável` abertas, que têm responsável e prazo, para que nenhum instável fique sem decisão.
 - **MQ-04 — Tempo da pipeline:** um CI lento atrasa o merge e incentiva pular etapas. A mediana de 30 dias evita
   que uma execução fora da curva distorça o número.
 - **MQ-05 — Taxa de sucesso da pipeline:** já era um KPI do negócio

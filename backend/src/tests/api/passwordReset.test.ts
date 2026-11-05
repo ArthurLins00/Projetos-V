@@ -35,7 +35,7 @@ describe('Recuperação de senha (API)', () => {
     prisma.usuario.update.mockResolvedValue(usuario);
   });
 
-  it('envia o código e redefine a senha com o código correto', async () => {
+  it('[TC-49] envia o código e redefine a senha com o código correto', async () => {
     const forgot = await request(app).post('/auth/forgot-password').send({ email: usuario.email });
     expect(forgot.status).toBe(200);
     expect(sendMock).toHaveBeenCalledWith(usuario.email, expect.any(String), expect.any(String));
@@ -49,7 +49,7 @@ describe('Recuperação de senha (API)', () => {
     expect(bcrypt.compareSync('senhaNova123', novoHash)).toBe(true);
   });
 
-  it('responde 200 sem enviar e-mail quando o usuário não existe', async () => {
+  it('[TC-49] responde 200 sem enviar e-mail quando o usuário não existe', async () => {
     prisma.usuario.findUnique.mockResolvedValue(null);
 
     const response = await request(app).post('/auth/forgot-password').send({ email: 'ninguem@example.com' });
@@ -58,7 +58,7 @@ describe('Recuperação de senha (API)', () => {
     expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it('rejeita código incorreto e não permite reutilizar o código', async () => {
+  it('[TC-49] rejeita código incorreto e não permite reutilizar o código', async () => {
     await request(app).post('/auth/forgot-password').send({ email: usuario.email });
     const codigo = codigoEnviado();
     const errado = codigo === '000000' ? '111111' : '000000';
@@ -79,7 +79,7 @@ describe('Recuperação de senha (API)', () => {
     expect(reuso.status).toBe(400);
   });
 
-  it('invalida o código após exceder o limite de tentativas', async () => {
+  it('[TC-49] invalida o código após exceder o limite de tentativas', async () => {
     await request(app).post('/auth/forgot-password').send({ email: usuario.email });
     const codigo = codigoEnviado();
     const errado = codigo === '000000' ? '111111' : '000000';
@@ -95,7 +95,7 @@ describe('Recuperação de senha (API)', () => {
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('valida o tamanho mínimo da nova senha', async () => {
+  it('[TC-49] valida o tamanho mínimo da nova senha', async () => {
     const response = await request(app)
       .post('/auth/reset-password')
       .send({ email: usuario.email, codigo: '123456', novaSenha: '123' });

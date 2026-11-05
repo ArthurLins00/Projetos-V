@@ -19,30 +19,30 @@ async function ouvir(server: Server): Promise<string> {
 }
 
 describe('consultar_status_chamados — regra de acesso', () => {
-  it('cidadão lista apenas os próprios chamados', async () => {
+  it('[TC-56] cidadão lista apenas os próprios chamados', async () => {
     const r = await consultarStatusChamados({}, cidadao);
     assert.deepEqual(r.chamados.map((c) => c.protocolo).sort(), ['DEM-20260815-B1TT', 'DEM-20260921-A7K2', 'DEM-20261001-C4RR']);
     assert.deepEqual(r.resumo_por_status, { 'Em Andamento': 1, Aberto: 1, Resolvido: 1 });
   });
 
-  it('cidadão consulta vários protocolos; o de outro cidadão volta como não encontrado', async () => {
+  it('[TC-56] cidadão consulta vários protocolos; o de outro cidadão volta como não encontrado', async () => {
     const r = await consultarStatusChamados({ protocolos: ['dem-20260921-a7k2', PROTOCOLO_DO_VIZINHO] }, cidadao);
     assert.deepEqual(r.chamados.map((c) => c.status), ['Em Andamento']);
     assert.deepEqual(r.nao_encontrados, [PROTOCOLO_DO_VIZINHO]);
   });
 
-  it('admin enxerga chamados de qualquer cidadão', async () => {
+  it('[TC-56] admin enxerga chamados de qualquer cidadão', async () => {
     const r = await consultarStatusChamados({ protocolos: [PROTOCOLO_DO_VIZINHO] }, admin);
     assert.equal(r.chamados[0]?.status, 'Em Análise');
     assert.equal((await consultarStatusChamados({}, admin)).total, 4);
   });
 
-  it('não devolve dados de quem abriu o chamado', async () => {
+  it('[TC-56] não devolve dados de quem abriu o chamado', async () => {
     const r = await consultarStatusChamados({}, admin);
     for (const c of r.chamados) assert.ok(!('donoId' in c));
   });
 
-  it('valida status e quantidade de protocolos', async () => {
+  it('[TC-56] valida status e quantidade de protocolos', async () => {
     await assert.rejects(consultarStatusChamados({ status: 'Perdido' }, cidadao), /Status inválido/);
     const muitos = Array.from({ length: 11 }, (_, i) => `DEM-20260101-000${i}`);
     await assert.rejects(consultarStatusChamados({ protocolos: muitos }, cidadao), /no máximo 10/);
@@ -52,7 +52,7 @@ describe('consultar_status_chamados — regra de acesso', () => {
 describe('consultar_status_chamados — prazos', () => {
   const agora = new Date('2026-10-13T08:15:00Z');
 
-  it('calcula a situação do prazo de cada chamado', async () => {
+  it('[TC-56] calcula a situação do prazo de cada chamado', async () => {
     const r = await consultarStatusChamados({}, cidadao, agora);
     const porProtocolo = Object.fromEntries(r.chamados.map((c) => [c.protocolo, c]));
 
@@ -63,13 +63,13 @@ describe('consultar_status_chamados — prazos', () => {
     assert.ok((porProtocolo['DEM-20260921-A7K2']?.horas_para_o_prazo ?? 0) < 0);
   });
 
-  it('chamado resolvido não tem prazo em aberto', async () => {
+  it('[TC-56] chamado resolvido não tem prazo em aberto', async () => {
     const r = await consultarStatusChamados({ protocolos: ['DEM-20260815-B1TT'] }, cidadao, agora);
     assert.equal(r.chamados[0]?.situacao_prazo, 'encerrado');
     assert.equal(r.chamados[0]?.horas_para_o_prazo, null);
   });
 
-  it('chamado sem data limite fica como sem_prazo', async () => {
+  it('[TC-56] chamado sem data limite fica como sem_prazo', async () => {
     const semPrazo = { listar: async () => [{ ...CHAMADO_BASE, prazo_limite: null }] };
     const r = await consultarStatusChamados({}, semPrazo, agora);
     assert.equal(r.chamados[0]?.situacao_prazo, 'sem_prazo');
@@ -109,7 +109,7 @@ describe('BackendChamadosSource — consulta GET /demands com o JWT do usuário'
   });
   after(() => backend.close());
 
-  it('repassa o token, converte o filtro de status e descarta o creator', async () => {
+  it('[TC-56] repassa o token, converte o filtro de status e descarta o creator', async () => {
     const fonte = new BackendChamadosSource(url, 'token-valido');
     const lista = await fonte.listar({ status: 'Em Análise', busca: 'DEM-20261005-ABCD' });
 
@@ -125,7 +125,7 @@ describe('BackendChamadosSource — consulta GET /demands com o JWT do usuário'
     assert.doesNotMatch(JSON.stringify(lista), /Fulano|fulano@x\.com/);
   });
 
-  it('token inválido vira erro amigável', async () => {
+  it('[TC-56] token inválido vira erro amigável', async () => {
     await assert.rejects(new BackendChamadosSource(url, 'expirado').listar({}), /Sessão inválida/);
   });
 });
@@ -156,13 +156,13 @@ describe('Servidor do agente (POST /chat)', () => {
   const post = (body: unknown, headers: Record<string, string>) =>
     fetch(`${url}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
 
-  it('exige o segredo compartilhado e o token do usuário', async () => {
+  it('[TC-56] exige o segredo compartilhado e o token do usuário', async () => {
     assert.equal((await post({ message: 'oi' }, { Authorization: 'Bearer jwt-cidadao' })).status, 403);
     assert.equal((await post({ message: 'oi' }, { 'x-agent-secret': 'segredo-123' })).status, 401);
     assert.equal((await post({ message: '' }, { 'x-agent-secret': 'segredo-123', Authorization: 'Bearer x' })).status, 400);
   });
 
-  it('responde usando a fonte de dados do token recebido e mantém a sessão', async () => {
+  it('[TC-56] responde usando a fonte de dados do token recebido e mantém a sessão', async () => {
     const headers = { 'x-agent-secret': 'segredo-123', Authorization: 'Bearer jwt-cidadao' };
     const r1 = await post({ sessionId: 'user-1:abc', message: 'Como estão meus chamados?' }, headers);
     const b1 = (await r1.json()) as any;
@@ -179,7 +179,7 @@ describe('Servidor do agente (POST /chat)', () => {
 });
 
 describe('Agente — perfil acompanhamento', () => {
-  it('encadeia mensagem → ferramenta → resposta com os protocolos pedidos', async () => {
+  it('[TC-56] encadeia mensagem → ferramenta → resposta com os protocolos pedidos', async () => {
     const pergunta = 'Qual o status do DEM-20260921-A7K2 e do DEM-20261001-C4RR?';
     const client = new ScriptedModelClient([
       chamarFerramenta('consultar_status_chamados', { protocolos: ['DEM-20260921-A7K2', 'DEM-20261001-C4RR'] }),

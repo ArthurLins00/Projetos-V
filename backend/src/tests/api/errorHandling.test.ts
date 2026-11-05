@@ -26,7 +26,7 @@ describe('TC-27 | Erro inesperado não expõe detalhes internos (API)', () => {
     jest.restoreAllMocks();
   });
 
-  it.each(['production', 'test'])('com NODE_ENV=%s a resposta 500 tem mensagem padrão, sem stack nem mensagem interna', async (env) => {
+  it.each(['production', 'test'])('[TC-27] com NODE_ENV=%s a resposta 500 tem mensagem padrão, sem stack nem mensagem interna', async (env) => {
     process.env.NODE_ENV = env;
 
     const response = await request(app).get('/demands').set(auth);
@@ -37,7 +37,7 @@ describe('TC-27 | Erro inesperado não expõe detalhes internos (API)', () => {
     expect(JSON.stringify(response.body)).not.toMatch(/ECONNREFUSED|senha|demandService|\.ts:/);
   });
 
-  it('só em desenvolvimento a resposta inclui o stack, para depuração local', async () => {
+  it('[TC-27] só em desenvolvimento a resposta inclui o stack, para depuração local', async () => {
     process.env.NODE_ENV = 'development';
 
     const response = await request(app).get('/demands').set(auth);

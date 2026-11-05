@@ -22,7 +22,7 @@ describe('errorMiddleware (unitário)', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it('AppError usa o status e inclui details quando há', () => {
+  it('[TC-70] AppError usa o status e inclui details quando há', () => {
     expect(run(new AppError(422, 'inválido', { campo: 'x' }))).toMatchObject({ status: 422, body: { error: 'inválido', details: { campo: 'x' } } });
     expect(run(new AppError(404, 'sumiu')).body).not.toHaveProperty('details');
   });
@@ -36,14 +36,14 @@ describe('errorMiddleware (unitário)', () => {
     ['P2014', 409],
     ['P1000', 503],
     ['P5000', 503],
-  ])('erro conhecido do Prisma %s vira %i', (code, status) => {
+  ])('[TC-70] erro conhecido do Prisma %s vira %i', (code, status) => {
     const { status: got, body } = run(prismaError(code));
 
     expect(got).toBe(status);
     expect(body.code).toBe(code);
   });
 
-  it('erro desconhecido do Prisma vira 500 genérico', () => {
+  it('[TC-70] erro desconhecido do Prisma vira 500 genérico', () => {
     expect(run(prismaError('P9999'))).toMatchObject({ status: 500, body: { error: 'Erro ao processar dados.' } });
   });
 
@@ -53,14 +53,14 @@ describe('errorMiddleware (unitário)', () => {
     [named('ValidationError', 'campo x'), 400, /campo x/],
     [new Error('E-mail já cadastrado.'), 409, /E-mail já cadastrado/],
     [Object.assign(new Error('big'), { type: 'entity.too.large' }), 413, /muito grande/],
-  ])('%s vira %i', (error, status, message) => {
+  ])('[TC-70] %s vira %i', (error, status, message) => {
     const result = run(error);
 
     expect(result.status).toBe(status);
     expect(result.body.error).toMatch(message);
   });
 
-  it('asyncHandler encaminha a rejeição para o next', async () => {
+  it('[TC-70] asyncHandler encaminha a rejeição para o next', async () => {
     const next = jest.fn();
     const error = new Error('falhou');
 
