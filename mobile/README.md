@@ -138,6 +138,31 @@ Android Studio, com solução de problemas, está em [`COMO_RODAR_ANDROID_STUDIO
 | `npm run ios` | Build de desenvolvimento e execução no iOS (requer macOS) |
 | `npm run prebuild` | Gera a pasta nativa `android/` (necessário após mudar o `app.json` ou instalar lib nativa) |
 | `npm run typecheck` | Checagem de tipos do TypeScript |
+| `npm run build:apk` | Gera o APK instalável no EAS (perfil `preview`) |
+
+### Build empacotado (EAS)
+
+O projeto está vinculado ao EAS (`extra.eas.projectId` e `owner` no [`app.json`](app.json)) e os perfis
+de build ficam em [`eas.json`](eas.json):
+
+| Perfil | Saída | Uso |
+|---|---|---|
+| `preview` | APK (Android) / build de simulador (iOS) | Distribuição interna: instalar direto no celular |
+| `production` | AAB (Android) / IPA (iOS) | Publicação nas lojas; versão incrementada automaticamente |
+
+No APK não existe Metro, então a URL do backend **precisa** vir de `EXPO_PUBLIC_API_URL` (sem ela o app
+cai em `10.0.2.2`, que só funciona no emulador). Cadastre a variável no EAS uma vez e gere o build:
+
+```bash
+npx eas-cli login
+npx eas-cli env:create --environment preview --name EXPO_PUBLIC_API_URL --value http://SEU_IP:3000 --visibility plaintext
+npm run build:apk
+```
+
+Ao terminar, o EAS mostra o link e o QR code para baixar o APK; os builds ficam listados em
+`npx eas-cli build:list`. O `usesCleartextTraffic` (plugin `expo-build-properties`) libera HTTP sem TLS
+no Android para o APK falar com o backend local; em produção use uma URL HTTPS e remova essa opção.
+Push remoto também passa a funcionar no APK (no Expo Go do Android não funciona desde o SDK 53).
 
 ### Permissões
 
