@@ -93,7 +93,7 @@ Toda falha de teste segue o mesmo caminho, do registro ao encaminhamento:
 |---|---|---|---|
 | **SUT** — defeito no sistema sob teste | `classificação: sut` | o comportamento observado contraria o requisito; reproduz à mão no app ou na API | corrigir o código **com** o teste que pegou o defeito; registrar na seção 5 do `TESTES.md` |
 | **TAS** — defeito na automação | `classificação: tas` | seletor ou `testID` desatualizado, dado de teste compartilhado, mock incompleto, espera mal feita, script de CI | corrigir o teste ou o script; se não der no prazo, quarentena (seção 5) |
-| **Ambiente** | `classificação: ambiente` | emulador sem resposta, timeout de rede, serviço externo (Gemini, Expo Push, IBGE) fora, runner sem recurso | nova tentativa permitida **uma vez**; se repetir, issue de ambiente e ajuste do workflow (espera, serviço, retry no nível certo) |
+| **Ambiente** | `classificação: ambiente` | emulador sem resposta, timeout de rede, serviço externo (Gemini, Expo Push, IBGE) fora, runner sem recurso | um *Re-run failed jobs* manual para confirmar (a issue continua aberta e vira `teste instável`); se repetir, ajuste do workflow no nível do ambiente (aquecimento, espera, serviço), nunca nova tentativa do teste |
 | **Variação esperada** | `classificação: variação esperada` | mudança intencional (texto de tela, regra de negócio, contrato da API) que o teste ainda não acompanha | atualizar o teste e o caso no plano/catálogo no **mesmo PR** da mudança; citar a decisão ou a HU |
 
 Regras de classificação:
@@ -139,8 +139,7 @@ Um teste é **instável** quando passa e falha **sem mudança de código** (mesm
 
 | Sinal | Mecanismo |
 |---|---|
-| Passou na nova tentativa da mesma execução | Playwright (`retries: 1` no CI) e Maestro (`run-maestro.sh`) marcam como *flaky*; o relatório de qualidade conta (MQ-03) |
-| O workflow voltou a passar **no mesmo commit** que falhou | o script de issues de falha **não fecha** a issue: adiciona `teste instável` e comenta pedindo a triagem |
+| O workflow voltou a passar **no mesmo commit** que falhou (re-run manual ou nova execução) | o script de issues de falha **não fecha** a issue: adiciona `teste instável` e comenta pedindo a triagem; o relatório de qualidade conta as issues abertas (MQ-03) |
 | Falha que não se reproduz localmente | formulário **Teste instável**, com as execuções que falharam e as que passaram |
 | Suspeita durante o desenvolvimento | rodar a suíte repetidas vezes (ex.: `for i in 1 2 3 4 5; do npx jest --silent; done`) e registrar a taxa |
 
@@ -157,8 +156,8 @@ Um teste é **instável** quando passa e falha **sem mudança de código** (mesm
 
 ### 5.3 Salvaguardas para não mascarar defeitos
 
-- **Nova tentativa automática só nos E2E** (Playwright e Maestro), no máximo **uma**. Unitários e de API rodam com
-  banco mockado e não têm motivo legítimo para variar: instabilidade neles é defeito da TAS e se corrige.
+- **Nenhuma suíte tem nova tentativa automática** (decisão e justificativa na seção 5.4). A primeira falha
+  reprova o job e abre a issue; repetir é uma ação manual, que deixa rastro na issue.
 - **Teste de segurança ou smoke não entra em quarentena.** Se ficar instável, corrige-se no prazo da prioridade
   alta ou reverte-se a mudança; o formulário pede essa confirmação.
 - Antes da quarentena, alguém **reproduz o comportamento do sistema à mão** e confirma que está correto. Sem isso,
@@ -168,9 +167,45 @@ Um teste é **instável** quando passa e falha **sem mudança de código** (mesm
 - Enquanto um teste está em quarentena, o caso correspondente do plano é verificado pelo **roteiro manual** antes
   de cada release (como já acontece com o M-02 e o M-05).
 
-**Por quê:** a nova tentativa e a quarentena são úteis para não travar a equipe por causa do emulador, mas, sem
-limite, viram o lugar onde os defeitos reais se escondem. Os limites (uma nova tentativa, duas ocorrências, 14
-dias, uma prorrogação) mantêm o custo de conviver com o teste instável sempre visível.
+**Por quê:** a quarentena é útil para não travar a equipe por causa do emulador, mas, sem limite, vira o lugar
+onde os defeitos reais se escondem. Os limites (duas ocorrências, 14 dias, uma prorrogação) mantêm o custo de
+conviver com o teste instável sempre visível.
+
+### 5.4 Decisão: sem nova tentativa automática nas suítes de API e E2E
+
+**Decisão (05/11/2026):** removida a nova tentativa automática que existia no E2E da API (`retries: 1` do
+Playwright no CI) e nos fluxos de tela (laço de duas tentativas do `run-maestro.sh`). Hoje nenhuma suíte da TAS
+repete teste sozinha: unitários e de API (Jest), E2E da API (Playwright, `retries: 0`), E2E de telas (Maestro) e
+agente de IA.
+
+**Justificativa:**
+
+1. **A nova tentativa escondia a falha do registro.** O workflow *Issues de falha do CI* só abre issue quando o
+   job termina com falha. Com a nova tentativa, um teste que falhava e passava na segunda vez deixava o job verde:
+   nenhuma issue era aberta, ninguém era atribuído e o prazo da seção 4 não começava. A falha só aparecia como um
+   número no MQ-03 do relatório de qualidade, que não tem dono nem prazo.
+2. **No E2E da API não havia causa de ambiente que justificasse a repetição.** O Playwright roda contra o backend
+   e o PostgreSQL do próprio job, com o `webServer` esperando o `/health`. Uma falha ali é defeito do sistema
+   (concorrência, transação) ou da automação (dado compartilhado, espera mal feita), e as duas causas se
+   corrigem, não se repetem.
+3. **No E2E de telas, a instabilidade do emulador já é tratada no nível certo.** O `run-maestro.sh` faz um
+   aquecimento (`maestro-warmup.yaml`) e reinicia o emulador quando o Maestro não enxerga o app, **antes** de
+   rodar qualquer fluxo. Esse é o problema conhecido de 15/10 e 16/10 (seção 9). Repetir o fluxo inteiro depois
+   disso tratava um sintoma e atrasava a regressão em dezenas de minutos.
+4. **A orientação da disciplina** para a manutenção da TAS é não ter reexecução automática nas suítes de API e
+   E2E. Com os motivos acima, o projeto não tinha razão para manter uma exceção.
+
+**Como a instabilidade continua visível sem a nova tentativa:** a falha abre a issue (`classificação: pendente`).
+Quem investiga pode usar *Re-run failed jobs*; se passar no mesmo commit, a issue **não fecha**, recebe
+`teste instável` e segue a seção 5.2. O MQ-03 passa a contar as issues `teste instável` abertas, que têm
+responsável e prazo, em vez dos testes que passaram na segunda tentativa.
+
+**Custo aceito:** a regressão diária pode ficar vermelha por uma falha do emulador que antes passaria na segunda
+tentativa. Esse custo é intencional: cada ocorrência vira uma issue `classificação: ambiente`, e duas ocorrências
+em 14 dias levam a uma correção do workflow ou à quarentena do fluxo (seção 5.2).
+
+**Quando rever:** só por nova decisão registrada na seção 9, com dados (issues `classificação: ambiente` das
+últimas quatro semanas), e nunca para unitários, testes de API ou o E2E da API.
 
 ---
 
@@ -277,6 +312,7 @@ Para rodar localmente: `node .github/scripts/tas/check-tas.mjs`.
 |---|---|---|---|---|
 | 2026-10 | Removidos do backlog por estar fora do escopo | TC-15, TC-18, TC-19, TC-26, TC-29, TC-31, TC-32, TC-33, TC-34 | funcionalidade não implementada (plano de testes, seção 6.1) | equipe, antes desta política |
 | 2026-10-15 | Fluxos Maestro movidos para `pending/` | M-02 (`register.yaml`), M-05 (`demand_crud.yaml`) | instáveis no emulador do CI; mantidos como roteiro assistido | equipe, antes desta política |
+| 2026-11-05 | Removida a nova tentativa automática do Playwright (`retries: 1` no CI) e do `run-maestro.sh` | E2E da API e E2E de telas | escondia a falha do registro em issue; orientação da disciplina (seção 5.4) | equipe, a partir do feedback do acompanhamento do PI |
 | 2026-11-05 | Quarentena dos dois fluxos registrada com prorrogação até 15/11/2026 | M-02, M-05 | regularização pela seção 5; decidir na revisão de 15/11 | registro em `.github/tas/quarentena.json` e issue #63 |
 
 ---
