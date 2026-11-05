@@ -221,7 +221,7 @@ cada release ou mudança grande de arquitetura. O Guardião da quinzena conduz a
 | **Quarentena** | `.github/tas/quarentena.json` (verificado pelo `check-tas.mjs`) | nenhuma vencida | corrigir, prorrogar uma vez ou propor a remoção |
 | **Tempo de execução** | MQ-04 (mediana de 30 dias) e testes mais lentos do relatório técnico | CI/CD ≤ 10 min; regressão ≤ 60 min; teste de API ≤ 2 s; E2E da API ≤ 30 s | mover o caso para um nível mais barato, dividir, reduzir dados ou paralelizar |
 | **Duplicação de código** | `jscpd` sobre `backend/src/tests`, `e2e` e `ai-agent/tests`, blocos de 8+ linhas (na própria issue) | ≤ 5% das linhas | extrair helper, fixture ou `it.each` |
-| **Rastreabilidade** | `check-tas.mjs`: todo arquivo de teste no catálogo do `TESTES.md`; todo caso com TC no plano | 100% | catalogar ou ligar ao TC no mesmo ciclo |
+| **Rastreabilidade** | `check-tas.mjs`: todo arquivo de teste no catálogo do `TESTES.md`; todo teste com `[TC-xx]` no título e TC existente no plano; `catalogo-testes.json` em dia | 100% | catalogar ou ligar ao TC no mesmo ciclo |
 | **Cobertura** | MQ-02 | linhas ≥ 85%, branches ≥ 80% | priorizar testes para os arquivos menos cobertos do relatório |
 | **Prazos** | issues com `prazo vencido` | nenhuma | reatribuir e registrar o motivo |
 
@@ -269,6 +269,7 @@ escrito impede que a remoção vire o atalho para uma falha que ninguém quis in
 | Registro manual de falha, teste instável e remoção | formulários de issue | `.github/ISSUE_TEMPLATE/*.yml` |
 | Checklist de testes e manutenção em todo PR | template de PR | `.github/pull_request_template.md` |
 | Bloqueio de `.only`, teste desligado sem registro e teste fora do catálogo | job **Política da TAS** no Quality Gate | `.github/workflows/ci.yml`, `.github/scripts/tas/check-tas.mjs` |
+| Caso do plano (`[TC-xx]`) no título de cada teste e catálogo em JSON gerado dos títulos | mesmo job (seção 8.5) | `.github/scripts/tas/test-catalog.mjs`, `docs/testes/catalogo-testes.json` |
 | Registro das quarentenas | arquivo versionado | `.github/tas/quarentena.json` |
 | Prazos vencidos, quarentenas sem decisão, revisão quinzenal e labels | workflow *Manutenção da TAS* | `.github/workflows/tas-manutencao.yml`, `.github/scripts/tas/policy.js` |
 | Métricas de instabilidade, tempo, cobertura e MTTR | relatório de qualidade | `.github/workflows/quality-report.yml` |
@@ -294,6 +295,7 @@ O job **Política da TAS** do `ci.yml` roda `node .github/scripts/tas/check-tas.
 | teste com `.only` | quarentena vencida |
 | teste desligado (`.skip`, `.fixme`, `xit`, `pending/`) sem registro na quarentena | quarentena sem issue |
 | arquivo de teste fora do catálogo do `TESTES.md` | registro de um teste que voltou a rodar |
+| teste sem `[TC-xx]` no título, TC inexistente no plano ou `catalogo-testes.json` desatualizado | |
 | registro de quarentena malformado ou de arquivo inexistente | quarentena maior que 14 dias sem `prorrogacao` |
 
 Para rodar localmente: `node .github/scripts/tas/check-tas.mjs`.
@@ -304,6 +306,22 @@ Para rodar localmente: `node .github/scripts/tas/check-tas.mjs`.
 2. Definir a variável `CI_FAILURE_ASSIGNEES` (*Settings → Secrets and variables → Actions → Variables*) com o login do
    Guardião da quinzena e atualizá-la no rodízio.
 
+### 8.5 Rastreabilidade no título e catálogo em dados
+
+Até 05/11/2026, só 14 títulos de teste citavam o caso do backlog; o vínculo dos outros dependia das tabelas do
+`TESTES.md`, mantidas à mão e desfeitas a cada refatoração. Desde então:
+
+- todo teste começa com o caso do plano entre colchetes (`it('[TC-01] ...')`; nos fluxos Maestro, `name:`);
+- `.github/scripts/tas/test-catalog.mjs --write` lê os títulos e a tabela de casos do plano (seção 4.6) e gera
+  `docs/testes/catalogo-testes.json`, com cada teste (suíte, arquivo, grupo, título, TCs e HUs) e cada caso (HU,
+  título, quantidade de testes e suítes);
+- o job **Política da TAS** reprova o PR quando falta o TC no título, o TC não existe no plano ou o JSON não foi
+  regenerado. O vínculo passa a mudar junto com o teste, no mesmo commit.
+
+**Por quê:** o identificador no título aparece no relatório do Jest, do Playwright e do Maestro, na issue de
+falha e no relatório de qualidade, então quem investiga uma falha chega ao caso e à HU sem consultar outra
+tabela. O JSON permite responder por script quais casos não têm teste e quais HUs dependem de uma suíte.
+
 ---
 
 ## 9. Histórico de decisões e remoções
@@ -312,6 +330,7 @@ Para rodar localmente: `node .github/scripts/tas/check-tas.mjs`.
 |---|---|---|---|---|
 | 2026-10 | Removidos do backlog por estar fora do escopo | TC-15, TC-18, TC-19, TC-26, TC-29, TC-31, TC-32, TC-33, TC-34 | funcionalidade não implementada (plano de testes, seção 6.1) | equipe, antes desta política |
 | 2026-10-15 | Fluxos Maestro movidos para `pending/` | M-02 (`register.yaml`), M-05 (`demand_crud.yaml`) | instáveis no emulador do CI; mantidos como roteiro assistido | equipe, antes desta política |
+| 2026-11-05 | Caso do plano no título de todos os testes e catálogo gerado em JSON; TC-75 e TC-76 incluídos no plano | todos (362 títulos) | rastreabilidade manual se desfazia a cada refatoração (seção 8.5) | equipe, a partir do feedback do acompanhamento do PI |
 | 2026-11-05 | Removida a nova tentativa automática do Playwright (`retries: 1` no CI) e do `run-maestro.sh` | E2E da API e E2E de telas | escondia a falha do registro em issue; orientação da disciplina (seção 5.4) | equipe, a partir do feedback do acompanhamento do PI |
 | 2026-11-05 | Quarentena dos dois fluxos registrada com prorrogação até 15/11/2026 | M-02, M-05 | regularização pela seção 5; decidir na revisão de 15/11 | registro em `.github/tas/quarentena.json` e issue #63 |
 
