@@ -116,7 +116,7 @@ A notificação também fica gravada na tabela `notificacao`.
 
 | Método | Rota | Perfil | Descrição |
 |---|---|---|---|
-| `GET` | `/demands` | todos | Lista paginada. Filtros: `busca`, `status`, `categoria`, `regiao`, `page`, `limit` |
+| `GET` | `/demands` | todos | Lista paginada. Filtros combináveis: `busca`, `status`, `categoria` (id), `uf`, `cidade`, `zona` (`Urbana`/`Rural`), `regiao` (texto livre no endereço, cidade ou UF), `page`, `limit`; valores inválidos retornam 400 |
 | `POST` | `/demands` | Cidadão | Registra uma ocorrência |
 | `GET` | `/demands/:id` | todos | Detalhe com histórico (`logs`) e fotos (`photos`) |
 | `PUT` | `/demands/:id` | Cidadão (dono) | Edita título, descrição, categoria, endereço, coordenadas, estado, cidade e zona |
@@ -180,7 +180,7 @@ As respostas usam o texto de exibição. O filtro `status` de `GET /demands` usa
 |---|---|---|
 | `GET` | `/gestor/dashboard` | Totais de chamados por status, atrasados e os atribuídos ao usuário |
 | `GET` | `/gestor/equipe` | Gestores e admins ativos (possíveis responsáveis) |
-| `GET` | `/gestor/chamados` | Fila de todos os chamados. Filtros: `status` (ou `Atrasados`), `busca`, `responsavel` (`meus` / `sem`), `limit` (padrão 20), `offset` |
+| `GET` | `/gestor/chamados` | Fila de todos os chamados. Filtros combináveis: `status` (ou `Atrasados`), `busca`, `responsavel` (`meus` / `sem`), `categoria`, `uf`, `cidade`, `zona`, `limit` (padrão 20), `offset` |
 | `GET` | `/gestor/chamados/:id` | Detalhe completo de um chamado (fotos, responsável, histórico) |
 | `PUT` | `/gestor/chamados/:id/aceitar` | Assume o chamado (ou atribui a outro gestor/admin com `gestorDestinoId`) |
 | `POST` | `/gestor/chamados/:id/comentarios` | Registra uma atualização (`mensagem`) no histórico e notifica o cidadão |
@@ -191,9 +191,12 @@ As respostas usam o texto de exibição. O filtro `status` de `GET /demands` usa
 
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/metrics/total-demands` | Total de chamados |
-| `GET` | `/metrics/demands-by-category` | Chamados por categoria |
-| `GET` | `/metrics/average-response-time` | Tempo médio de resposta |
+| `GET` | `/metrics/total-demands` | Total de chamados e contagem por status (aberta, em andamento, resolvida, encerrada) |
+| `GET` | `/metrics/demands-by-category` | Chamados por categoria, com percentual (inclui categorias sem chamados) |
+| `GET` | `/metrics/average-response-time` | Tempo médio entre a abertura e a resolução, em horas (`null` sem chamados concluídos) |
+
+O painel do gestor no app consome as três rotas. As respostas ficam em cache no Redis por 5 minutos (quando
+`REDIS_URL` está definido) e o cache é invalidado a cada mudança de status.
 
 As métricas são consolidadas periodicamente em `metrics_snapshot` por um job agendado (padrão: a cada hora,
 configurável em `CRON_METRICS_SCHEDULE`). Para rodar manualmente: `npm run etl`.
@@ -282,7 +285,8 @@ npm run test:api
 
 Os testes unitários e de API usam um **mock do Prisma** e não precisam de banco. Os testes E2E, que rodam
 contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e2e`). Veja
-[`../TESTES.md`](../TESTES.md) para o que cada nível cobre.
+[`../TESTES.md`](../TESTES.md) para o que cada nível cobre. Somando as duas suítes, a cobertura é de 93% das
+linhas e 83% dos branches (meta MQ-02: 85% e 80%); para medir: `npx jest --coverage`.
 
 ---
 
@@ -362,4 +366,5 @@ backend/
 - [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo
 - [`SETUP.md`](SETUP.md): script de setup automático
 - [`../TESTES.md`](../TESTES.md): estratégia e cobertura dos testes
+- [`../docs/tas.md`](../docs/tas.md): política de manutenção da automação de testes
 - [`../README.md`](../README.md): visão geral do projeto (backend + app)

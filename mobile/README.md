@@ -16,10 +16,11 @@ acompanhar o andamento e gerenciar as próprias ocorrências.
 |---|---|---|
 | Login | `/(auth)/login` | Entrar com e-mail e senha. Em modo dev há o botão "Entrar como Cidadão (Teste)" |
 | Cadastro | `/(auth)/register` | Criar conta de cidadão |
-| Minhas Demandas | `/(app)` | Lista (FlatList) com pesquisa, filtros por status, paginação e "puxar para atualizar" |
+| Minhas Demandas | `/(app)` | Lista (FlatList) com pesquisa combinável com os filtros de status, categoria, estado, cidade e zona, paginação e "puxar para atualizar" |
 | Nova Demanda | `/(app)/create-demand` | Formulário com categoria, GPS e câmera |
 | Detalhes da Demanda | `/(app)/demand/[id]` | Foto, dados, coordenadas, histórico e botões de editar e excluir |
 | Editar Demanda | `/(app)/demand/[id]/edit` | Mesmo formulário da criação, já preenchido |
+| Gestão de Chamados (Gestor/Admin) | `/(app)` | Indicadores operacionais (total, concluídas, tempo médio, distribuição por categoria), fila com pesquisa e filtros de status, responsável, categoria e região |
 
 ### Recursos do dispositivo
 
@@ -197,7 +198,8 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 |---|---|
 | Login | `login-email`, `login-password`, `login-submit`, `login-go-register`, `login-dev` |
 | Cadastro | `register-name`, `register-email`, `register-password`, `register-submit`, `register-go-login` |
-| Lista | `demand-search`, `status-filter-<status>`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
+| Lista | `demand-search`, `status-filter-<status>`, `demand-region-filters-{categoria,uf,cidade,zona,limpar}`, `demand-list`, `demand-card`, `new-demand-button`, `notifications-button`, `help-button` |
+| Gestão | `metrics-panel`, `metric-total`, `metric-resolvidas`, `metric-tempo-medio`, `ticket-search`, `ticket-filter-<filtro>`, `ticket-region-filters-{categoria,uf,cidade,zona,limpar}`, `ticket-list` |
 | Formulário | `form-title`, `form-category-<id>`, `form-address`, `form-description`, `form-photo`, `form-gps`, `form-submit` |
 | Câmera | `camera-shutter` |
 | Detalhe | `detail-title`, `detail-edit`, `detail-delete` |

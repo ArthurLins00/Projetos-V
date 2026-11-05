@@ -115,10 +115,11 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Evento | Workflow | O que roda |
 |---|---|---|
 | Push em branch de trabalho | `push.yml` | Unitários e de API do backend; testes do agente de IA com cliente roteirizado (e typecheck do mobile, pelo `mobile.yml`, quando `mobile/` muda) |
-| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado |
+| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado; **Política da TAS** (`.only`, testes desligados sem quarentena e rastreabilidade do catálogo) |
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
 | Fim do CI/CD e da regressão | `quality-report.yml` | Métricas de qualidade e relatórios técnico e de negócio em HTML (seção 2.2) |
+| Dias úteis às 09h e dias 1 e 15 às 10h (Brasília), ou manual | `tas-manutencao.yml` | Política de manutenção da TAS ([`docs/tas.md`](docs/tas.md)): prazos vencidos, quarentenas sem decisão e a issue da revisão periódica |
 
 Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
 estar habilitado no fork (aba Actions → *I understand my workflows, go ahead and enable them*). Os eventos de PR,
@@ -144,7 +145,8 @@ Para rodar só o smoke do Playwright localmente: `npm run test:e2e -- --grep @sm
 demanda pode atrasar ou não rodar. Por isso a regressão também pode ser disparada pela aba Actions → *Regressão
 completa (diária)* → *Run workflow*.
 
-**Quality Gate:** o job **CI concluído** do `ci.yml` falha se qualquer job do PR falhar ou for cancelado. Ele é o
+**Quality Gate:** o job **CI concluído** do `ci.yml` falha se qualquer job do PR falhar ou for cancelado, inclusive o
+job **Política da TAS**. Ele é o
 único check obrigatório no ruleset `main` do repositório `ArthurLins00/Projetos-V`, que vale para as branches
 `main` e `dev` (Settings → Rules → Rulesets):
 
@@ -161,9 +163,12 @@ nunca é reportado e travaria todos os merges. Com a regra ativa, o botão de me
 
 **Issues automáticas:** o workflow `ci-failure-issues.yml` abre uma issue com a label `ci-failure` para cada execução
 que falhar (CI/CD, push, regressão, Maestro etc.), com os jobs e passos que falharam e o trecho do log. Ela recebe
-`area: backend | mobile | mobile-e2e | ai-agent` pelo job que falhou e `prioridade: alta` quando a falha é em `main`,
-`dev` ou na regressão diária. Quando o mesmo workflow volta a passar na mesma branch, as issues abertas dele são
-fechadas com um comentário. Essas datas de abertura e fechamento são a base do MTTR (MQ-06).
+`area: backend | mobile | mobile-e2e | ai-agent` pelo job que falhou, `classificação: pendente` e `prioridade: alta`
+quando a falha é em `main`, `dev` ou na regressão diária (`prioridade: média` nos demais casos), com o prazo e os
+passos de encaminhamento da política da TAS ([`docs/tas.md`](docs/tas.md), seções 3 e 4). Quando o mesmo workflow
+volta a passar na mesma branch com um commit novo, as issues abertas dele são fechadas com um comentário; se passar
+no **mesmo commit** que falhou, a issue continua aberta com a label `teste instável` (seção 5 da política). Essas
+datas de abertura e fechamento são a base do MTTR (MQ-06).
 
 **Artefatos de cada execução** (aba *Actions* → execução → *Artifacts*):
 

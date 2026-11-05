@@ -57,7 +57,9 @@ lido tanto pelo cálculo quanto pelos relatórios.
   único número para a equipe e para os stakeholders. Só conta `main`, porque falhas em PRs e branches de trabalho
   fazem parte do desenvolvimento.
 - **MQ-06 — MTTR:** também já era um KPI do negócio (meta ≤ 2 h). Mede quanto tempo a `main` fica quebrada, o que
-  importa mais do que quantas vezes ela quebra.
+  importa mais do que quantas vezes ela quebra. Desde a política de manutenção da TAS ([`docs/tas.md`](../tas.md)),
+  uma falha que volta a passar no mesmo commit não fecha a issue (vira `teste instável`); o MTTR passa a contar
+  esse tempo até a causa ser tratada, em vez de registrar a instabilidade como recuperação imediata.
 - **MQ-07 — Falhas abertas:** as labels `area:*` traduzem a falha em uma parte do produto (app, backend,
   assistente), o que o relatório de negócio usa para dizer onde está o risco.
 - **MQ-08 — Vulnerabilidades:** por causa da LGPD e de o backend estar exposto na internet. Críticas e altas

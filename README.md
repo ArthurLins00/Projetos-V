@@ -21,7 +21,7 @@ cidadão acompanha o andamento pelo app até a resolução.
 - **Registrar ocorrência** com título, categoria, endereço, descrição, **localização por GPS**
   (preenche o endereço automaticamente) e **foto pela câmera**.
 - **Listagem** das ocorrências com **pesquisa** por título, descrição, endereço ou protocolo,
-  **filtro por status**, paginação e "puxar para atualizar".
+  **filtros por status, categoria e região** (estado, cidade e zona), paginação e "puxar para atualizar".
 - **Detalhe** da ocorrência com foto, coordenadas e histórico de alterações.
 - **Editar e remover** a ocorrência enquanto ela ainda não está em andamento.
 - **Assistente de IA** (balão 💬 na tela inicial): responde em linguagem natural sobre o status de
@@ -29,6 +29,10 @@ cidadão acompanha o andamento pelo app até a resolução.
   chamados; gestor e admin, todos. Detalhes em [`ai-agent/README.md`](ai-agent/README.md#integração-com-o-app-fiscalize).
 - **Perfis:** Cidadão, Gestor e Admin, com permissões hierárquicas. Gestor e Admin veem a fila de todos os chamados
   e dão seguimento às ocorrências; o Admin também gerencia os perfis dos usuários.
+- **Painel do gestor** com indicadores operacionais: total de demandas, concluídas, tempo médio de atendimento e
+  distribuição por categoria.
+- **Notificações** por push (Expo Notifications), e-mail e na tela a cada mudança de status do chamado.
+- **Build empacotado** pelo EAS (APK de distribuição interna); passo a passo em [`mobile/README.md`](mobile/README.md#build-empacotado-eas).
 
 ## Requisitos do projeto
 
@@ -65,6 +69,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── mobile/           App React Native (Expo) e fluxos E2E do Maestro (mobile/e2e)
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
 ├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
+├── docs/             Segurança, negócio, plano de testes, métricas e a política de manutenção da TAS
 ├── TESTES.md         O que cada nível de teste cobre e como rodar
 └── package.json      Scripts que rodam toda a suíte de testes
 ```
@@ -153,7 +158,8 @@ npm test
 Os testes E2E precisam do banco criado e populado (`npm run seed`). O Playwright sobe o backend
 sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.md`](TESTES.md), que também
 descreve o que o GitHub Actions roda a cada push, antes de cada merge e na regressão diária, e o Quality Gate
-que bloqueia o merge quando algum teste falha (seção 2.1).
+que bloqueia o merge quando algum teste falha (seção 2.1). Falhas, testes instáveis, quarentena, revisão
+periódica e remoção de testes seguem a política de manutenção em [`docs/tas.md`](docs/tas.md).
 
 ---
 
@@ -171,6 +177,8 @@ que bloqueia o merge quando algum teste falha (seção 2.1).
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
 - [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
+- [`docs/tas.md`](docs/tas.md): política de manutenção da automação de testes
+- [`docs/testes/Template_Plano_de_Testes_e_Backlog.md`](docs/testes/Template_Plano_de_Testes_e_Backlog.md): plano de testes e backlog de automação
 
 ## Declaração de uso de I.A.
 
