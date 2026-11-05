@@ -267,6 +267,8 @@ O que mudou entre as duas saídas
 | `Atendimento pelo gestor` | `Tabela de decisão` | `ação (status, aceitar, comentar, transferir) × dados completos × chamado existe × status anterior Aberto × órgão destino válido e diferente` | `TC-72` |
 | `Validação da autenticação` | `Partição de equivalência` | `campo ausente, tipo errado, formato inválido, abaixo do mínimo; usuário autenticado ou não` | `TC-73` |
 | `Filtros por categoria e região` | `Partição de equivalência` | `categoria inteira positiva ou não; UF válida, minúscula ou inexistente; zona Urbana, Rural ou outra; combinados com status e pesquisa` | `TC-74` |
+| `Verificação em duas etapas` | `Tabela de decisão` | `2FA ativo ou não × código correto, incorreto, repetido ou de desafio desconhecido × tentativas até 5 × reenvio antes ou depois de 1 min; ativação com senha correta ou não; modo demonstração` | `TC-75` |
+| `Remetente dos e-mails` | `Partição de equivalência` | `MAIL_FROM com endereço, só com o nome ou vazio × conta do SMTP configurada ou não` | `TC-76` |
 
 ### 4.5 Matriz de rastreabilidade de evidências
 
@@ -348,6 +350,8 @@ O que mudou entre as duas saídas
 | `TC-72` | `HU-05` | `—` | `"quando um gestor altera o status do meu chamado" (aceite, comentário e transferência vêm do código)` | `S` |
 | `TC-73` | `HU-01` | `—` | `— (validação de entrada vem do código)` | `S` |
 | `TC-74` | `HU-06` | `—` | `"Filtros funcionais de demandas por categoria/tipo, região e status integrados à API" (acompanhamento de 10/11/2026)` | `N` |
+| `TC-75` | `HU-01` | `—` | `— (a HU trata do login; a verificação em duas etapas vem do código)` | `S` |
+| `TC-76` | `—` | `—` | `— (remetente dos e-mails vem do código e da configuração de SMTP)` | `S` |
 
 ### 4.6 Casos de teste
 
@@ -355,7 +359,7 @@ Grave a saída íntegra em um arquivo próprio versionado no repositório e refe
 
 Arquivo: [`docs/testes/ia/saida-rodada-2.md`](ia/saida-rodada-2.md)
 
-Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório. TC-64 a TC-74 foram incluídos em 05/11/2026 para elevar a cobertura do backend acima de 80% (estava em 63% das linhas e 53% dos branches) e para cobrir os filtros e as métricas do acompanhamento de 10/11/2026.
+Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório. TC-64 a TC-74 foram incluídos em 05/11/2026 para elevar a cobertura do backend acima de 80% (estava em 63% das linhas e 53% dos branches) e para cobrir os filtros e as métricas do acompanhamento de 10/11/2026. TC-75 e TC-76 também foram incluídos em 05/11/2026, quando cada teste automatizado passou a levar o TC no título: a verificação em duas etapas e o remetente dos e-mails já tinham testes (A-190 a A-202, U-86 a U-89), mas nenhum caso no plano.
 
 | ID | HU | CA | Título | Pré-condições | Passos | Resultado esperado | Pós-condições |
 | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -433,6 +437,8 @@ Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes j
 | TC-72 | HU-05 | — | Atendimento pelo gestor | Gestor logado; chamado Aberto | Concluir com nota; mudar status sem justificativa; aceitar designando outro gestor; aceitar chamado em andamento; comentar longo; transferir válido e inválido | Nota e evento de conclusão; histórico descritivo; notificação só quando o chamado sai de Aberto; 400/404 sem alterar nada | Histórico e notificação registrados |
 | TC-73 | HU-01 | — | Validação de entrada da autenticação | authService substituído por duplo | Enviar cada campo ausente, de tipo errado ou fora do formato; chamar as rotas da conta sem usuário | 400 com a mensagem do campo; 401 sem usuário; dados normalizados antes do serviço | — |
 | TC-74 | HU-06 | — | Filtros por categoria e região | Cidadão e gestor logados | Listar combinando status, pesquisa, categoria, UF, cidade e zona; enviar categoria, UF e zona inválidas | Filtros combinados; UF em maiúsculas; 400 sem consultar o banco | — |
+| TC-75 | HU-01 | — | Verificação em duas etapas | Usuário com 2FA ativo e outro sem; envio de e-mail substituído por duplo | Login; informar o código certo, repetir o código, errar 5 vezes, usar desafio desconhecido, reenviar antes de 1 min; ativar com senha certa e errada; repetir em modo demonstração | Login sem tokens até o código; código vale uma vez; desafio invalidado após 5 erros; reenvio limitado; ativação exige a senha atual; em demonstração o código vem na resposta | Sessão aberta só após o código |
+| TC-76 | — | — | Remetente dos e-mails | — | Resolver o remetente com MAIL_FROM com endereço, só com o nome, vazio e sem conta do SMTP | Endereço mantido; nome combinado com a conta do SMTP; nome padrão; no-reply sem conta | — |
 
 ---
 
@@ -525,6 +531,8 @@ execuções até o retorno  =  Ti ÷ (Tm − Ta − Mn/F)
 | `TC-72` | `Integração` | `20 min` | `90 min` | `2 s` | `10 min` | `20` | `Sim` |
 | `TC-73` | `Componente` | `25 min` | `60 min` | `1 s` | `5 min` | `20` | `Sim` |
 | `TC-74` | `Integração` | `10 min` | `45 min` | `1 s` | `5 min` | `20` | `Sim` |
+| `TC-75` | `Integração` | `15 min` | `60 min` | `2 s` | `5 min` | `20` | `Sim` |
+| `TC-76` | `Componente` | `10 min` | `15 min` | `1 s` | `1 min` | `20` | `Sim` |
 
 Os onze casos incluídos em 05/11/2026 (TC-64 a TC-74) se pagam em menos de 10 execuções cada (o pior é TC-65: 90 ÷ (20 − 0,03 − 1) ≈ 4,7), dentro das ~12 do horizonte do projeto, porque rodam com o banco mockado em todo push e PR.
 
@@ -615,8 +623,10 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 57 | `TC-72` | `HU-05` | `Integração` | `3` | `2` | `3` | `(3×3)÷2 = 4,5` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-181 a A-189)` |
 | 58 | `TC-64` | `—` | `Integração` | `2` | `1` | `2` | `(2×2)÷1 = 4,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-115 a A-133; revelou o defeito da validação de órgão, seção 5 do TESTES.md)` |
 | 59 | `TC-69` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-167 a A-173)` |
+| 60 | `TC-75` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-190 a A-199, U-54, U-56, U-57)` |
+| 61 | `TC-76` | `—` | `Componente` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-86 a U-89)` |
 
-As linhas 49 a 59 foram incluídas em 05/11/2026 depois que o backlog original já estava todo automatizado; estão ordenadas entre si pela mesma regra e não alteram a ordem das 48 anteriores. Com elas, a cobertura do backend passou de 63% para 93% das linhas e de 53% para 83% dos branches.
+As linhas 49 a 61 foram incluídas em 05/11/2026 depois que o backlog original já estava todo automatizado; estão ordenadas entre si pela mesma regra e não alteram a ordem das 48 anteriores. Com elas, a cobertura do backend passou de 63% para 93% das linhas e de 53% para 83% dos branches.
 
 Verificação
 
