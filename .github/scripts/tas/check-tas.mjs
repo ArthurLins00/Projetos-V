@@ -8,11 +8,14 @@
 //   - teste desligado (.skip, .fixme, xit, xdescribe ou fluxo em mobile/e2e/pending) sem registro em
 //     .github/tas/quarentena.json;
 //   - arquivo de teste que não aparece no catálogo do TESTES.md (rastreabilidade);
+//   - teste sem o caso do plano no título ([TC-xx]), caso inexistente no plano ou
+//     docs/testes/catalogo-testes.json desatualizado (test-catalog.mjs);
 //   - registro de quarentena malformado ou apontando para arquivo que não existe.
 // Avisos (aparecem no sumário, não reprovam): quarentena vencida, sem issue ou apontando para teste que
 // voltou a rodar (registro esquecido).
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, appendFileSync } from 'node:fs';
 import path from 'node:path';
+import { checkCatalog } from './test-catalog.mjs';
 
 const ROOT = process.cwd();
 const REGISTRY = '.github/tas/quarentena.json';
@@ -131,7 +134,11 @@ export function check({ today = new Date() } = {}) {
     }
   }
 
-  return { files: files.length, disabled, quarantine, errors, warnings };
+  // 4. Rastreabilidade por teste: [TC-xx] no título e catálogo em JSON em dia
+  const traceability = checkCatalog();
+  errors.push(...traceability.errors);
+
+  return { files: files.length, tests: traceability.tests, tagged: traceability.tagged, disabled, quarantine, errors, warnings };
 }
 
 function summary(result) {
@@ -141,6 +148,7 @@ function summary(result) {
     `| Verificação | Resultado |`,
     `|---|---|`,
     `| Arquivos de teste no catálogo | ${result.files - result.errors.filter((e) => e.includes('catálogo')).length}/${result.files} |`,
+    `| Testes com o caso do plano no título | ${result.tagged}/${result.tests} |`,
     `| Testes desligados | ${result.disabled.length} (${result.quarantine.length} em quarentena registrada) |`,
     `| Erros | ${result.errors.length} |`,
     `| Avisos | ${result.warnings.length} |`,
