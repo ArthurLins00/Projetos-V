@@ -277,7 +277,7 @@ Para rodar localmente: `node .github/scripts/tas/check-tas.mjs`.
 |---|---|---|---|---|
 | 2026-10 | Removidos do backlog por estar fora do escopo | TC-15, TC-18, TC-19, TC-26, TC-29, TC-31, TC-32, TC-33, TC-34 | funcionalidade não implementada (plano de testes, seção 6.1) | equipe, antes desta política |
 | 2026-10-15 | Fluxos Maestro movidos para `pending/` | M-02 (`register.yaml`), M-05 (`demand_crud.yaml`) | instáveis no emulador do CI; mantidos como roteiro assistido | equipe, antes desta política |
-| 2026-11-05 | Quarentena dos dois fluxos registrada com prorrogação até 15/11/2026 | M-02, M-05 | regularização pela seção 5; decidir na revisão de 15/11 | registro em `.github/tas/quarentena.json` |
+| 2026-11-05 | Quarentena dos dois fluxos registrada com prorrogação até 15/11/2026 | M-02, M-05 | regularização pela seção 5; decidir na revisão de 15/11 | registro em `.github/tas/quarentena.json` e issue #63 |
 
 ---
 
@@ -292,7 +292,7 @@ Três situações reais desta semana, do registro ao encaminhamento.
 | **Identificação** | Em 05/11/2026, uma execução completa da suíte do backend terminou com 1 falha em 198 testes (197 passaram), apontando o bloco `describe` de `backend/src/tests/unit/demandService.test.ts:42`. A mudança em andamento (filtros por categoria e região) não tocava esse arquivo. |
 | **Investigação** | O arquivo rodado sozinho passou (24/24) e a suíte completa, rodada logo em seguida sem mudança de código, também (198/198). Em todas as execuções completas posteriores ele passou, inclusive em 6 repetições seguidas no mesmo commit (361/361 em cada). |
 | **Classificação** | Instabilidade suspeita (seção 5), `prioridade: média`. A hipótese é carga na primeira execução (compilação do ts-jest em paralelo) somada às operações em disco do teste de fotos, o que aponta para `classificação: tas` ou `ambiente`; fica `classificação: pendente` até haver uma segunda ocorrência com o log completo. |
-| **Encaminhamento** | Uma ocorrência em 14 dias fica abaixo do limite de quarentena: o teste **continua rodando e bloqueando**. Registro com o formulário **Teste instável**, decisão *Monitorar*, taxa "1 falha em 10 execuções completas". Prazo de triagem: 1 dia útil. Se voltar a falhar, aplicar o passo 3 da seção 5.2 (corrigir ou quarentenar) com o log anexado. |
+| **Encaminhamento** | Uma ocorrência em 14 dias fica abaixo do limite de quarentena: o teste **continua rodando e bloqueando**. Registrado na [issue #62](https://github.com/ArthurLins00/Projetos-V/issues/62) no formato do formulário **Teste instável** (labels `teste instável`, `classificação: pendente`, `prioridade: média`, `area: backend`), decisão *Monitorar*, taxa "1 falha em 10 execuções completas". Prazo de triagem: 1 dia útil. Se voltar a falhar até 19/11/2026, aplicar o passo 3 da seção 5.2 (corrigir ou quarentenar) com o log anexado. |
 
 ### Caso 2 — Defeito no cadastro de órgãos revelado por um teste novo (SUT)
 
@@ -310,4 +310,4 @@ Três situações reais desta semana, do registro ao encaminhamento.
 | **Identificação** | A primeira execução do `check-tas.mjs` reprovou com 6 erros: 4 arquivos de teste fora do catálogo do `TESTES.md` (`twoFactor`, `twoFactorDemo`, `registerDemo`, `mailFrom`) e 2 fluxos Maestro desligados em `pending/` sem registro. |
 | **Investigação** | Os 4 arquivos existiam e passavam, mas nunca tinham sido catalogados; os fluxos estavam em `pending/` desde 15/10/2026 sem data para voltar. |
 | **Classificação** | `classificação: tas`, `prioridade: baixa` (não afetava o produto, mas tirava a rastreabilidade e escondia testes desligados). |
-| **Encaminhamento** | Catálogo completado (A-190 a A-202, U-86 a U-89) no commit `7c9429a`; quarentena dos fluxos registrada com prorrogação justificada até a revisão de 15/11/2026 (seção 9). O `check-tas.mjs` agora passa com 2 avisos (*quarentena sem issue*), que o workflow transforma na issue **TAS: testes em quarentena precisam de decisão** na primeira execução agendada. |
+| **Encaminhamento** | Catálogo completado (A-190 a A-202, U-86 a U-89) no commit `7c9429a`; quarentena dos fluxos registrada com prorrogação justificada até a revisão de 15/11/2026 (seção 9) e acompanhada na [issue #63](https://github.com/ArthurLins00/Projetos-V/issues/63) (labels `quarentena`, `classificação: tas`, `classificação: ambiente`, `prioridade: média`, `area: mobile-e2e`), ligada aos dois registros pelo campo `issue`. O `check-tas.mjs` passa sem erros nem avisos; se a decisão não sair até 15/11, o workflow marca a quarentena como vencida e cobra na issue **TAS: testes em quarentena precisam de decisão**. |

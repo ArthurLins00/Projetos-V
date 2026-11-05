@@ -8,7 +8,7 @@
     "expira": "2026-11-15",
     "prorrogacao": "Mais de 14 dias: o plano de testes (seção 5) rebaixou o fluxo a roteiro assistido no emulador. Corrigir ou propor a remoção na revisão periódica de 15/11/2026.",
     "responsavel": "Guardião da TAS",
-    "issue": null
+    "issue": 63
   },
   {
     "arquivo": "mobile/e2e/pending/demand_crud.yaml",
@@ -19,6 +19,6 @@
     "expira": "2026-11-15",
     "prorrogacao": "Mais de 14 dias: TC-46 permanece manual pelo cálculo de retorno (seção 5 do plano), com este fluxo como roteiro assistido. Reavaliar na revisão periódica de 15/11/2026.",
     "responsavel": "Guardião da TAS",
-    "issue": null
+    "issue": 63
   }
 ]
