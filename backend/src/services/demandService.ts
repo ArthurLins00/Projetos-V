@@ -7,6 +7,7 @@ import path from 'path';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
 import { detectImageExtension } from '../utils/image';
 import { notificationService } from './notificationService';
+import { DemandListFilters, demandFilterWhere } from '../utils/demandFilters';
 
 const STATUS_DISPLAY: Record<status_chamado, string> = {
   Aberto: 'Aberto',
@@ -39,8 +40,7 @@ interface ListDemandsInput {
   userId: string;
   perfil: string;
   status?: string;
-  categoria?: number;
-  regiao?: string;
+  filters?: DemandListFilters;
   busca?: string;
   page: number;
   limit: number;
@@ -119,15 +119,15 @@ async function resolveOrgan(categoryId: number): Promise<string | null> {
 
 export const demandService = {
   async list(input: ListDemandsInput) {
-    const { userId, perfil, status, categoria, regiao, busca, page, limit } = input;
+    const { userId, perfil, status, filters = {}, busca, page, limit } = input;
 
     const where: Record<string, unknown> = {};
 
     if (perfil === 'Cidadao') where['cidadaoid'] = userId;
     if (status) where['status'] = status;
     else if (perfil === 'Cidadao') where['status'] = { not: 'Fechado' };
-    if (categoria) where['categoriaid'] = categoria;
-    if (regiao) where['endereco'] = { contains: regiao, mode: 'insensitive' };
+    const filterWhere = demandFilterWhere(filters);
+    if (filterWhere.length) where['AND'] = filterWhere;
     if (busca) {
       where['OR'] = [
         { subcategoria: { contains: busca, mode: 'insensitive' } },

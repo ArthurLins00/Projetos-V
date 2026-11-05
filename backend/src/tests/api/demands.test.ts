@@ -72,6 +72,38 @@ describe('API de Demandas (/demands)', () => {
     expect(where.OR).toBeUndefined();
   });
 
+  it('GET /demands combina status, pesquisa, categoria e região (UF, cidade e zona)', async () => {
+    prisma.chamado.findMany.mockResolvedValue([]);
+    prisma.chamado.count.mockResolvedValue(0);
+
+    const response = await request(app)
+      .get('/demands')
+      .query({ status: 'Aberto', busca: 'poste', categoria: '3', uf: 'pe', cidade: 'Recife', zona: 'Urbana' })
+      .set(auth);
+
+    expect(response.status).toBe(200);
+    const { where } = prisma.chamado.findMany.mock.calls.at(-1)![0] as any;
+    expect(where).toMatchObject({ cidadaoid: cidadao.id, status: 'Aberto' });
+    expect(where.OR).toHaveLength(5);
+    expect(where.AND).toEqual([
+      { categoriaid: 3 },
+      { uf: 'PE' },
+      { cidade: { equals: 'Recife', mode: 'insensitive' } },
+      { zona: 'Urbana' },
+    ]);
+  });
+
+  it.each([
+    [{ categoria: 'abc' }, /Categoria inválida/],
+    [{ uf: 'XX' }, /Estado inválido/],
+    [{ zona: 'Litoral' }, /Zona inválida/],
+  ])('GET /demands rejeita filtro inválido %j (400)', async (query, message) => {
+    const response = await request(app).get('/demands').query(query).set(auth);
+
+    expect(response.status).toBe(400);
+    expect(JSON.stringify(response.body)).toMatch(message);
+  });
+
   it('GET /demands/:id retorna a demanda com histórico', async () => {
     prisma.chamado.findUnique.mockResolvedValue(chamado as any);
 

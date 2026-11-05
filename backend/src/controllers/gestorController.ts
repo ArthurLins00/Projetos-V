@@ -4,6 +4,7 @@ import { Prisma, status_chamado } from '@prisma/client';
 import { prisma } from '../config/prisma';
 import { invalidateMetricsCache } from '../utils/cache';
 import { notificationService } from '../services/notificationService';
+import { demandFilterWhere, parseDemandListFilters } from '../utils/demandFilters';
 
 const STATUS_DISPLAY: Record<status_chamado, string> = {
   Aberto: 'Aberto',
@@ -100,6 +101,9 @@ export const gestorController = {
 
       if (responsavel === 'meus') where.gestorid = usuarioId;
       if (responsavel === 'sem') where.gestorid = null;
+
+      const filtros = demandFilterWhere(parseDemandListFilters(req.query));
+      if (filtros.length) where.AND = filtros;
 
       if (typeof busca === 'string' && busca.trim()) {
         const termo = busca.trim();
