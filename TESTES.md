@@ -343,6 +343,15 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-84 | Token expirado, JWT inválido, validação, e-mail duplicado, corpo grande | 401, 401, 400, 409, 413 |
 | U-85 | `asyncHandler` | Rejeição encaminhada ao `next` |
 
+**`mailFrom.test.ts`: remetente dos e-mails (`resolveMailFrom`)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-86 | `MAIL_FROM` com endereço | Mantido |
+| U-87 | `MAIL_FROM` só com o nome | Usa a conta do SMTP |
+| U-88 | `MAIL_FROM` vazio | Nome padrão com a conta do SMTP |
+| U-89 | Sem conta do SMTP | Endereço no-reply |
+
 ### 3.2 API — `backend/src/tests/api` (233)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
@@ -673,6 +682,34 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-188 | Transferir | Órgão trocado e motivo no histórico |
 | A-189 | Transferir sem dados, chamado ou órgão inexistente, mesmo órgão | 400 ou 404 e nada alterado |
 
+**`twoFactor.test.ts`: verificação em duas etapas por e-mail**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-190 | Login com 2FA ativo | Sem tokens; código enviado por e-mail |
+| A-191 | Código correto | Autentica; o mesmo código não pode ser reutilizado |
+| A-192 | Código incorreto | Recusado; o desafio é invalidado após 5 tentativas |
+| A-193 | Desafio desconhecido | Recusado |
+| A-194 | Reenvio do código | No máximo um por minuto |
+| A-195 | Usuário sem 2FA | Login direto |
+| A-196 | `PUT /auth/me/two-factor` com a senha atual | Ativa a verificação |
+| A-197 | Senha incorreta | Recusada |
+| A-198 | Campo `ativo` ausente ou não booleano | 400 |
+
+**`twoFactorDemo.test.ts`: 2FA com `DEMO_MODE`**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-199 | Login com 2FA em modo demonstração | Código devolvido na resposta e aceito na verificação |
+
+**`registerDemo.test.ts`: cadastro com `DEMO_MODE` e senha repetida**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-200 | Senha já usada por outra conta | Avisa qual conta usa a senha e não cria o usuário |
+| A-201 | Pessoa decide prosseguir | Usuário criado |
+| A-202 | Senha que não se repete | Usuário criado direto |
+
 ### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
@@ -805,6 +842,9 @@ Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído po
 | Consulta de usuários e categorias | — | A-167 a A-173 | — | — |
 | Painel, fila e atendimento do gestor | — | A-174 a A-189 | — | — |
 | Validação de entrada da autenticação | U-51 a U-64 | — | — | — |
+| Verificação em duas etapas | — | A-190 a A-199 | — | — |
+| Cadastro em modo demonstração | — | A-200 a A-202 | — | — |
+| Remetente dos e-mails | U-86 a U-89 | — | — | — |
 | Tradução de erros HTTP | U-81 a U-85 | A-54, A-55 | — | — |
 
 ---
