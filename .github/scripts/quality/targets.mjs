@@ -3,7 +3,7 @@
 
 export const TARGETS = {
   passRate: 100, // MQ-01, %
-  coverage: { lines: 70, branches: 60 }, // MQ-02, %
+  coverage: { lines: 85, branches: 80 }, // MQ-02, %
   flaky: 0, // MQ-03
   durationMinutes: { 'CI/CD': 10, 'Regressão completa (diária)': 60 }, // MQ-04, mediana de 30 dias
   pipelineSuccessRate: 95, // MQ-05, %

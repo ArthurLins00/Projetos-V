@@ -3,9 +3,10 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend, app mobile e agente de IA).
 
-**Situação na última execução (19/10/2026):** 234 testes automatizados passando: 50 unitários,
-125 de API, 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado), além de 3 fluxos de tela (Maestro)
-no emulador do CI. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
+**Situação em 05/11/2026:** 420 testes automatizados: 128 unitários e
+233 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
+branches), além de 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado) e 3 fluxos de tela (Maestro)
+no emulador do CI, conforme a última execução da pipeline. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
 rodam ao vivo contra o Gemini só na regressão diária.
 
 ---
@@ -21,9 +22,9 @@ e completos no topo.
               ┌─┴──────────────────────────┴─┐
               │ E2E da API (Playwright) 36   │  backend + banco reais
             ┌─┴──────────────────────────────┴─┐
-            │ API (Jest + Supertest) 125       │  rotas HTTP, banco mockado
+            │ API (Jest + Supertest) 233       │  rotas HTTP, banco mockado
           ┌─┴──────────────────────────────────┴─┐
-          │ Unitários (Jest) 50                  │  regras de negócio isoladas
+          │ Unitários (Jest) 128                 │  regras de negócio isoladas
           └──────────────────────────────────────┘
 ```
 
@@ -205,7 +206,7 @@ Com `GITHUB_REPOSITORY`, `GITHUB_TOKEN` e `SOURCE_RUN_ID` definidos, também ent
 
 ## 3. Catálogo de testes
 
-### 3.1 Unitários — `backend/src/tests/unit` (50)
+### 3.1 Unitários — `backend/src/tests/unit` (128)
 
 Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas numa pasta temporária.
 
@@ -287,7 +288,62 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-49 | Chamado inexistente | Nada é registrado nem enviado |
 | U-50 | Registro do token de push | Token Expo válido gravado; formato inválido recusado |
 
-### 3.2 API — `backend/src/tests/api` (125)
+**`authController.test.ts`: validação de entrada do controller de autenticação, com o `authService` substituído por duplo (TC-73)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-51 | 22 entradas inválidas (cadastro, login, 2FA, refresh, recuperação de senha, perfil, foto, push, termos) | 400 com a mensagem do campo |
+| U-52 | 8 rotas da conta chamadas sem usuário autenticado | 401 |
+| U-53 | Cadastro válido | 201 sem a senha |
+| U-54 | Login com 2FA ativo | Devolve o desafio (e o código em demonstração), sem cookie |
+| U-55 | Login sem 2FA | Sessão aberta com cookie `httpOnly`/`strict` que expira junto com o token |
+| U-56 | Código 2FA com espaços | Aceito depois do `trim` |
+| U-57 | Reenvio do código 2FA | Código só aparece quando o serviço devolve (modo demonstração) |
+| U-58 | Refresh | Cookie renovado e novo par de tokens |
+| U-59 | Recuperação e redefinição de senha | E-mail e código normalizados antes do serviço |
+| U-60 | Logout com header e refresh token | Cookie limpo, token na blocklist e refresh revogado |
+| U-61 | Logout sem token | Só limpa o cookie |
+| U-62 | `GET /auth/me` | Perfil sem a senha |
+| U-63 | 2FA, foto, termos, push e perfil | Repassados ao serviço com os dados normalizados (push responde 204) |
+| U-64 | Erro do serviço | Repassado ao middleware de erro |
+
+**`metricsAndCache.test.ts`: indicadores operacionais e cache Redis (TC-67)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-65 | Tempo médio de atendimento | Só chamados com evento Resolvido/Fechado; média arredondada para 1 casa |
+| U-66 | Nenhum chamado concluído | `media_horas` nulo; escopo do órgão respeitado |
+| U-67 | Distribuição por categoria | Inclui categorias sem chamados; percentual com 1 casa |
+| U-68 | Nenhum chamado | 0%, sem divisão por zero |
+| U-69 | Total de demandas | Contagem por status |
+| U-70 | Valor em cache | Devolvido sem consultar o banco |
+| U-71 | Cache vazio | Calcula e grava com TTL de 5 minutos |
+| U-72 | Sem Redis configurado | Leitura, gravação e remoção viram no-op |
+| U-73 | Redis falhando | Nunca derruba a requisição |
+| U-74 | Valor ausente ou JSON inválido | `null` |
+| U-75 | Invalidação | Apaga as chaves da plataforma e, com gestor, também as dele |
+| U-76 | Chaves de escopo e de snapshot | Formato esperado |
+
+**`redis.test.ts`: cliente Redis opcional (TC-67)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-77 | Sem `REDIS_URL` | Cliente nulo e Redis indisponível |
+| U-78 | Com `REDIS_URL` | Um único cliente, sem fila offline, com poucas tentativas |
+| U-79 | Falha na conexão inicial | Só aviso no log |
+| U-80 | `PING` | `PONG` = disponível; erro = indisponível |
+
+**`errorMiddleware.test.ts`: tradução de erros em respostas HTTP (TC-70)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-81 | `AppError` | Status do erro; `details` só quando existe |
+| U-82 | 8 erros conhecidos do Prisma | 409, 404, 400 ou 503 com o código |
+| U-83 | Erro desconhecido do Prisma | 500 genérico |
+| U-84 | Token expirado, JWT inválido, validação, e-mail duplicado, corpo grande | 401, 401, 400, 409, 413 |
+| U-85 | `asyncHandler` | Rejeição encaminhada ao `next` |
+
+### 3.2 API — `backend/src/tests/api` (233)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -513,6 +569,110 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-109 | Sem token | 401 |
 | A-110 | `GET /auth/me` | Inclui `termosversao` |
 
+**`demands.test.ts` e `gestorChamados.test.ts`: filtros por categoria e região (TC-74)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-111 | `GET /demands` com status, pesquisa, categoria, UF, cidade e zona | Todos combinados (`AND`), UF em maiúsculas, cidade sem diferenciar maiúsculas |
+| A-112 | Categoria, UF ou zona inválidas | 400 |
+| A-113 | `GET /gestor/chamados` com pesquisa, categoria, UF e zona | Filtros combinados com a pesquisa |
+| A-114 | UF inválida na fila do gestor | 400 e nada consultado |
+
+**`adminOrgans.test.ts`: órgãos `/admin/organs` (TC-64)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-115 | Listagem por gestor | SLA padrão e nomes das categorias |
+| A-116 | Filtro `status=inativo` | Consulta só inativos |
+| A-117 | Filtro de status desconhecido | 400 |
+| A-118 | Cidadão | 403 |
+| A-119 | Cadastro | 201, tipo Municipal por padrão, categorias vinculadas e auditoria `organ_created` |
+| A-120 | Cadastro sem campos obrigatórios | 400 e nada gravado (defeito corrigido, seção 5) |
+| A-121 | Sigla já cadastrada | 409 |
+| A-122 | Nome já cadastrado | 409 |
+| A-123 | Cadastro por gestor | 403 |
+| A-124 | Edição | Dados e categorias substituídos; auditoria `organ_edited` |
+| A-125 | Edição removendo todas as categorias | Nenhum vínculo novo |
+| A-126 | Edição de órgão inexistente | 404 |
+| A-127 | Nome em uso por outro órgão | 409 e nada alterado |
+| A-128 | Inativação | Novo status devolvido |
+| A-129 | Status desconhecido | 400 |
+| A-130 | Status de órgão inexistente | 404 |
+| A-131 | Categorias do órgão | Lista id e nome |
+| A-132 | Categorias de órgão inexistente | 404 |
+| A-133 | Erro inesperado do banco | 500 sem a mensagem interna |
+
+**`adminRoutingRules.test.ts`: regras de competência (TC-65) e ciclo de vida dos usuários (TC-66)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-134 | Criar regra sem SLA | Herda o SLA do órgão (201) |
+| A-135 | Criar com SLA e órgão secundário | Valores informados gravados |
+| A-136 | Sem categoria; prioridade inválida | 400 e nada gravado |
+| A-137 | Categoria inexistente | 404 |
+| A-138 | Órgão principal inexistente; inativo | 404; 400 |
+| A-139 | Órgão secundário inexistente | 404 |
+| A-140 | Categoria não vinculada ao órgão | 400 |
+| A-141 | Regra duplicada | 409 |
+| A-142 | Listagem por órgão e categoria | Órgão principal ou secundário; paginação |
+| A-143 | Edição parcial | Só os campos enviados |
+| A-144 | Troca de categoria, subcategoria e órgão | Duplicata verificada excluindo a própria regra |
+| A-145 | Edição de regra inexistente | 404 |
+| A-146 | Edição com categoria/órgão inválidos ou duplicata | 404, 400 ou 409 e nada alterado |
+| A-147 | Edição com secundário inexistente | 404 |
+| A-148 | Remoção | Regra apagada |
+| A-149 | Remoção de regra inexistente | 404 |
+| A-150 | Desativar usuário | Status anterior registrado na auditoria |
+| A-151 | Reativar usuário | Auditoria `user_activated` |
+| A-152 | Ativar já ativo, desativar já inativo, ativar ou desativar admin | 409 ou 403 e nada alterado |
+| A-153 | Usuário inexistente | 404 |
+| A-154 | Admin se desativando | 403 "não pode se desativar" |
+| A-155 | Criar gestor | Ativo, senha criptografada e registro de gestor |
+| A-156 | Criar com campos faltando ou perfil Admin | 400 |
+| A-157 | E-mail já cadastrado | 409 |
+| A-158 | Mudar perfil: inválido, igual, o próprio, inexistente | 400, 409, 403, 404 |
+| A-159 | `GET /admin/audit-logs` | Filtro por ação e admin, com paginação |
+
+**`metricsHealthUsers.test.ts`: métricas (TC-67), health check (TC-68), usuários e categorias (TC-69)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-160 | `GET /metrics/total-demands` | Totais por status, escopo plataforma |
+| A-161 | `GET /metrics/demands-by-category` | Distribuição com percentual |
+| A-162 | `GET /metrics/average-response-time` | Média em horas (nula sem concluídos) |
+| A-163 | Cidadão nas métricas | 403 |
+| A-164 | Banco falhando nas 3 rotas | 500 |
+| A-165 | `/health` com banco no ar | 200 `ok`; Redis `unavailable` quando não responde |
+| A-166 | `/health` com banco fora | 503 `degraded` |
+| A-167 | `GET /users` | Paginação e campos da API |
+| A-168 | `GET /users/:id` | Usuário encontrado |
+| A-169 | ID fora do formato UUID; inexistente | 400; 404 |
+| A-170 | `GET /users` com banco falhando | 500 |
+| A-171 | `GET /categories/:id` | Categoria ativa |
+| A-172 | ID não numérico; inexistente ou inativa | 400; 404 |
+| A-173 | `GET /categories` com banco falhando | 500 |
+
+**`gestorFluxos.test.ts`: painel e fila (TC-71) e atendimento (TC-72) do gestor**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-174 | `GET /gestor/dashboard` | Contagens por status, atrasados e "meus" |
+| A-175 | Usuário removido entre a sessão e a consulta | 404 |
+| A-176 | Filtros "Atrasados" e "sem responsável" | Prazo vencido e não encerrado; `gestorid` nulo; paginação |
+| A-177 | Filtro "Todos"; status desconhecido | Sem filtro de status; 400 |
+| A-178 | Detalhe | Status de exibição e campos vazios tratados |
+| A-179 | `GET /gestor/equipe` | Gestores e admins ativos |
+| A-180 | Detalhe inexistente | 404 |
+| A-181 | Concluir com nota de resolução | Nota gravada, evento `conclusao` e cidadão notificado |
+| A-182 | Mudar status sem justificativa | Transição descrita no histórico |
+| A-183 | Status ausente | 400 |
+| A-184 | Aceitar designando outro gestor | Responsável designado e notificação `equipe_designada` |
+| A-185 | Aceitar chamado já em andamento | Status mantido e sem nova notificação |
+| A-186 | Aceitar chamado inexistente | 404 |
+| A-187 | Comentário acima de 1000 caracteres; chamado inexistente | 400; 404 |
+| A-188 | Transferir | Órgão trocado e motivo no histórico |
+| A-189 | Transferir sem dados, chamado ou órgão inexistente, mesmo órgão | 400 ou 404 e nada alterado |
+
 ### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
@@ -636,6 +796,16 @@ Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído po
 | Notificações (e-mail, push e tela) | U-46 a U-50 | A-79 a A-84 | E-17b, E-19, E-31 | — |
 | Assistente de IA | — | A-74 a A-78 | — | — |
 | Agente de IA (triagem e acompanhamento) | `ai-agent/tests` (seção 3.5) | — | — | — |
+| Filtros por categoria e região | — | A-111 a A-114 | — | — |
+| Órgãos | — | A-115 a A-133 | — | — |
+| Regras de competência | — | A-134 a A-149 | — | — |
+| Ciclo de vida dos usuários e auditoria | — | A-150 a A-159 | — | — |
+| Métricas do painel do gestor e cache | U-65 a U-80 | A-160 a A-164 | — | — |
+| Health check | — | A-165, A-166 | — | — |
+| Consulta de usuários e categorias | — | A-167 a A-173 | — | — |
+| Painel, fila e atendimento do gestor | — | A-174 a A-189 | — | — |
+| Validação de entrada da autenticação | U-51 a U-64 | — | — | — |
+| Tradução de erros HTTP | U-81 a U-85 | A-54, A-55 | — | — |
 
 ---
 
@@ -655,6 +825,7 @@ Os testes revelaram defeitos que foram corrigidos no código:
 | Reutilizar o refresh token de uma sessão encerrada por logout derrubava as outras sessões do usuário | `authService` | A-38, E-34 |
 | Corpo acima do limite de 15 MB retornava 500 em vez de 413 | `errorMiddleware` | A-45 |
 | Regra de competência e vínculo com a categoria podiam encaminhar o chamado a um órgão inativo | `demandService` | A-48 |
+| Cadastro de órgão sem campos obrigatórios passava da validação (chamada `async` sem `await`) e terminava em 500 | `organService` | A-120 |
 
 ---
 
