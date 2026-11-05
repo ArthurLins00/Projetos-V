@@ -53,7 +53,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     });
   });
 
-  it('deve retornar 200 ao alterar o chamado para um status válido', async () => {
+  it('[TC-47] deve retornar 200 ao alterar o chamado para um status válido', async () => {
     const response = await request(app)
       .put(ROUTE)
       .set('Authorization', `Bearer ${tokenGestor}`)
@@ -70,7 +70,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     expect(prisma.$transaction).toHaveBeenCalled();
   });
 
-  it('deve retornar 400 quando o status enviado não estiver na lista permitida', async () => {
+  it('[TC-47] deve retornar 400 quando o status enviado não estiver na lista permitida', async () => {
     const response = await request(app)
       .put(ROUTE)
       .set('Authorization', `Bearer ${tokenGestor}`)
@@ -86,7 +86,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
   it.each([
     ['Em Análise', 'Em_An_lise'],
     ['Em Andamento', 'Em_Andamento'],
-  ])('deve gravar "%s" no banco como %s', async (statusApi, statusBanco) => {
+  ])('[TC-47] deve gravar "%s" no banco como %s', async (statusApi, statusBanco) => {
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
     prisma.chamado.update.mockResolvedValue({ id: mockChamado.id, status: statusBanco } as any);
 
@@ -101,7 +101,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     );
   });
 
-  it('deve retornar 404 ao tentar atualizar um chamado que não existe', async () => {
+  it('[TC-47] deve retornar 404 ao tentar atualizar um chamado que não existe', async () => {
     prisma.chamado.findUnique.mockResolvedValue(null);
 
     const response = await request(app)
@@ -116,7 +116,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     expect(response.body.error).toMatch(/Chamado não encontrado/i);
   });
 
-  it('deve permitir atualizar chamado de qualquer órgão (gestor não é vinculado a órgão)', async () => {
+  it('[TC-47] deve permitir atualizar chamado de qualquer órgão (gestor não é vinculado a órgão)', async () => {
     prisma.chamado.findUnique.mockResolvedValue({
       ...mockChamado,
       orgaoid: 'orgao-2',
@@ -133,7 +133,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     expect(prisma.gestor.findUnique).not.toHaveBeenCalled();
   });
 
-  it('deve permitir que um admin atualize o status de um chamado', async () => {
+  it('[TC-62] deve permitir que um admin atualize o status de um chamado', async () => {
     const admin = { ...mockUsuario, id: 'uuid-admin', perfil: 'Admin', email: 'admin@teste.com' };
     prisma.usuario.findUnique.mockResolvedValue(admin as any);
     const tokenAdmin = jwt.sign({ id: admin.id, email: admin.email, perfil: admin.perfil }, JWT_SECRET, { expiresIn: '1h' });
@@ -146,7 +146,7 @@ describe('PUT /gestor/chamados/:id/status', () => {
     expect(response.status).toBe(200);
   });
 
-  it('deve retornar 403 para cidadão', async () => {
+  it('[TC-62] deve retornar 403 para cidadão', async () => {
     const cidadao = { ...mockUsuario, id: 'uuid-cidadao', perfil: 'Cidadao', email: 'cidadao@teste.com' };
     prisma.usuario.findUnique.mockResolvedValue(cidadao as any);
     const tokenCidadao = jwt.sign({ id: cidadao.id, email: cidadao.email, perfil: cidadao.perfil }, JWT_SECRET, { expiresIn: '1h' });
@@ -173,7 +173,7 @@ describe('Gestão de chamados (/gestor)', () => {
     prisma.usuario.findUnique.mockResolvedValue(gestor as any);
   });
 
-  it('GET /gestor/chamados lista chamados de todos os órgãos e aplica o filtro "meus"', async () => {
+  it('[TC-62] GET /gestor/chamados lista chamados de todos os órgãos e aplica o filtro "meus"', async () => {
     prisma.chamado.findMany.mockResolvedValue([]);
     prisma.chamado.count.mockResolvedValue(0);
 
@@ -188,7 +188,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(where).toMatchObject({ gestorid: gestor.id, status: 'Em_An_lise' });
   });
 
-  it('GET /gestor/chamados filtra por categoria e região junto com a pesquisa', async () => {
+  it('[TC-74] GET /gestor/chamados filtra por categoria e região junto com a pesquisa', async () => {
     prisma.chamado.findMany.mockResolvedValue([]);
     prisma.chamado.count.mockResolvedValue(0);
 
@@ -203,7 +203,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(where.AND).toEqual([{ categoriaid: 2 }, { uf: 'SP' }, { zona: 'Rural' }]);
   });
 
-  it('GET /gestor/chamados rejeita UF inválida (400)', async () => {
+  it('[TC-74] GET /gestor/chamados rejeita UF inválida (400)', async () => {
     const response = await request(app)
       .get('/gestor/chamados')
       .query({ uf: 'ZZ' })
@@ -213,7 +213,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(prisma.chamado.findMany).not.toHaveBeenCalled();
   });
 
-  it('PUT /gestor/chamados/:id/aceitar rejeita responsável que não é gestor', async () => {
+  it('[TC-62] PUT /gestor/chamados/:id/aceitar rejeita responsável que não é gestor', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ id: 'c1', status: 'Aberto', gestorid: null } as any);
     prisma.usuario.findUnique.mockImplementation((async ({ where }: any) =>
       where.id === 'uuid-cidadao' ? { perfil: 'Cidadao', status: 'Ativo' } : gestor) as any);
@@ -227,7 +227,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(prisma.chamado.update).not.toHaveBeenCalled();
   });
 
-  it('PUT /gestor/chamados/:id/aceitar atribui o chamado a quem aceitou', async () => {
+  it('[TC-62] PUT /gestor/chamados/:id/aceitar atribui o chamado a quem aceitou', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ id: 'c1', status: 'Aberto', gestorid: null } as any);
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
     prisma.chamado.update.mockResolvedValue({ id: 'c1', status: 'Em_An_lise', gestorid: gestor.id } as any);
@@ -244,7 +244,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(response.body.chamado.status).toBe('Em Análise');
   });
 
-  it('POST /gestor/chamados/:id/comentarios exige mensagem', async () => {
+  it('[TC-62] POST /gestor/chamados/:id/comentarios exige mensagem', async () => {
     const response = await request(app)
       .post('/gestor/chamados/c1/comentarios')
       .set('Authorization', `Bearer ${token}`)
@@ -253,7 +253,7 @@ describe('Gestão de chamados (/gestor)', () => {
     expect(response.status).toBe(400);
   });
 
-  it('POST /gestor/chamados/:id/comentarios registra a mensagem no histórico', async () => {
+  it('[TC-62] POST /gestor/chamados/:id/comentarios registra a mensagem no histórico', async () => {
     prisma.chamado.findUnique.mockResolvedValue({ id: 'c1' } as any);
     prisma.timeline_event.create.mockResolvedValue({ id: 'e1', tipo: 'mensagem' } as any);
 

@@ -24,7 +24,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
   });
 
-  it('GET lista os usuários com busca por nome ou e-mail', async () => {
+  it('[TC-54] GET lista os usuários com busca por nome ou e-mail', async () => {
     mockUsuarios(admin);
     prisma.usuario.findMany.mockResolvedValue([cidadao] as any);
     prisma.usuario.count.mockResolvedValue(1);
@@ -44,7 +44,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     ]);
   });
 
-  it('GET retorna 403 para gestor', async () => {
+  it('[TC-54] GET retorna 403 para gestor', async () => {
     mockUsuarios(gestor);
 
     const response = await request(app).get('/admin/users').set('Authorization', `Bearer ${tokenOf(gestor)}`);
@@ -52,7 +52,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     expect(response.status).toBe(403);
   });
 
-  it('PATCH promove cidadão a gestor e cria o registro de gestor', async () => {
+  it('[TC-54] PATCH promove cidadão a gestor e cria o registro de gestor', async () => {
     mockUsuarios(admin, cidadao);
     prisma.usuario.update.mockResolvedValue({ ...cidadao, perfil: 'Gestor' } as any);
 
@@ -66,7 +66,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     expect(prisma.gestor.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { id: cidadao.id } }));
   });
 
-  it('PATCH rebaixa gestor a cidadão e garante o registro de cidadão', async () => {
+  it('[TC-54] PATCH rebaixa gestor a cidadão e garante o registro de cidadão', async () => {
     mockUsuarios(admin, gestor);
     prisma.usuario.update.mockResolvedValue({ ...gestor, perfil: 'Cidadao' } as any);
 
@@ -79,7 +79,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     expect(prisma.cidadao.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { id: gestor.id } }));
   });
 
-  it('PATCH não permite alterar o perfil de outro admin', async () => {
+  it('[TC-54] PATCH não permite alterar o perfil de outro admin', async () => {
     const outroAdmin = { ...admin, id: 'uuid-admin-2', email: 'admin2@teste.com' };
     mockUsuarios(admin, outroAdmin);
 
@@ -92,7 +92,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });
 
-  it('PATCH rejeita perfil Admin', async () => {
+  it('[TC-54] PATCH rejeita perfil Admin', async () => {
     mockUsuarios(admin, cidadao);
 
     const response = await request(app)
@@ -103,7 +103,7 @@ describe('Gestão de usuários pelo admin (/admin/users)', () => {
     expect(response.status).toBe(400);
   });
 
-  it('a mudança de perfil vale sem novo login: o token antigo de cidadão passa a acessar /gestor', async () => {
+  it('[TC-54] a mudança de perfil vale sem novo login: o token antigo de cidadão passa a acessar /gestor', async () => {
     const promovido = { ...cidadao, perfil: 'Gestor' };
     mockUsuarios(promovido);
     prisma.chamado.count.mockResolvedValue(0);

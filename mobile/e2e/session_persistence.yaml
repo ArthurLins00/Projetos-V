@@ -1,4 +1,5 @@
 appId: com.projetosv.fiscalize
+name: "[TC-63] M-03 Sessão continua aberta ao reabrir o app"
 ---
 - runFlow: subflows/login.yaml
 

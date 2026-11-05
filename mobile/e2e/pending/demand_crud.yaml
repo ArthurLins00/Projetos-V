@@ -1,4 +1,5 @@
 appId: com.projetosv.fiscalize
+name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 ---
 - evalScript: ${output.titulo = 'Maestro poste ' + Date.now()}
 

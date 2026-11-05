@@ -62,7 +62,7 @@ describe('authController (unitário)', () => {
     ['updateMe', { ...logged, body: { nome: '   ' } }, /Nome/],
     ['updateMe', { ...logged, body: { email: 'x' } }, /E-mail inválido/],
     ['updateMe', { ...logged, body: { novaSenha: '1' } }, /6 caracteres/],
-  ] as const)('%s recusa entrada inválida (400): %j', async (method, req, message) => {
+  ] as const)('[TC-73] %s recusa entrada inválida (400): %j', async (method, req, message) => {
     const { error } = await call(method, req);
 
     expect(error?.statusCode).toBe(400);
@@ -70,7 +70,7 @@ describe('authController (unitário)', () => {
   });
 
   it.each(['updateTwoFactor', 'me', 'uploadPhoto', 'registerPushToken', 'removePushToken', 'acceptTerms', 'removePhoto', 'updateMe'] as const)(
-    '%s sem usuário autenticado retorna 401',
+    '[TC-73] %s sem usuário autenticado retorna 401',
     async (method) => {
       const { error } = await call(method);
 
@@ -78,7 +78,7 @@ describe('authController (unitário)', () => {
     }
   );
 
-  it('register cria o cidadão e devolve 201 sem a senha', async () => {
+  it('[TC-73] register cria o cidadão e devolve 201 sem a senha', async () => {
     service.register!.mockResolvedValue({ ...usuario, senha: 'hash' });
 
     const { status, body } = await call('register', { body: { nome: 'Maria', email: 'maria@t.com', senha: '123456', ignorarSenhaRepetida: true } });
@@ -88,7 +88,7 @@ describe('authController (unitário)', () => {
     expect(service.register).toHaveBeenCalledWith('Maria', 'maria@t.com', '123456', true);
   });
 
-  it('login com 2FA devolve o desafio e, em demonstração, o código', async () => {
+  it('[TC-73] login com 2FA devolve o desafio e, em demonstração, o código', async () => {
     service.login!.mockResolvedValue({ desafioId: 'd1', usuario, codigo: '123456' });
 
     const { body, res } = await call('login', { body: { email: 'maria@t.com', senha: '123456' } });
@@ -97,7 +97,7 @@ describe('authController (unitário)', () => {
     expect(res.cookie).not.toHaveBeenCalled();
   });
 
-  it('login sem 2FA abre a sessão com cookie httpOnly que expira junto com o token', async () => {
+  it('[TC-73] login sem 2FA abre a sessão com cookie httpOnly que expira junto com o token', async () => {
     service.login!.mockResolvedValue({ usuario, token, refreshToken: 'r1' });
 
     const { body, res } = await call('login', { body: { email: 'maria@t.com', senha: '123456' } });
@@ -108,7 +108,7 @@ describe('authController (unitário)', () => {
     expect(options.maxAge).toBeGreaterThan(14 * 60 * 1000);
   });
 
-  it('verifyTwoFactor aceita o código com espaços e abre a sessão', async () => {
+  it('[TC-73] verifyTwoFactor aceita o código com espaços e abre a sessão', async () => {
     service.verifyTwoFactor!.mockResolvedValue({ usuario, token, refreshToken: 'r1' });
 
     const { status } = await call('verifyTwoFactor', { body: { desafioId: 'd1', codigo: ' 123456 ' } });
@@ -117,7 +117,7 @@ describe('authController (unitário)', () => {
     expect(service.verifyTwoFactor).toHaveBeenCalledWith('d1', '123456');
   });
 
-  it('resendTwoFactor só inclui o código quando o serviço o devolve', async () => {
+  it('[TC-73] resendTwoFactor só inclui o código quando o serviço o devolve', async () => {
     service.resendTwoFactor!.mockResolvedValueOnce({ codigo: '654321' }).mockResolvedValueOnce({});
 
     const demo = await call('resendTwoFactor', { body: { desafioId: 'd1' } });
@@ -127,7 +127,7 @@ describe('authController (unitário)', () => {
     expect(real.body).not.toHaveProperty('codigo');
   });
 
-  it('refresh renova o cookie e devolve o novo par de tokens', async () => {
+  it('[TC-73] refresh renova o cookie e devolve o novo par de tokens', async () => {
     service.refresh!.mockResolvedValue({ token, refreshToken: 'r2' });
 
     const { body, res } = await call('refresh', { body: { refreshToken: 'r1' } });
@@ -136,7 +136,7 @@ describe('authController (unitário)', () => {
     expect(res.cookie).toHaveBeenCalled();
   });
 
-  it('forgotPassword e resetPassword normalizam o e-mail e o código', async () => {
+  it('[TC-73] forgotPassword e resetPassword normalizam o e-mail e o código', async () => {
     await call('forgotPassword', { body: { email: ' maria@t.com ' } });
     await call('resetPassword', { body: { email: ' maria@t.com ', codigo: ' 123456 ', novaSenha: 'nova123' } });
 
@@ -144,7 +144,7 @@ describe('authController (unitário)', () => {
     expect(service.resetPassword).toHaveBeenCalledWith('maria@t.com', '123456', 'nova123');
   });
 
-  it('logout revoga o token do header e o refresh token da sessão', async () => {
+  it('[TC-73] logout revoga o token do header e o refresh token da sessão', async () => {
     const { res, status } = await call('logout', {
       ...logged,
       headers: { authorization: `Bearer ${token}` },
@@ -157,14 +157,14 @@ describe('authController (unitário)', () => {
     expect(service.revokeRefreshToken).toHaveBeenCalledWith('r1', 'u1');
   });
 
-  it('logout sem token nenhum só limpa o cookie', async () => {
+  it('[TC-73] logout sem token nenhum só limpa o cookie', async () => {
     await call('logout');
 
     expect(service.addTokenToBlocklist).not.toHaveBeenCalled();
     expect(service.revokeRefreshToken).not.toHaveBeenCalled();
   });
 
-  it('me devolve o perfil do usuário logado', async () => {
+  it('[TC-73] me devolve o perfil do usuário logado', async () => {
     service.getUserById!.mockResolvedValue({ ...usuario, status: 'Ativo', doisfatores: false, criadoem: new Date(0), senha: 'hash' });
 
     const { body } = await call('me', logged);
@@ -173,7 +173,7 @@ describe('authController (unitário)', () => {
     expect(body).not.toHaveProperty('senha');
   });
 
-  it('ações da conta repassam ao serviço com os dados normalizados', async () => {
+  it('[TC-73] ações da conta repassam ao serviço com os dados normalizados', async () => {
     service.setTwoFactor!.mockResolvedValue(usuario);
     service.updatePhoto!.mockResolvedValue(usuario);
     service.removePhoto!.mockResolvedValue(usuario);
@@ -196,7 +196,7 @@ describe('authController (unitário)', () => {
     expect(service.updateProfile).toHaveBeenCalledWith('u1', { nome: 'Maria', email: 'maria@t.com', senhaAtual: 'a', novaSenha: 'nova123' });
   });
 
-  it('erro do serviço é repassado ao middleware de erro', async () => {
+  it('[TC-73] erro do serviço é repassado ao middleware de erro', async () => {
     const falha = new Error('db');
     service.login!.mockRejectedValue(falha);
 

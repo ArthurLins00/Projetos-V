@@ -27,7 +27,7 @@ describe('Cadastro com DEMO_MODE: senha já usada por outra conta (API)', () => 
     delete process.env.DEMO_MODE;
   });
 
-  it('avisa qual conta já usa a senha e não cria o usuário', async () => {
+  it('[TC-40] avisa qual conta já usa a senha e não cria o usuário', async () => {
     const response = await request(app).post(ROUTE).send(novo);
 
     expect(response.status).toBe(409);
@@ -35,14 +35,14 @@ describe('Cadastro com DEMO_MODE: senha já usada por outra conta (API)', () => 
     expect(prisma.usuario.create).not.toHaveBeenCalled();
   });
 
-  it('cria o usuário quando a pessoa decide prosseguir assim mesmo', async () => {
+  it('[TC-40] cria o usuário quando a pessoa decide prosseguir assim mesmo', async () => {
     const response = await request(app).post(ROUTE).send({ ...novo, ignorarSenhaRepetida: true });
 
     expect(response.status).toBe(201);
     expect(prisma.usuario.create).toHaveBeenCalled();
   });
 
-  it('cria o usuário direto quando a senha não se repete', async () => {
+  it('[TC-40] cria o usuário direto quando a senha não se repete', async () => {
     const response = await request(app).post(ROUTE).send({ ...novo, senha: 'senhaInedita9' });
 
     expect(response.status).toBe(201);

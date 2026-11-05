@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login, registerAndLogin } from './helpers';
 
 test.describe('Sessão com refresh token', () => {
-  test('refresh troca o par de tokens, o novo access token funciona e o refresh antigo deixa de valer', async ({ request }) => {
+  test('[TC-03] refresh troca o par de tokens, o novo access token funciona e o refresh antigo deixa de valer', async ({ request }) => {
     const sessao = await registerAndLogin(request, 'refresh');
     expect(sessao.refreshToken).toEqual(expect.any(String));
 
@@ -23,7 +23,7 @@ test.describe('Sessão com refresh token', () => {
     expect(depoisDoReuso.status()).toBe(401);
   });
 
-  test('logout revoga o refresh token daquela sessão sem derrubar a outra', async ({ request }) => {
+  test('[TC-05, TC-08] logout revoga o refresh token daquela sessão sem derrubar a outra', async ({ request }) => {
     const sessaoA = await registerAndLogin(request, 'refresh-logout');
     const sessaoB = await login(request, sessaoA.email, sessaoA.senha);
 
@@ -40,7 +40,7 @@ test.describe('Sessão com refresh token', () => {
     expect(refreshB.status()).toBe(200);
   });
 
-  test('refresh sem o campo retorna 400 e com token desconhecido retorna 401', async ({ request }) => {
+  test('[TC-03] refresh sem o campo retorna 400 e com token desconhecido retorna 401', async ({ request }) => {
     const semCampo = await request.post('/auth/refresh', { data: {} });
     expect(semCampo.status()).toBe(400);
 

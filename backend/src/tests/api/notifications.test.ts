@@ -16,7 +16,7 @@ describe('Notificações (/notifications)', () => {
     prisma.usuario.findUnique.mockResolvedValue({ id: usuarioId, perfil: 'Cidadao', status: 'Ativo' } as any);
   });
 
-  it('lista as notificações do usuário, da mais recente para a mais antiga, com o total de não lidas', async () => {
+  it('[TC-53] lista as notificações do usuário, da mais recente para a mais antiga, com o total de não lidas', async () => {
     prisma.notificacao.findMany.mockResolvedValue([
       {
         id: NOTIF_ID,
@@ -50,7 +50,7 @@ describe('Notificações (/notifications)', () => {
     expect(args.orderBy).toEqual({ criadoem: 'desc' });
   });
 
-  it('filtra só as não lidas com ?unread=true', async () => {
+  it('[TC-53] filtra só as não lidas com ?unread=true', async () => {
     prisma.notificacao.findMany.mockResolvedValue([]);
     prisma.notificacao.count.mockResolvedValue(0);
 
@@ -59,7 +59,7 @@ describe('Notificações (/notifications)', () => {
     expect((prisma.notificacao.findMany.mock.calls[0]![0] as any).where).toEqual({ usuarioid: usuarioId, lida: false });
   });
 
-  it('marca uma notificação como lida, só se for do próprio usuário', async () => {
+  it('[TC-53] marca uma notificação como lida, só se for do próprio usuário', async () => {
     prisma.notificacao.updateMany.mockResolvedValue({ count: 1 });
 
     const res = await request(app).patch(`/notifications/${NOTIF_ID}/read`).set(auth);
@@ -71,14 +71,14 @@ describe('Notificações (/notifications)', () => {
     });
   });
 
-  it('retorna 404 para notificação de outra pessoa ou id inválido', async () => {
+  it('[TC-53] retorna 404 para notificação de outra pessoa ou id inválido', async () => {
     prisma.notificacao.updateMany.mockResolvedValue({ count: 0 });
     expect((await request(app).patch(`/notifications/${NOTIF_ID}/read`).set(auth)).status).toBe(404);
 
     expect((await request(app).patch('/notifications/nao-e-uuid/read').set(auth)).status).toBe(404);
   });
 
-  it('marca todas como lidas', async () => {
+  it('[TC-53] marca todas como lidas', async () => {
     prisma.notificacao.updateMany.mockResolvedValue({ count: 3 });
 
     const res = await request(app).patch('/notifications/read-all').set(auth);
@@ -87,7 +87,7 @@ describe('Notificações (/notifications)', () => {
     expect(res.body).toEqual({ updated: 3 });
   });
 
-  it('exige autenticação (401)', async () => {
+  it('[TC-53] exige autenticação (401)', async () => {
     expect((await request(app).get('/notifications')).status).toBe(401);
   });
 });

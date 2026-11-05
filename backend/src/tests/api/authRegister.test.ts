@@ -27,7 +27,7 @@ describe('POST /auth/register', () => {
     prisma.cidadao.create.mockResolvedValue({} as any);
   });
 
-  it('deve registrar o usuário com sucesso (201) e forçar o perfil como Cidadão', async () => {
+  it('[TC-40] deve registrar o usuário com sucesso (201) e forçar o perfil como Cidadão', async () => {
     const response = await request(app)
       .post(ROUTE)
       .send({
@@ -49,7 +49,7 @@ describe('POST /auth/register', () => {
     );
   });
 
-  it('deve IGNORAR tentativa de injeção e registrar o usuário como Cidadão mesmo enviando perfil de Admin', async () => {
+  it('[TC-40] deve IGNORAR tentativa de injeção e registrar o usuário como Cidadão mesmo enviando perfil de Admin', async () => {
     const response = await request(app)
       .post(ROUTE)
       .send({
@@ -73,7 +73,7 @@ describe('POST /auth/register', () => {
     );
   });
 
-  it('deve retornar 409 quando tentar registrar um e-mail já existente', async () => {
+  it('[TC-40] deve retornar 409 quando tentar registrar um e-mail já existente', async () => {
     prisma.usuario.findUnique.mockResolvedValue({ id: 'existente' } as any);
 
     const response = await request(app)
@@ -101,7 +101,7 @@ describe('POST /auth/register', () => {
       [{ ...valido, email: 'maria.exemplo.com' }, /E-mail inválido/i],
       [{ ...valido, email: 'maria@exemplo' }, /E-mail inválido/i],
       [{ ...valido, senha: '12345' }, /mínimo 6 caracteres/i],
-    ])('recusa %j com 400 e não grava nada', async (body, mensagem) => {
+    ])('[TC-41] recusa %j com 400 e não grava nada', async (body, mensagem) => {
       const response = await request(app).post(ROUTE).send(body);
 
       expect(response.status).toBe(400);
@@ -109,7 +109,7 @@ describe('POST /auth/register', () => {
       expect(prisma.usuario.create).not.toHaveBeenCalled();
     });
 
-    it.each(['123456', '1234567'])('aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)', async (senha) => {
+    it.each(['123456', '1234567'])('[TC-41] aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)', async (senha) => {
       const response = await request(app).post(ROUTE).send({ ...valido, senha });
 
       expect(response.status).toBe(201);

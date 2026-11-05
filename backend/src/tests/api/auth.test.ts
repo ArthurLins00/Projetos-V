@@ -27,7 +27,7 @@ describe('POST /auth/login', () => {
     jest.clearAllMocks();
   });
 
-  it('deve retornar 200 e um token/cookie quando as credenciais forem válidas', async () => {
+  it('[TC-01] deve retornar 200 e um token/cookie quando as credenciais forem válidas', async () => {
     prisma.usuario.findUnique.mockResolvedValue(mockUsuarioBase as any);
 
     const response = await request(app)
@@ -44,7 +44,7 @@ describe('POST /auth/login', () => {
     expect(response.headers['set-cookie']).toBeDefined();
   });
 
-  it('deve retornar 401 quando a senha estiver incorreta', async () => {
+  it('[TC-02] deve retornar 401 quando a senha estiver incorreta', async () => {
     prisma.usuario.findUnique.mockResolvedValue(mockUsuarioBase as any);
 
     const response = await request(app)
@@ -59,7 +59,7 @@ describe('POST /auth/login', () => {
     expect(response.body.error).toMatch(/Credenciais inválidas/i);
   });
 
-  it('deve retornar 401 quando o e-mail não existir', async () => {
+  it('[TC-02] deve retornar 401 quando o e-mail não existir', async () => {
     prisma.usuario.findUnique.mockResolvedValue(null);
 
     const response = await request(app)
@@ -74,7 +74,7 @@ describe('POST /auth/login', () => {
     expect(response.body.error).toMatch(/Credenciais inválidas/i);
   });
 
-  it('deve retornar 403 se o usuário estiver com status inativo', async () => {
+  it('[TC-61] deve retornar 403 se o usuário estiver com status inativo', async () => {
     const usuarioInativo = { ...mockUsuarioBase, status: 'Inativo' };
     prisma.usuario.findUnique.mockResolvedValue(usuarioInativo as any);
 

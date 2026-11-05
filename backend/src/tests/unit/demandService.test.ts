@@ -58,7 +58,7 @@ describe('demandService (unitário)', () => {
       prisma.chamado.count.mockResolvedValue(1);
     });
 
-    it('cidadão vê só as próprias demandas e, sem filtro, as removidas (Fechado) ficam ocultas', async () => {
+    it('[TC-43, TC-57] cidadão vê só as próprias demandas e, sem filtro, as removidas (Fechado) ficam ocultas', async () => {
       await demandService.list({ userId: CIDADAO_ID, perfil: 'Cidadao', page: 1, limit: 20 });
 
       const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
@@ -66,14 +66,14 @@ describe('demandService (unitário)', () => {
       expect(where.status).toEqual({ not: 'Fechado' });
     });
 
-    it('filtro de status explícito substitui a regra padrão (permite ver "Removidas")', async () => {
+    it('[TC-57] filtro de status explícito substitui a regra padrão (permite ver "Removidas")', async () => {
       await demandService.list({ userId: CIDADAO_ID, perfil: 'Cidadao', status: 'Fechado', page: 1, limit: 20 });
 
       const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
       expect(where.status).toBe('Fechado');
     });
 
-    it('gestor não fica restrito às próprias demandas', async () => {
+    it('[TC-57] gestor não fica restrito às próprias demandas', async () => {
       await demandService.list({ userId: 'gestor-1', perfil: 'Gestor', page: 1, limit: 20 });
 
       const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
@@ -81,7 +81,7 @@ describe('demandService (unitário)', () => {
       expect(where.status).toBeUndefined();
     });
 
-    it('pesquisa textual busca em título, descrição, endereço, protocolo e categoria (sem diferenciar maiúsculas)', async () => {
+    it('[TC-57] pesquisa textual busca em título, descrição, endereço, protocolo e categoria (sem diferenciar maiúsculas)', async () => {
       await demandService.list({ userId: CIDADAO_ID, perfil: 'Cidadao', busca: 'buraco', page: 1, limit: 20 });
 
       const { where } = prisma.chamado.findMany.mock.calls[0][0] as any;
@@ -91,7 +91,7 @@ describe('demandService (unitário)', () => {
       expect(where.OR[4].categoria).toEqual({ nome: { contains: 'buraco', mode: 'insensitive' } });
     });
 
-    it('aplica paginação e converte o registro para o formato da API', async () => {
+    it('[TC-25, TC-28] aplica paginação e converte o registro para o formato da API', async () => {
       const result = await demandService.list({ userId: CIDADAO_ID, perfil: 'Cidadao', page: 3, limit: 10 });
 
       const args = prisma.chamado.findMany.mock.calls[0][0] as any;
@@ -109,7 +109,7 @@ describe('demandService (unitário)', () => {
   });
 
   describe('create', () => {
-    it('grava estado, cidade e zona e devolve no formato da API', async () => {
+    it('[TC-59] grava estado, cidade e zona e devolve no formato da API', async () => {
       prisma.categoria.findUnique.mockResolvedValue({ id: 1, ativo: true } as any);
       prisma.cidadao.findUnique.mockResolvedValue({ id: CIDADAO_ID } as any);
       prisma.regra_competencia.findFirst.mockResolvedValue(null);
@@ -134,7 +134,7 @@ describe('demandService (unitário)', () => {
   });
 
   describe('deleteDemand', () => {
-    it('cidadão dono remove a demanda aberta: status vira Fechado e o histórico é registrado', async () => {
+    it('[TC-42] cidadão dono remove a demanda aberta: status vira Fechado e o histórico é registrado', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());
 
       await demandService.deleteDemand('chamado-1', CIDADAO_ID, 'Cidadao');
@@ -148,7 +148,7 @@ describe('demandService (unitário)', () => {
       );
     });
 
-    it('cidadão não pode remover demanda de outra pessoa (403)', async () => {
+    it('[TC-42, TC-43] cidadão não pode remover demanda de outra pessoa (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID }));
 
       await expect(demandService.deleteDemand('chamado-1', CIDADAO_ID, 'Cidadao')).rejects.toMatchObject({
@@ -158,7 +158,7 @@ describe('demandService (unitário)', () => {
     });
 
     it.each(['Em_Andamento', 'Resolvido', 'Fechado'])(
-      'cidadão não pode remover demanda com status %s (403)',
+      '[TC-42] cidadão não pode remover demanda com status %s (403)',
       async (status) => {
         prisma.chamado.findUnique.mockResolvedValue(makeChamado({ status }));
 
@@ -168,7 +168,7 @@ describe('demandService (unitário)', () => {
       },
     );
 
-    it('gestor pode remover demanda de qualquer cidadão', async () => {
+    it('[TC-42] gestor pode remover demanda de qualquer cidadão', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID, status: 'Em_Andamento' }));
 
       await demandService.deleteDemand('chamado-1', 'gestor-1', 'Gestor');
@@ -177,7 +177,7 @@ describe('demandService (unitário)', () => {
       expect(notificationService.notifyDemandUpdate).toHaveBeenCalledWith('chamado-1', expect.objectContaining({ titulo: 'Chamado encerrado' }));
     });
 
-    it('retorna 404 para demanda inexistente', async () => {
+    it('[TC-42] retorna 404 para demanda inexistente', async () => {
       prisma.chamado.findUnique.mockResolvedValue(null);
 
       await expect(demandService.deleteDemand('nao-existe', CIDADAO_ID, 'Cidadao')).rejects.toMatchObject({
@@ -187,7 +187,7 @@ describe('demandService (unitário)', () => {
   });
 
   describe('update', () => {
-    it('cidadão não pode editar demanda de outra pessoa (403)', async () => {
+    it('[TC-42, TC-43] cidadão não pode editar demanda de outra pessoa (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID }));
 
       await expect(
@@ -195,7 +195,7 @@ describe('demandService (unitário)', () => {
       ).rejects.toMatchObject({ statusCode: 403 });
     });
 
-    it('não permite editar demanda já em andamento (403)', async () => {
+    it('[TC-42] não permite editar demanda já em andamento (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ status: 'Em_Andamento' }));
 
       await expect(
@@ -203,7 +203,7 @@ describe('demandService (unitário)', () => {
       ).rejects.toMatchObject({ statusCode: 403 });
     });
 
-    it('atualiza os campos enviados e registra o histórico com dados antigos e novos', async () => {
+    it('[TC-42] atualiza os campos enviados e registra o histórico com dados antigos e novos', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());
       prisma.chamado.update.mockResolvedValue(makeChamado({ subcategoria: 'Novo título' }));
       prisma.usuario.findUnique.mockResolvedValue({ nome: 'Cidadão' } as any);
@@ -232,7 +232,7 @@ describe('demandService (unitário)', () => {
       prisma.chamado_foto.create.mockImplementation((async ({ data }: any) => ({ id: 'foto-1', url: data.url })) as any);
     });
 
-    it('salva um JPEG válido no disco e registra a foto', async () => {
+    it('[TC-10] salva um JPEG válido no disco e registra a foto', async () => {
       const foto = await demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64);
 
       expect(foto).toEqual({ id: 'foto-1', url: expect.stringMatching(/^\/uploads\/chamado-1-\d+-\w+\.jpg$/) });
@@ -240,33 +240,33 @@ describe('demandService (unitário)', () => {
       expect(saved.subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
     });
 
-    it('aceita o prefixo data URI (data:image/jpeg;base64,...)', async () => {
+    it('[TC-10] aceita o prefixo data URI (data:image/jpeg;base64,...)', async () => {
       const foto = await demandService.addPhoto('chamado-1', CIDADAO_ID, `data:image/jpeg;base64,${JPEG_BASE64}`);
 
       expect(foto.url).toMatch(/\.jpg$/);
     });
 
-    it('rejeita conteúdo que não é imagem, mesmo em base64 (422)', async () => {
+    it('[TC-11] rejeita conteúdo que não é imagem, mesmo em base64 (422)', async () => {
       const texto = Buffer.from('não sou uma imagem').toString('base64');
 
       await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, texto)).rejects.toMatchObject({ statusCode: 422 });
       expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
     });
 
-    it('recusa a foto quando o limite de 5 foi atingido (400)', async () => {
+    it('[TC-14] recusa a foto quando o limite de 5 foi atingido (400)', async () => {
       prisma.chamado_foto.count.mockResolvedValue(5);
 
       await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 400 });
       expect(prisma.chamado_foto.create).not.toHaveBeenCalled();
     });
 
-    it('cidadão não pode enviar foto para demanda de outra pessoa (403)', async () => {
+    it('[TC-43] cidadão não pode enviar foto para demanda de outra pessoa (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ cidadaoid: OUTRO_CIDADAO_ID }));
 
       await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 403 });
     });
 
-    it('não permite alterar fotos de demanda em andamento (403)', async () => {
+    it('[TC-42] não permite alterar fotos de demanda em andamento (403)', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado({ status: 'Em_Andamento' }));
 
       await expect(demandService.addPhoto('chamado-1', CIDADAO_ID, JPEG_BASE64)).rejects.toMatchObject({ statusCode: 403 });
@@ -274,7 +274,7 @@ describe('demandService (unitário)', () => {
   });
 
   describe('removePhoto', () => {
-    it('apaga o registro e o arquivo da foto', async () => {
+    it('[TC-60] apaga o registro e o arquivo da foto', async () => {
       await fs.mkdir(TMP_UPLOADS, { recursive: true });
       const arquivo = path.join(TMP_UPLOADS, 'chamado-1-antiga.jpg');
       await fs.writeFile(arquivo, Buffer.from([0xff, 0xd8, 0xff]));
@@ -287,7 +287,7 @@ describe('demandService (unitário)', () => {
       await expect(fs.access(arquivo)).rejects.toThrow();
     });
 
-    it('remover foto inexistente retorna 404', async () => {
+    it('[TC-60] remover foto inexistente retorna 404', async () => {
       prisma.chamado.findUnique.mockResolvedValue(makeChamado());
       prisma.chamado_foto.findFirst.mockResolvedValue(null);
 

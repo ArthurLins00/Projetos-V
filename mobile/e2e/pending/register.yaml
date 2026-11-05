@@ -1,4 +1,5 @@
 appId: com.projetosv.fiscalize
+name: "[TC-63] M-02 Cadastro pela tela e login com a conta nova"
 ---
 - evalScript: ${output.email = 'maestro.' + Date.now() + '@teste.fiscalize'}
 

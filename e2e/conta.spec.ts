@@ -4,14 +4,14 @@ import { JPEG_BASE64, registerAndLogin } from './helpers';
 test.describe.serial('Conta do cidadão: termos, foto de perfil, notificações e recuperação de senha', () => {
   let session: Awaited<ReturnType<typeof registerAndLogin>>;
 
-  test('conta nova ainda não aceitou os termos de uso', async ({ request }) => {
+  test('[TC-52] conta nova ainda não aceitou os termos de uso', async ({ request }) => {
     session = await registerAndLogin(request, 'conta');
 
     const me = await (await request.get('/auth/me', { headers: session.headers })).json();
     expect(me.termosversao).toBeNull();
   });
 
-  test('aceite dos termos fica gravado e não regride para uma versão anterior', async ({ request }) => {
+  test('[TC-52] aceite dos termos fica gravado e não regride para uma versão anterior', async ({ request }) => {
     const aceite = await request.post('/auth/me/terms', { headers: session.headers, data: { versao: 2 } });
     expect(aceite.status(), await aceite.text()).toBe(200);
     expect((await aceite.json()).termosversao).toBe(2);
@@ -21,7 +21,7 @@ test.describe.serial('Conta do cidadão: termos, foto de perfil, notificações 
     expect(me.termosversao).toBe(2);
   });
 
-  test('envia a foto de perfil, ela fica disponível e pode ser removida', async ({ request }) => {
+  test('[TC-51] envia a foto de perfil, ela fica disponível e pode ser removida', async ({ request }) => {
     const upload = await request.put('/auth/me/photo', { headers: session.headers, data: { photo: JPEG_BASE64 } });
     expect(upload.status(), await upload.text()).toBe(200);
     const { fotourl } = await upload.json();
@@ -35,7 +35,7 @@ test.describe.serial('Conta do cidadão: termos, foto de perfil, notificações 
     expect((await request.get(fotourl)).status()).toBe(404);
   });
 
-  test('registra e remove o token de push do aparelho; token inválido é recusado', async ({ request }) => {
+  test('[TC-20] registra e remove o token de push do aparelho; token inválido é recusado', async ({ request }) => {
     const token = `ExponentPushToken[e2e-${Date.now()}]`;
 
     const registro = await request.post('/auth/me/push-token', { headers: session.headers, data: { token } });
@@ -50,7 +50,7 @@ test.describe.serial('Conta do cidadão: termos, foto de perfil, notificações 
     expect(invalido.status()).toBe(400);
   });
 
-  test('recuperação de senha responde igual para e-mail existente e inexistente e recusa código errado', async ({ request }) => {
+  test('[TC-49] recuperação de senha responde igual para e-mail existente e inexistente e recusa código errado', async ({ request }) => {
     const existente = await request.post('/auth/forgot-password', { data: { email: session.email } });
     const inexistente = await request.post('/auth/forgot-password', { data: { email: 'ninguem.e2e@teste.fiscalize' } });
     expect(existente.status()).toBe(200);

@@ -44,7 +44,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     prisma.refresh_token.create.mockResolvedValue({} as any);
   });
 
-  it('não entrega tokens no login e envia o código por e-mail', async () => {
+  it('[TC-75] não entrega tokens no login e envia o código por e-mail', async () => {
     const response = await iniciarLogin();
 
     expect(response.status).toBe(200);
@@ -57,7 +57,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     expect(sendMock).toHaveBeenCalledWith(usuario.email, expect.any(String), expect.stringMatching(/\d{6}/));
   });
 
-  it('autentica com o código correto e não permite reutilizá-lo', async () => {
+  it('[TC-75] autentica com o código correto e não permite reutilizá-lo', async () => {
     const { body } = await iniciarLogin();
     const codigo = codigoEnviado();
 
@@ -71,7 +71,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     expect(reuso.status).toBe(400);
   });
 
-  it('rejeita código incorreto e invalida o desafio após 5 tentativas', async () => {
+  it('[TC-75] rejeita código incorreto e invalida o desafio após 5 tentativas', async () => {
     const { body } = await iniciarLogin();
     const codigo = codigoEnviado();
 
@@ -86,7 +86,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     expect(response.status).toBe(400);
   });
 
-  it('rejeita desafio desconhecido', async () => {
+  it('[TC-75] rejeita desafio desconhecido', async () => {
     const response = await request(app)
       .post('/auth/login/2fa')
       .send({ desafioId: 'inexistente', codigo: '123456' });
@@ -94,7 +94,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     expect(response.status).toBe(400);
   });
 
-  it('limita o reenvio do código a um por minuto', async () => {
+  it('[TC-75] limita o reenvio do código a um por minuto', async () => {
     const { body } = await iniciarLogin();
 
     const response = await request(app).post('/auth/login/2fa/resend').send({ desafioId: body.desafioId });
@@ -103,7 +103,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
     expect(sendMock).toHaveBeenCalledTimes(1);
   });
 
-  it('mantém o login direto para quem não ativou a verificação', async () => {
+  it('[TC-75] mantém o login direto para quem não ativou a verificação', async () => {
     usuario.doisfatores = false;
 
     const response = await iniciarLogin();
@@ -116,7 +116,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
   describe('PUT /auth/me/two-factor', () => {
     const tokenDe = (u: any) => jwt.sign({ id: u.id, email: u.email, perfil: u.perfil }, process.env.JWT_SECRET!);
 
-    it('ativa a verificação com a senha atual', async () => {
+    it('[TC-75] ativa a verificação com a senha atual', async () => {
       usuario.doisfatores = false;
       prisma.usuario.update.mockResolvedValue({ ...usuario, doisfatores: true });
 
@@ -130,7 +130,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
       expect(prisma.usuario.update.mock.calls[0][0].data).toMatchObject({ doisfatores: true });
     });
 
-    it('recusa a alteração com senha incorreta', async () => {
+    it('[TC-75] recusa a alteração com senha incorreta', async () => {
       const response = await request(app)
         .put('/auth/me/two-factor')
         .set('Authorization', `Bearer ${tokenDe(usuario)}`)
@@ -140,7 +140,7 @@ describe('Verificação em duas etapas por e-mail (API)', () => {
       expect(prisma.usuario.update).not.toHaveBeenCalled();
     });
 
-    it('exige o campo ativo booleano', async () => {
+    it('[TC-75] exige o campo ativo booleano', async () => {
       const response = await request(app)
         .put('/auth/me/two-factor')
         .set('Authorization', `Bearer ${tokenDe(usuario)}`)

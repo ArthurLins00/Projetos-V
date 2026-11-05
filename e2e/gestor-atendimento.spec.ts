@@ -6,7 +6,7 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
   let gestor: Awaited<ReturnType<typeof login>>;
   let demand: { id: string; protocolo: string };
 
-  test('cidadão registra um vazamento (categoria Água e Esgoto → COMPESA)', async ({ request }) => {
+  test('[TC-16] cidadão registra um vazamento (categoria Água e Esgoto → COMPESA)', async ({ request }) => {
     cidadao = await registerAndLogin(request, 'vazamento');
     const categoryId = await categoryIdByName(request, cidadao, 'Água e Esgoto');
     demand = await createDemand(request, cidadao, {
@@ -16,7 +16,7 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     });
   });
 
-  test('a ocorrência chega à fila de gestão de chamados', async ({ request }) => {
+  test('[TC-16, TC-62] a ocorrência chega à fila de gestão de chamados', async ({ request }) => {
     gestor = await login(request, SEED.gestor.email, SEED.gestor.senha);
 
     const fila = await request.get('/gestor/chamados', { headers: gestor.headers, params: { limit: '100' } });
@@ -25,13 +25,13 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     expect(ids).toContain(demand.id);
   });
 
-  test('cidadão não tem acesso às rotas do gestor', async ({ request }) => {
+  test('[TC-39] cidadão não tem acesso às rotas do gestor', async ({ request }) => {
     const response = await request.get('/gestor/chamados', { headers: cidadao.headers });
 
     expect(response.status()).toBe(403);
   });
 
-  test('gestor move a ocorrência para "Em Andamento"', async ({ request }) => {
+  test('[TC-47] gestor move a ocorrência para "Em Andamento"', async ({ request }) => {
     const response = await request.put(`/gestor/chamados/${demand.id}/status`, {
       headers: gestor.headers,
       data: { status: 'Em Andamento', justificativa: 'Equipe enviada ao local' },
@@ -40,14 +40,14 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     expect(response.status(), await response.text()).toBe(200);
   });
 
-  test('cidadão vê o novo status e o registro no histórico', async ({ request }) => {
+  test('[TC-47] cidadão vê o novo status e o registro no histórico', async ({ request }) => {
     const detail = await (await request.get(`/demands/${demand.id}`, { headers: cidadao.headers })).json();
 
     expect(detail.status).toBe('Em Andamento');
     expect(detail.logs.map((l: { titulo: string }) => l.titulo)).toContain('Status atualizado');
   });
 
-  test('cidadão recebe a notificação da mudança e pode marcá-la como lida', async ({ request }) => {
+  test('[TC-21, TC-53] cidadão recebe a notificação da mudança e pode marcá-la como lida', async ({ request }) => {
     const lista = await (await request.get('/notifications', { headers: cidadao.headers })).json();
 
     expect(lista.unreadCount).toBe(1);
@@ -69,7 +69,7 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     expect(deOutro.status()).toBe(404);
   });
 
-  test('com a ocorrência em andamento, o cidadão não pode mais editar nem remover', async ({ request }) => {
+  test('[TC-42] com a ocorrência em andamento, o cidadão não pode mais editar nem remover', async ({ request }) => {
     const update = await request.put(`/demands/${demand.id}`, { headers: cidadao.headers, data: { title: 'Mudança' } });
     expect(update.status()).toBe(403);
 
@@ -77,7 +77,7 @@ test.describe.serial('Jornada do gestor: atendimento de uma ocorrência', () => 
     expect(remove.status()).toBe(403);
   });
 
-  test('gestor conclui a ocorrência e ela aparece como Resolvido para o cidadão', async ({ request }) => {
+  test('[TC-47, TC-53] gestor conclui a ocorrência e ela aparece como Resolvido para o cidadão', async ({ request }) => {
     const response = await request.put(`/gestor/chamados/${demand.id}/status`, {
       headers: gestor.headers,
       data: { status: 'Resolvido', resolutionNote: 'Tubulação substituída' },

@@ -6,7 +6,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
   let demand: { id: string; protocolo: string; title: string };
   const title = `Buraco na via ${uniqueSuffix()}`;
 
-  test('cadastro e login de um novo cidadão', async ({ request }) => {
+  test('[TC-01, TC-40] cadastro e login de um novo cidadão', async ({ request }) => {
     session = await registerAndLogin(request, 'jornada');
 
     expect(session.user.perfil).toBe('Cidadao');
@@ -15,14 +15,14 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect((await me.json()).email).toBe(session.email);
   });
 
-  test('lista de ocorrências começa vazia para um cidadão novo', async ({ request }) => {
+  test('[TC-25] lista de ocorrências começa vazia para um cidadão novo', async ({ request }) => {
     const response = await request.get('/demands', { headers: session.headers });
 
     expect(response.status()).toBe(200);
     expect(await response.json()).toMatchObject({ data: [], total: 0 });
   });
 
-  test('registra uma ocorrência com categoria, endereço, região e coordenadas do GPS', async ({ request }) => {
+  test('[TC-30, TC-59] registra uma ocorrência com categoria, endereço, região e coordenadas do GPS', async ({ request }) => {
     const categoryId = await categoryIdByName(request, session, 'Infraestrutura');
     demand = await createDemand(request, session, {
       title,
@@ -38,7 +38,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(demand).toMatchObject({ title, status: 'Aberto', state: 'PE', city: 'Recife', zone: 'Urbana' });
   });
 
-  test('a ocorrência aparece na listagem com status Aberto', async ({ request }) => {
+  test('[TC-25] a ocorrência aparece na listagem com status Aberto', async ({ request }) => {
     const response = await request.get('/demands', { headers: session.headers });
     const body = await response.json();
 
@@ -53,7 +53,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     });
   });
 
-  test('pesquisa por título, endereço, protocolo e categoria encontra a ocorrência; termo inexistente não', async ({ request }) => {
+  test('[TC-57] pesquisa por título, endereço, protocolo e categoria encontra a ocorrência; termo inexistente não', async ({ request }) => {
     for (const termo of ['buraco na via', 'avenida central', demand.protocolo, 'infraestrut']) {
       const response = await request.get('/demands', { headers: session.headers, params: { busca: termo } });
       const ids = (await response.json()).data.map((d: { id: string }) => d.id);
@@ -64,7 +64,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect((await semResultado.json()).total).toBe(0);
   });
 
-  test('filtro por status: aparece em "Aberto" e não em "Resolvido"', async ({ request }) => {
+  test('[TC-57] filtro por status: aparece em "Aberto" e não em "Resolvido"', async ({ request }) => {
     const aberto = await request.get('/demands', { headers: session.headers, params: { status: 'Aberto' } });
     expect((await aberto.json()).total).toBe(1);
 
@@ -72,7 +72,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect((await resolvido.json()).total).toBe(0);
   });
 
-  test('detalhe mostra os dados, a região, o prazo (SLA) e o histórico da ocorrência', async ({ request }) => {
+  test('[TC-58] detalhe mostra os dados, a região, o prazo (SLA) e o histórico da ocorrência', async ({ request }) => {
     const response = await request.get(`/demands/${demand.id}`, { headers: session.headers });
     const body = await response.json();
 
@@ -83,7 +83,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(new Date(body.slaDeadline).getTime()).toBeGreaterThan(new Date(body.createdAt).getTime());
   });
 
-  test('edita título, descrição e categoria; a alteração fica no histórico', async ({ request }) => {
+  test('[TC-42] edita título, descrição e categoria; a alteração fica no histórico', async ({ request }) => {
     const novaCategoria = await categoryIdByName(request, session, 'Sinalização');
     const update = await request.put(`/demands/${demand.id}`, {
       headers: session.headers,
@@ -100,7 +100,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(detail.logs.map((l: { titulo: string }) => l.titulo)).toContain('Demanda atualizada');
   });
 
-  test('anexa duas fotos, elas ficam disponíveis no app e uma pode ser removida', async ({ request }) => {
+  test('[TC-10, TC-14, TC-60] anexa duas fotos, elas ficam disponíveis no app e uma pode ser removida', async ({ request }) => {
     const enviadas = [];
     for (let i = 0; i < 2; i++) {
       const upload = await request.post(`/demands/${demand.id}/photos`, {
@@ -128,7 +128,7 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(depois.photoUrl).toBe(enviadas[1].url);
   });
 
-  test('remove a ocorrência: some da lista padrão e aparece em "Removidas"', async ({ request }) => {
+  test('[TC-42] remove a ocorrência: some da lista padrão e aparece em "Removidas"', async ({ request }) => {
     const remove = await request.delete(`/demands/${demand.id}`, { headers: session.headers });
     expect(remove.status()).toBe(204);
 
@@ -139,13 +139,13 @@ test.describe.serial('Jornada do cidadão: ciclo de vida de uma ocorrência', ()
     expect(removidas.data.map((d: { id: string }) => d.id)).toContain(demand.id);
   });
 
-  test('ocorrência removida não pode mais ser editada', async ({ request }) => {
+  test('[TC-42] ocorrência removida não pode mais ser editada', async ({ request }) => {
     const update = await request.put(`/demands/${demand.id}`, { headers: session.headers, data: { title: 'Tentativa' } });
 
     expect(update.status()).toBe(403);
   });
 
-  test('logout encerra a sessão: o token deixa de funcionar', async ({ request }) => {
+  test('[TC-07] logout encerra a sessão: o token deixa de funcionar', async ({ request }) => {
     const logout = await request.post('/auth/logout', { headers: session.headers });
     expect(logout.status()).toBe(200);
 

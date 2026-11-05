@@ -23,7 +23,7 @@ describe('notificationService (unitário)', () => {
     prisma.push_token.findMany.mockResolvedValue([]);
   });
 
-  it('registra a notificação e envia e-mail para o cidadão', async () => {
+  it('[TC-22] registra a notificação e envia e-mail para o cidadão', async () => {
     await notificationService.notifyDemandUpdate('chamado-1', UPDATE);
 
     expect(prisma.notificacao.create).toHaveBeenCalledWith({
@@ -37,7 +37,7 @@ describe('notificationService (unitário)', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('envia push para os aparelhos do cidadão e remove tokens que não existem mais', async () => {
+  it('[TC-21] envia push para os aparelhos do cidadão e remove tokens que não existem mais', async () => {
     prisma.push_token.findMany.mockResolvedValue([{ token: 'ExponentPushToken[ok]' }, { token: 'ExponentPushToken[velho]' }] as any);
     fetchMock.mockResolvedValue({
       ok: true,
@@ -54,7 +54,7 @@ describe('notificationService (unitário)', () => {
     expect(prisma.push_token.deleteMany).toHaveBeenCalledWith({ where: { token: { in: ['ExponentPushToken[velho]'] } } });
   });
 
-  it('falha no e-mail ou no push não interrompe o fluxo', async () => {
+  it('[TC-23] falha no e-mail ou no push não interrompe o fluxo', async () => {
     sendMail.mockRejectedValue(new Error('SMTP fora do ar'));
     prisma.push_token.findMany.mockResolvedValue([{ token: 'ExponentPushToken[ok]' }] as any);
     fetchMock.mockRejectedValue(new Error('sem rede'));
@@ -65,7 +65,7 @@ describe('notificationService (unitário)', () => {
     consoleError.mockRestore();
   });
 
-  it('não faz nada se o chamado não existir', async () => {
+  it('[TC-21] não faz nada se o chamado não existir', async () => {
     prisma.chamado.findUnique.mockResolvedValue(null);
 
     await notificationService.notifyDemandUpdate('nao-existe', UPDATE);
@@ -74,7 +74,7 @@ describe('notificationService (unitário)', () => {
     expect(sendMail).not.toHaveBeenCalled();
   });
 
-  it('registra token de push válido e recusa token em formato inválido', async () => {
+  it('[TC-20] registra token de push válido e recusa token em formato inválido', async () => {
     await notificationService.registerPushToken('cidadao-1', 'ExponentPushToken[abc123]');
     expect(prisma.push_token.upsert).toHaveBeenCalledWith({
       where: { token: 'ExponentPushToken[abc123]' },

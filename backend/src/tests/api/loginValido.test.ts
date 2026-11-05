@@ -20,7 +20,7 @@ describe('AUT-01 | Realizar login com credenciais válidas | RF04 (API)', () => 
     atualizadoem: new Date(),
   };
 
-  it('deve autenticar o usuário e retornar um token de acesso', async () => {
+  it('[TC-01] deve autenticar o usuário e retornar um token de acesso', async () => {
     prisma.usuario.findUnique.mockResolvedValue(usuario as any);
 
     const response = await request(app)
