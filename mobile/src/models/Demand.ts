@@ -51,6 +51,10 @@ export interface DemandPayload {
 export interface DemandListParams {
   busca?: string;
   status?: string;
+  categoria?: number;
+  uf?: string;
+  cidade?: string;
+  zona?: Zone;
   page?: number;
   limit?: number;
 }

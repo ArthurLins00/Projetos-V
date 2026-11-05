@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useManagementDashboardViewModel } from '../viewmodels/useManagementDashboardViewModel';
 import { ManagedTicketCard } from '../components/ManagedTicketCard';
+import { MetricsPanel } from '../components/MetricsPanel';
+import { DemandFilterBar } from '../components/DemandFilterBar';
 import { Avatar, Chip, EmptyState, ScrollableRow } from '../components/ui';
 import { MANAGEMENT_FILTERS, ManagementFilter } from '../models/Management';
 import { PERFIL_LABELS } from '../models/User';
@@ -138,6 +140,7 @@ export function ManagementDashboardView() {
             />
           ))}
         </ScrollableRow>
+        <DemandFilterBar filters={vm.filters} testID="ticket-region-filters" />
       </View>
 
       {vm.loading ? (
@@ -153,11 +156,14 @@ export function ManagementDashboardView() {
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
-            vm.error || !vm.tickets.length ? undefined : (
-              <Text style={styles.count}>
-                {vm.total} {vm.total === 1 ? 'chamado' : 'chamados'}
-              </Text>
-            )
+            <>
+              <MetricsPanel metrics={vm.metrics} error={vm.metricsError} onRetry={vm.reloadMetrics} />
+              {!vm.error && !!vm.tickets.length && (
+                <Text style={styles.count}>
+                  {vm.total} {vm.total === 1 ? 'chamado' : 'chamados'}
+                </Text>
+              )}
+            </>
           }
           ListEmptyComponent={
             <EmptyState

@@ -5,6 +5,7 @@ import { useDemands } from '../contexts/DemandContext';
 import { notificationsService } from '../services/notificationsService';
 import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useDemandFilters } from './useDemandFilters';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -22,6 +23,8 @@ export function useDemandListViewModel() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const filters = useDemandFilters(() => setLoading(true));
+  const filterParams = filters.params;
 
   const refreshUnreadCount = useCallback(() => {
     notificationsService.unreadCount().then(setUnreadCount).catch(() => undefined);
@@ -40,7 +43,9 @@ export function useDemandListViewModel() {
       current = await loadDemands({
         page: targetPage,
         limit: PAGE_SIZE,
-        ...(debouncedSearch ? { busca: debouncedSearch } : status && { status }),
+        ...(debouncedSearch && { busca: debouncedSearch }),
+        ...(status && { status }),
+        ...filterParams,
       });
       if (current) setError(null);
     } catch (err) {
@@ -52,7 +57,7 @@ export function useDemandListViewModel() {
         setLoadingMore(false);
       }
     }
-  }, [debouncedSearch, status, loadDemands]);
+  }, [debouncedSearch, status, filterParams, loadDemands]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
@@ -76,15 +81,8 @@ export function useDemandListViewModel() {
     fetchPage(page + 1);
   };
 
-  const searching = !!search.trim();
-
   const selectStatus = (value?: string) => {
-    if (searching) {
-      setSearch('');
-      setDebouncedSearch('');
-    } else if (value === status) {
-      return;
-    }
+    if (value === status) return;
     setLoading(true);
     setStatus(value);
   };
@@ -102,8 +100,8 @@ export function useDemandListViewModel() {
     search,
     setSearch,
     status,
-    searching,
     selectStatus,
+    filters,
     loading,
     refreshing,
     loadingMore,

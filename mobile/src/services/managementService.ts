@@ -1,6 +1,8 @@
 import { api } from './api';
 import {
+  CategoryMetric,
   ManagedTicketDetail,
+  OperationalMetrics,
   ManagedTicketListParams,
   ManagedTicketListResponse,
   ManagementDashboard,
@@ -13,6 +15,22 @@ export const managementService = {
   async dashboard(): Promise<ManagementDashboard> {
     const response = await api.get<ManagementDashboard>('/gestor/dashboard');
     return response.data;
+  },
+
+  async metrics(): Promise<OperationalMetrics> {
+    const [total, porCategoria, tempo] = await Promise.all([
+      api.get<{ total: number; resolvida: number; encerrada: number }>('/metrics/total-demands'),
+      api.get<{ data: CategoryMetric[] }>('/metrics/demands-by-category'),
+      api.get<{ media_horas: number | null; total_demandas_consideradas: number }>('/metrics/average-response-time'),
+    ]);
+    return {
+      total: total.data.total,
+      resolvidas: total.data.resolvida,
+      encerradas: total.data.encerrada,
+      mediaHoras: tempo.data.media_horas,
+      consideradas: tempo.data.total_demandas_consideradas,
+      porCategoria: [...porCategoria.data.data].sort((a, b) => b.total - a.total),
+    };
   },
 
   async list(params: ManagedTicketListParams = {}): Promise<ManagedTicketListResponse> {

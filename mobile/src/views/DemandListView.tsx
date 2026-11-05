@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useDemandListViewModel } from '../viewmodels/useDemandListViewModel';
 import { DemandCard } from '../components/DemandCard';
 import { EmergencyNotice } from '../components/EmergencyNotice';
+import { DemandFilterBar } from '../components/DemandFilterBar';
 import { Avatar, Chip, EmptyState, ScrollableRow } from '../components/ui';
 import { STATUS_FILTERS } from '../models/Demand';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
@@ -14,7 +15,7 @@ export function DemandListView() {
   const styles = useStyles();
   const vm = useDemandListViewModel();
   const insets = useSafeAreaInsets();
-  const filtering = !!(vm.search || vm.status);
+  const filtering = !!(vm.search || vm.status || vm.filters.active);
 
   return (
     <View style={styles.container}>
@@ -97,12 +98,12 @@ export function DemandListView() {
               key={filter.label}
               testID={`status-filter-${filter.value ?? 'todos'}`}
               label={filter.label}
-              selected={vm.searching ? filter.value === undefined : vm.status === filter.value}
+              selected={vm.status === filter.value}
               onPress={() => vm.selectStatus(filter.value)}
             />
           ))}
         </ScrollableRow>
-        {vm.searching && <Text style={styles.searchHint}>Buscando em todos os status. Toque em um status para limpar a busca.</Text>}
+        <DemandFilterBar filters={vm.filters} testID="demand-region-filters" />
       </View>
 
       {vm.loading ? (
@@ -189,7 +190,6 @@ const useStyles = makeStyles((colors) => ({
   },
   searchInput: { flex: 1, fontSize: 15, color: colors.text },
   chips: { paddingVertical: 14, gap: 8 },
-  searchHint: { fontSize: 12, color: colors.textSubtle, marginTop: -6, marginBottom: 12 },
   loader: { marginTop: 48 },
   list: { paddingHorizontal: 20, paddingTop: 18 },
   loadingMore: { marginVertical: 16 },
