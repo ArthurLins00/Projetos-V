@@ -1,0 +1,20 @@
+# Pastas fora da análise estática do workflow Segurança. Este arquivo substitui as exclusões padrão do
+# Semgrep, por isso dependências e saídas de build também estão listadas.
+node_modules/
+dist/
+build/
+coverage/
+.expo/
+reports/
+security-report/
+tech-report/
+e2e-report/
+test-results/
+
+# Testes usam segredos e tokens falsos de propósito; documentação não é código
+backend/src/tests/
+ai-agent/tests/
+e2e/
+mobile/e2e/
+docs/
+*.md

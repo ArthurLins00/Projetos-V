@@ -1310,6 +1310,39 @@ export const openApiSpec = {
       },
     },
 
+    '/gestor/chamados/{id}/comentarios': {
+      post: {
+        tags: ['Gestor'],
+        summary: 'Publicar uma atualização da equipe no chamado',
+        description:
+          'Adiciona uma mensagem à linha do tempo do chamado (evento do tipo `mensagem`, com o nome de quem escreveu) ' +
+          'e notifica o cidadão.',
+        security: BEARER,
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['mensagem'],
+                properties: {
+                  mensagem: { type: 'string', maxLength: 1000, example: 'Equipe agendada para amanhã de manhã.' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: { description: 'Evento criado na linha do tempo (`{ evento }`)' },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          404: { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
+
     '/metrics/total-demands': {
       get: {
         tags: ['Metrics'],

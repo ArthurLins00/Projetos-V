@@ -1,0 +1,47 @@
+name: Relatório técnico
+
+# Relatório técnico geral do projeto, montado a partir do próprio repositório:
+#   - cada tecnologia com o texto dos READMEs de docs/<disciplina>/ (como foi usada, por quê, o que foi descartado),
+#     a versão instalada (package-lock) e os arquivos que a usam;
+#   - rotas da API com o perfil exigido, modelo de dados, telas do app, testes e workflows;
+#   - dependências sem seção na documentação.
+# Gera relatorio-tecnico-projeto.html e tecnologias.xml. Só lê arquivos (sem npm install) e nunca falha a execução.
+# O mapa entre tecnologias, seções dos READMEs e pacotes fica em .github/scripts/tech-report/tecnologias.mjs.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: relatorio-tecnico-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  relatorio:
+    name: Relatório técnico do projeto
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Gera o relatório
+        id: report
+        continue-on-error: true
+        run: node .github/scripts/tech-report/render-tech-report.mjs --out tech-report
+
+      - name: Publica o relatório
+        if: ${{ !cancelled() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: relatorio-tecnico-projeto
+          path: tech-report
+          retention-days: 30
+
+      - name: Avisa se o relatório não foi gerado
+        if: ${{ !cancelled() && steps.report.outcome == 'failure' }}
+        run: echo "::warning::Não foi possível gerar o relatório técnico; veja o log do passo 'Gera o relatório'"

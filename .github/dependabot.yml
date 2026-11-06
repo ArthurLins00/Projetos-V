@@ -1,0 +1,73 @@
+# Atualizações automáticas de dependências: um PR por ecossistema e pasta, toda segunda-feira, com as atualizações
+# minor e patch agrupadas num PR só (as major vêm separadas, porque costumam exigir mudança de código).
+# Cada PR passa pelo CI e pelo Quality Gate como qualquer outro. Política: docs/seguranca-da-informacao/06_Gestao_de_Fornecedores.md
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: chore, include: scope }
+    groups:
+      backend-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /ai-agent
+    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: chore, include: scope }
+    groups:
+      ai-agent-minor-patch:
+        update-types: [minor, patch]
+
+  # Testes E2E (Playwright) no package.json da raiz
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    open-pull-requests-limit: 3
+    commit-message: { prefix: chore, include: scope }
+    groups:
+      e2e-minor-patch:
+        update-types: [minor, patch]
+
+  # App: as versões do Expo, do React e do React Native precisam ficar alinhadas ao SDK. Trocar de SDK é uma
+  # migração feita à mão (npx expo install --fix); aqui entram só as correções (patch) desses pacotes.
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: chore, include: scope }
+    ignore:
+      - dependency-name: 'expo'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: 'expo-*'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: '@expo/*'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: 'react'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: 'react-dom'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: '@types/react'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: 'react-native'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: 'react-native-*'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+    groups:
+      mobile-minor-patch:
+        update-types: [minor, patch]
+
+  # Versões das actions usadas nos workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    commit-message: { prefix: 'ci' }
+    groups:
+      actions:
+        patterns: ['*']
+
+# Os Dockerfiles usam a tag node:22-bookworm-slim, que já recebe as correções do Node 22 a cada build; trocar a
+# versão major acompanha a do CI (NODE_VERSION nos workflows) e é feita à mão.

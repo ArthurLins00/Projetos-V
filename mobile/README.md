@@ -165,6 +165,25 @@ Ao terminar, o EAS mostra o link e o QR code para baixar o APK; os builds ficam 
 no Android para o APK falar com o backend local; em produção use uma URL HTTPS e remova essa opção.
 Push remoto também passa a funcionar no APK (no Expo Go do Android não funciona desde o SDK 53).
 
+#### Pelo GitHub Actions (workflow *Build do APK*)
+
+O [`mobile-release.yml`](../.github/workflows/mobile-release.yml) faz o mesmo build no EAS sem precisar da máquina
+de ninguém:
+
+- **Manual:** aba *Actions* → *Build do APK* → *Run workflow*, escolhendo o perfil (`preview` gera o APK,
+  `production` gera o AAB da Play Store). O arquivo fica no artefato `app-android` da execução.
+- **Em release:** ao publicar uma release no GitHub (*Releases* → *Draft a new release*, com uma tag como `v1.0.0`),
+  o APK é gerado e anexado à própria release, pronto para baixar e instalar.
+
+Configuração, uma vez:
+
+1. Crie um token em <https://expo.dev> → *Account settings* → *Access tokens*, com a conta dona do projeto
+   (`owner` no `app.json`).
+2. No GitHub: *Settings* → *Secrets and variables* → *Actions* → *New repository secret*, nome `EXPO_TOKEN`.
+3. Cadastre `EXPO_PUBLIC_API_URL` no ambiente do EAS (comando `env:create` acima) com a URL que o APK deve usar.
+
+O build roda na fila gratuita do EAS e pode levar de 10 a 40 minutos.
+
 ### Permissões
 
 Declaradas em [`app.json`](app.json) pelos plugins do Expo e pedidas só quando o recurso é usado:

@@ -29,7 +29,7 @@ const AREAS = [
   [/E2E Mobile|Maestro|Fluxos de tela/i, 'area: mobile-e2e'],
   [/^Mobile/i, 'area: mobile'],
   [/^Agente de IA/i, 'area: ai-agent'],
-  [/^Backend|Testes unitários|Testes End-to-End|^Build/i, 'area: backend'],
+  [/^Backend|Testes unitários|Testes End-to-End|^Build|Contrato da API|Rotas × Swagger|Docker/i, 'area: backend'],
 ];
 
 const LABEL_STYLES = {

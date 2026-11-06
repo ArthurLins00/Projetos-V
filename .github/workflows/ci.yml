@@ -41,6 +41,33 @@ jobs:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
 
+  # Fora do Quality Gate (ci-ok): relatório de segurança em HTML e XML, só informativo
+  seguranca:
+    name: Segurança
+    uses: ./.github/workflows/seguranca.yml
+
+  # Fora do Quality Gate (ci-ok): tecnologias, rotas, modelo de dados e telas em HTML e XML
+  relatorio-tecnico:
+    name: Relatório técnico
+    uses: ./.github/workflows/relatorio-tecnico.yml
+
+  # No Quality Gate: toda rota do Express documentada no Swagger e vice-versa
+  contrato-api:
+    name: Contrato da API
+    uses: ./.github/workflows/contrato-api.yml
+
+  # No Quality Gate: links internos e âncoras de todos os .md (arquivos movidos, seções renomeadas)
+  links:
+    name: Links da documentação
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node .github/scripts/docs/check-links.mjs
+
   # Política de manutenção da TAS (docs/testes-automatizados/tas.md, seção 8.3): nenhum teste com .only, nenhum teste desligado
   # sem quarentena registrada, todo arquivo de teste no catálogo do TESTES.md, todo teste com [TC-xx] no título
   # e docs/testes-automatizados/catalogo-testes.json em dia
@@ -96,7 +123,7 @@ jobs:
   ci-ok:
     name: CI concluído
     runs-on: ubuntu-24.04
-    needs: [backend, mobile, ai-agent, dependencias, tas]
+    needs: [backend, mobile, ai-agent, dependencias, tas, contrato-api, links]
     if: always()
     timeout-minutes: 5
     steps:

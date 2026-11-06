@@ -13,6 +13,8 @@ on:
       - Backend
       - Agente de IA
       - E2E Mobile (Maestro)
+      - Docker
+      - Build do APK
     types: [completed]
 
 permissions:

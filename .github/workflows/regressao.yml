@@ -43,6 +43,11 @@ jobs:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
 
+  # Imagens novas do PostgreSQL, Redis e Node podem quebrar o ambiente do Docker sem mudança no código
+  docker:
+    name: Docker
+    uses: ./.github/workflows/docker.yml
+
   qualidade:
     name: Relatório de qualidade
     needs: [backend, ai-agent, mobile, maestro, dependencias]

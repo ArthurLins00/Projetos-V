@@ -116,10 +116,15 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Evento | Workflow | O que roda |
 |---|---|---|
 | Push em branch de trabalho | `push.yml` | Unitários e de API do backend; testes do agente de IA com cliente roteirizado (e typecheck do mobile, pelo `mobile.yml`, quando `mobile/` muda) |
-| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado; **Política da TAS** (`.only`, testes desligados sem quarentena e rastreabilidade do catálogo) |
+| Pull request para `main` ou `dev` (antes do merge) | `ci.yml` | Unitários e de API; **testes smoke E2E do Playwright**; build do backend; typecheck do mobile; testes do agente de IA com cliente roteirizado; **Política da TAS** (`.only`, testes desligados sem quarentena e rastreabilidade do catálogo); **Contrato da API** (`contrato-api.yml`: toda rota do Express documentada no Swagger e vice-versa, e rota protegida documentada com `security`); **Links da documentação** (links internos e âncoras de todos os `.md`) |
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
 | Fim do CI/CD e da regressão | `quality-report.yml` | Métricas de qualidade e relatórios técnico e de negócio em HTML (seção 2.2) |
+| PR e push em `main`/`dev`, toda segunda às 07h (Brasília) ou manual | `seguranca.yml` | Varredura de segurança fora do Quality Gate: `npm audit`, segredos no código e no histórico (gitleaks), análise estática (Semgrep, regras OWASP) e os controles de [Segurança](../seguranca-da-informacao/README.md) conferidos no código; relatório em HTML e XML (seção 2.2) |
+| PR e push em `main`/`dev`, ou manual | `relatorio-tecnico.yml` | Relatório técnico do projeto fora do Quality Gate: tecnologias com versão, onde são usadas e as justificativas dos READMEs de `docs/`, rotas da API, modelo de dados, telas, testes e workflows, em HTML e XML (seção 2.2) |
+| PR e push em `main`/`dev` que mudam `compose.yaml`, `backend/`, `ai-agent/` ou `e2e/`; regressão diária; manual | `docker.yml` | Ambiente do Docker ([guia](../COMO_RODAR_COM_DOCKER.md)): constrói as imagens, sobe PostgreSQL, Redis e backend com `docker compose up --wait`, confere `/health` e os logins do seed, sobe o agente de IA na rede interna e roda os E2E do Playwright contra os containers |
+| Release publicada no GitHub, ou manual | `mobile-release.yml` | Build do app Android no EAS: APK (perfil `preview`) ou AAB (`production`, só no manual); publica no artefato e, numa release, anexa o arquivo à própria release. Precisa do secret `EXPO_TOKEN` |
+| Toda segunda às 07h (Recife) | Dependabot (`.github/dependabot.yml`) | PRs agrupados com atualizações minor e patch das dependências npm (backend, agente, E2E e app) e das actions; no app, Expo, React e React Native só recebem patch, para continuar alinhados ao SDK |
 | Dias úteis às 09h e dias 1 e 15 às 10h (Brasília), ou manual | `tas-manutencao.yml` | Política de manutenção da TAS ([`docs/testes-automatizados/tas.md`](tas.md)): prazos vencidos, quarentenas sem decisão e a issue da revisão periódica |
 
 Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
@@ -146,8 +151,10 @@ Para rodar só o smoke do Playwright localmente: `npm run test:e2e -- --grep @sm
 demanda pode atrasar ou não rodar. Por isso a regressão também pode ser disparada pela aba Actions → *Regressão
 completa (diária)* → *Run workflow*.
 
-**Quality Gate:** o job **CI concluído** do `ci.yml` falha se qualquer job do PR falhar ou for cancelado, inclusive o
-job **Política da TAS**. Ele é o
+**Quality Gate:** o job **CI concluído** do `ci.yml` falha se qualquer job do PR falhar ou for cancelado, inclusive os
+jobs **Política da TAS**, **Contrato da API** e **Links da documentação** (os relatórios de qualidade, de segurança e
+técnico ficam de fora: informam, não bloqueiam). O `docker.yml` é um workflow à parte, que só roda quando os arquivos
+das imagens mudam; ele não é exigido pelo ruleset, mas a falha abre issue como as demais. O **CI concluído** é o
 único check obrigatório no ruleset `main` do repositório `ArthurLins00/Projetos-V`, que vale para as branches
 `main` e `dev` (Settings → Rules → Rulesets):
 
@@ -184,6 +191,18 @@ datas de abertura e fechamento são a base do MTTR (MQ-06).
 | `relatorios-qualidade` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `metrics.json` | os relatórios de qualidade desta execução | 30 dias |
 | `catalogo-testes` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `catalogo-testes.json` | rastreabilidade: quanto do plano está automatizado por HU e a lista de testes com o caso de cada um | 30 dias |
 | `quality-history` | `history.json` com o resumo das últimas 60 execuções em `main` | tendência dos relatórios seguintes | 90 dias |
+| `relatorio-seguranca` | `relatorio-seguranca.html` (em linguagem simples, com o que fazer), `seguranca.xml` (todos os achados estruturados), `seguranca-junit.xml` (cada achado grave como teste que falha) e os JSON brutos do `npm audit`, gitleaks e Semgrep | situação de segurança: bibliotecas vulneráveis, segredos (valores nunca publicados), padrões inseguros no código e controles do projeto | 30 dias |
+| `relatorio-tecnico-projeto` | `relatorio-tecnico-projeto.html` e `tecnologias.xml` | visão técnica do projeto: cada tecnologia com versão, onde é usada, por que foi escolhida e o que foi descartado, além de rotas, modelo de dados, telas, testes e workflows | 30 dias |
+| `contrato-api` | `contrato-api.json`, `contrato-api-junit.xml` (uma rota por caso) e o `openapi.json` exportado | rotas sem documentação, documentadas e inexistentes, ou protegidas sem `security` no Swagger | 30 dias |
+| `docker-e2e` | `docker-compose.log` (todos os containers), `health.json`, relatório HTML e JUnit do Playwright | investigar uma falha do ambiente do Docker | 7 dias |
+| `app-android` | `fiscalize-<versão>-<perfil>.apk` (ou `.aab`) gerado pelo EAS | instalar o app sem compilar; numa release, o mesmo arquivo fica anexado a ela | 30 dias |
+
+O relatório de segurança e o relatório técnico são **informativos**: ficam fora do check **CI concluído** e nunca
+reprovam a execução. Os controles de segurança verificados estão em `.github/scripts/security/controls.mjs` e o
+mapa entre tecnologias, seções dos READMEs e pacotes em `.github/scripts/tech-report/tecnologias.mjs`; ao
+documentar uma tecnologia nova num README de `docs/`, acrescente-a nesse mapa (dependências fora dele aparecem
+no relatório como "sem seção na documentação"). Falsos positivos do gitleaks vão para o `.gitleaks.toml` (ou um
+comentário `gitleaks:allow` na linha) e os do Semgrep, para um comentário `nosemgrep` com o motivo.
 
 **Métricas e relatórios:** o último job do CI/CD e da regressão diária (**Relatório de qualidade**,
 `.github/workflows/quality-report.yml`) lê os artefatos acima e a API do GitHub e calcula as métricas MQ-01 a MQ-08.
