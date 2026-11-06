@@ -6,12 +6,10 @@ name: Segurança
 #   Semgrep     análise estática (SAST) com regras OWASP para JavaScript, TypeScript, React e JWT
 #   controles   cada controle de docs/seguranca-da-informacao/README.md conferido no código
 # Só informa: fica fora do Quality Gate e não falha a execução. Guia: docs/testes-automatizados/TESTES.md, seção 2.2.
+# Chamado pelo CI/CD em todo PR e push e, todo dia, pelo seguranca-diaria.yml, que transforma o resultado numa issue.
 on:
   workflow_call:
   workflow_dispatch:
-  # Vulnerabilidades novas aparecem sem mudança no código: roda também toda segunda às 07h (Brasília)
-  schedule:
-    - cron: '0 10 * * 1'
 
 permissions:
   contents: read

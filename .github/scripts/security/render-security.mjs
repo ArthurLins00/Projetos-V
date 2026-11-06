@@ -7,11 +7,14 @@
 //   relatorio-seguranca.html    o resultado em linguagem simples, com o que fazer
 //   seguranca.xml               todos os achados em XML estruturado
 //   seguranca-junit.xml         os mesmos achados como JUnit (cada achado grave é um "teste" que falha)
+//   issue.md / issue.json       corpo da issue da Segurança diária (o que fazer em cada item) e a situação,
+//                               usados por sync-issue.mjs
 // e um resumo no sumário do job. Fonte ausente aparece como "não executada", sem quebrar o relatório.
 // Nunca grava o valor de um segredo: só regra, arquivo, linha e commit.
 //
 // Uso: node .github/scripts/security/render-security.mjs [--reports reports] [--out security-report]
 
+import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CSS, dateTime, esc, table } from '../lib/report-html.mjs';
@@ -45,6 +48,34 @@ const short = (sha) => (sha ? String(sha).slice(0, 7) : '');
 
 // ---------- Leitura de cada fonte ----------
 
+const PROJECT_DIR = { backend: 'backend', mobile: 'mobile', 'ai-agent': 'ai-agent', e2e: '.' };
+const majorOf = (version) => Number(String(version ?? '').match(/\d+/)?.[0] ?? NaN);
+
+// Versão instalada de um pacote, lida do package-lock.json do projeto (o script roda na raiz do repositório)
+const locks = {};
+function installedVersion(projeto, name) {
+  if (!(projeto in locks)) {
+    try {
+      locks[projeto] = JSON.parse(readFileSync(join(PROJECT_DIR[projeto], 'package-lock.json'), 'utf8'));
+    } catch {
+      locks[projeto] = null;
+    }
+  }
+  return locks[projeto]?.packages?.[`node_modules/${name}`]?.version ?? null;
+}
+
+// O npm audit às vezes "corrige" voltando o pacote principal para uma major antiga (ex.: jest 30 → 25, expo 58 → 53).
+// Isso desfaz atualizações e quebra o projeto: é marcado como rebaixamento e nunca recomendado.
+function describeFix(projeto, fix) {
+  if (fix === true) return { correcao: 'npm audit fix', tipo: 'automatica' };
+  if (!fix) return { correcao: 'sem correção publicada', tipo: 'nenhuma' };
+  const installed = installedVersion(projeto, fix.name);
+  if (installed && majorOf(fix.version) < majorOf(installed)) {
+    return { correcao: `não aplicar: o npm sugere ${fix.name}@${fix.version}, mais antigo que o instalado (${installed})`, tipo: 'rebaixamento' };
+  }
+  return { correcao: `${fix.name}@${fix.version}${fix.isSemVerMajor ? ' (versão major)' : ''}`, tipo: fix.isSemVerMajor ? 'major' : 'versao' };
+}
+
 function readAudit() {
   return PROJECTS.map((projeto) => {
     const report = readJson(`audit-${projeto}.json`);
@@ -58,7 +89,9 @@ function readAudit() {
         direta: Boolean(v.isDirect),
         titulo: advisory?.title || `vem de ${(v.via || []).filter((x) => typeof x === 'string').join(', ')}`,
         url: advisory?.url || '',
-        correcao: v.fixAvailable === true ? 'npm audit fix' : v.fixAvailable ? `${v.fixAvailable.name}@${v.fixAvailable.version}${v.fixAvailable.isSemVerMajor ? ' (versão major)' : ''}` : 'sem correção publicada',
+        // Pacote com o aviso em si (não só "vem de" outro pacote vulnerável)
+        origem: Boolean(advisory),
+        ...describeFix(projeto, v.fixAvailable),
       };
     });
     vulnerabilidades.sort((a, b) => SEVERITIES.indexOf(a.severidade) - SEVERITIES.indexOf(b.severidade));
@@ -219,7 +252,7 @@ function html(d) {
     (a) => `<tr><td>${pill(a.severidade === 'ERROR' ? 'fail' : a.severidade === 'WARNING' ? 'warn' : 'na', SEMGREP_PT[a.severidade] || a.severidade)}</td><td>${loc(a.arquivo, a.linha)}</td><td>${esc(a.mensagem)}<div class="muted small"><code>${esc(a.regraCurta)}</code>${a.cwe.length ? ` · ${esc(a.cwe[0])}` : ''}${a.owasp.length ? ` · ${esc(a.owasp[0])}` : ''}</div></td></tr>`
   );
   const ctlRows = d.controles.map(
-    (c) => `<tr><td>${pill(STATUS_CLS[c.status], STATUS_PT[c.status])}</td><td><b>${esc(c.titulo)}</b><div class="muted small">${esc(c.id)} · ${esc(c.area)} · ${esc(c.asvs)}</div></td><td>${esc(c.explicacao)}</td><td>${c.evidencias.map((e) => loc(e.file, e.line)).join('<br>') || '<span class="muted">—</span>'}</td></tr>`
+    (c) => `<tr><td>${pill(STATUS_CLS[c.status], STATUS_PT[c.status])}</td><td><b>${esc(c.titulo)}</b><div class="muted small">${esc(c.id)} · ${esc(c.area)} · ${esc(c.asvs)}</div></td><td>${esc(c.explicacao)}${c.status !== 'ok' && c.correcao ? `<div class="small" style="margin-top:6px"><b>O que fazer:</b> ${esc(c.correcao)}</div>` : ''}</td><td>${c.evidencias.map((e) => loc(e.file, e.line)).join('<br>') || '<span class="muted">—</span>'}</td></tr>`
   );
 
   return `<!doctype html>
@@ -389,11 +422,138 @@ function summary(d) {
   ].join('\n');
 }
 
+// ---------- Issue da Segurança diária ----------
+// Um checklist em Markdown com o que fazer em cada item. A lista de chaves (sem valores de segredo) vira uma
+// impressão digital: sync-issue.mjs só comenta na issue quando ela muda, para não notificar todo dia o mesmo.
+
+const SEV_ORDER = { critical: 0, high: 1, moderate: 2, low: 3, info: 4 };
+
+function issueReport(d) {
+  const itens = [];
+  const lines = [];
+  const icon = { verde: '🟢', amarelo: '🟡', vermelho: '🔴' }[d.situacao];
+  const situacaoTexto = { verde: 'nenhum problema', amarelo: 'pontos de atenção, sem nada grave', vermelho: 'há itens graves que precisam de ação' }[d.situacao];
+  const runLink = d.run ? `[execução #${d.run.id}](${d.run.url})` : 'execução local';
+
+  lines.push(
+    `${icon} **Situação em ${dateTime(d.generatedAt)}: ${situacaoTexto}.**`,
+    '',
+    'Esta issue é mantida pelo workflow **Segurança diária**: o corpo é atualizado a cada execução, um comentário avisa quando aparece ou some algum item, e ela é fechada sozinha quando não sobrar nada. Marque os itens à medida que corrigir; a próxima execução confere de novo.',
+    '',
+    '| Verificação | Resultado |',
+    '|---|---|',
+    `| Bibliotecas (npm audit) | ${d.fontes.dependencias ? `${d.vuln.critical} críticas · ${d.vuln.high} altas · ${d.vuln.moderate} moderadas · ${d.vuln.low} baixas` : '⚠️ não executado'} |`,
+    `| Segredos (gitleaks) | ${d.fontes.segredos ? `${d.segredosAtual.achados.length} no código atual` : '⚠️ não executado'}${d.fontes.historico ? ` · ${d.segredosHistorico.achados.length} só no histórico` : ''} |`,
+    `| Análise estática (Semgrep) | ${d.fontes.sast ? `${d.sastCount.ERROR} erros · ${d.sastCount.WARNING} avisos` : '⚠️ não executada'} |`,
+    `| Controles do projeto | ${d.ctl.ok} ok · ${d.ctl.aviso} avisos · ${d.ctl.falha} falhas |`,
+    ''
+  );
+
+  let n = 0;
+  const section = (title) => lines.push(`### ${++n}. ${title}`, '');
+
+  // Segredos no código atual: mais urgente, o repositório é público
+  if (d.segredosAtual.achados.length) {
+    section('🔴 Segredos no código (repositório público)');
+    lines.push('Considere cada valor como vazado. Para cada item: **troque a chave no serviço de origem**, mova o valor para variável de ambiente (`.env` local, secret do GitHub Actions ou do EAS) e apague-o do código. Se for um valor de teste, acrescente `gitleaks:allow` na linha, com o motivo no PR.', '');
+    for (const s of d.segredosAtual.achados) {
+      lines.push(`- [ ] \`${s.arquivo}:${s.linha}\` — ${s.descricao} (\`${s.regra}\`)`);
+      itens.push(`segredo:${s.regra}:${s.arquivo}:${s.linha}`);
+    }
+    lines.push('');
+  }
+
+  // Bibliotecas: um bloco por projeto, com o comando que corrige
+  const vulnProjects = d.audit.filter((p) => p.vulnerabilidades.some((v) => v.severidade !== 'low' && v.severidade !== 'info'));
+  if (vulnProjects.length) {
+    section(`${d.vuln.critical + d.vuln.high ? '🔴' : '🟡'} Bibliotecas com vulnerabilidade conhecida`);
+    lines.push('Confira antes se já existe um PR do Dependabot com a atualização: ele roda todo dia e pode ter resolvido parte da lista.', '');
+    for (const p of vulnProjects) {
+      const dir = PROJECT_DIR[p.projeto];
+      const relevant = p.vulnerabilidades.filter((v) => SEV_ORDER[v.severidade] <= SEV_ORDER.moderate);
+      relevant.forEach((v) => itens.push(`vuln:${p.projeto}:${v.pacote}:${v.severidade}`));
+      // Mostra os pacotes com o aviso em si e as dependências diretas; os demais só herdam o problema deles
+      const shown = relevant.filter((v) => v.origem || v.direta).sort((a, b) => SEV_ORDER[a.severidade] - SEV_ORDER[b.severidade]);
+      const inherited = relevant.length - shown.length;
+      lines.push(`- [ ] **${p.projeto}** (\`${dir}\`): ${['critical', 'high', 'moderate'].filter((s) => p.contagem[s]).map((s) => `${p.contagem[s]} ${SEV_PT[s]}${p.contagem[s] > 1 ? 's' : ''}`).join(', ')}`);
+      if (relevant.some((v) => v.tipo === 'automatica')) {
+        lines.push(`  - Rode \`npm audit fix --prefix ${dir}\` (**sem** \`--force\`), confira o diff do \`package-lock.json\` e rode os testes.`);
+      }
+      for (const v of shown) {
+        const fix = {
+          automatica: 'resolvido pelo `npm audit fix` acima',
+          nenhuma: 'sem correção publicada: acompanhe o aviso e avalie se o trecho vulnerável é usado pelo projeto',
+          rebaixamento: v.origem
+            ? `**não aplique a sugestão do npm** (${v.correcao.replace(/^não aplicar: /, '')}). Force a versão corrigida de \`${v.pacote}\` com \`overrides\` no \`package.json\` de \`${dir}\` e rode os testes, ou aguarde a dependência que o puxa publicar a correção`
+            : `**não aplique a sugestão do npm** (${v.correcao.replace(/^não aplicar: /, '')}); o aviso está nos pacotes de que ele depende, listados neste bloco, e some quando eles forem corrigidos`,
+          major: `atualize para \`${v.correcao.replace(' (versão major)', '')}\` (versão major: revise o que mudou e rode os testes)`,
+          versao: `atualize para \`${v.correcao}\``,
+        }[v.tipo];
+        lines.push(`  - \`${v.pacote}\` (${SEV_PT[v.severidade]}${v.direta ? ', dependência direta' : ''}): ${v.url ? `[${v.titulo}](${v.url})` : v.titulo} — ${fix}`);
+      }
+      if (inherited) lines.push(`  - Outros ${inherited} pacotes aparecem no relatório só porque dependem dos acima; somem quando estes forem corrigidos.`);
+    }
+    lines.push('');
+  }
+
+  if (d.sast.achados.some((a) => a.severidade !== 'INFO')) {
+    section(`${d.sastCount.ERROR ? '🔴' : '🟡'} Padrões inseguros no código (Semgrep)`);
+    lines.push('Corrija o trecho ou, se for falso positivo, acrescente o comentário `// nosemgrep: <regra>` na linha, com o motivo no PR.', '');
+    for (const a of d.sast.achados.filter((x) => x.severidade !== 'INFO')) {
+      lines.push(`- [ ] \`${a.arquivo}:${a.linha}\` (${SEMGREP_PT[a.severidade]}) — ${a.mensagem}${a.cwe.length ? ` _${a.cwe[0]}_` : ''} · regra \`${a.regraCurta}\``);
+      itens.push(`sast:${a.regra}:${a.arquivo}:${a.linha}`);
+    }
+    lines.push('');
+  }
+
+  const pendentes = d.controles.filter((c) => c.status !== 'ok');
+  if (pendentes.length) {
+    section(`${pendentes.some((c) => c.status === 'falha') ? '🔴' : '🟡'} Controles de segurança do projeto`);
+    lines.push('Controles descritos em `docs/seguranca-da-informacao/README.md` (seção 4) que estão ausentes ou enfraquecidos no código.', '');
+    for (const c of pendentes) {
+      const onde = c.evidencias.map((e) => `\`${e.file}:${e.line}\``).join(', ');
+      lines.push(`- [ ] **${c.id} ${c.titulo}** (${c.status === 'falha' ? 'falha' : 'aviso'}, ${c.asvs})`, `  - Situação: ${c.explicacao}`, `  - O que fazer: ${c.correcao}`);
+      if (onde) lines.push(`  - Onde: ${onde}`);
+      itens.push(`controle:${c.id}:${c.status}`);
+    }
+    lines.push('');
+  }
+
+  if (d.segredosHistorico.achados.length) {
+    section('🟡 Segredos só no histórico do Git');
+    lines.push('Já saíram do código, mas continuam legíveis nos commits antigos de um repositório público. Se algum era uma chave real, **troque-a no serviço de origem**; apagar o arquivo não basta. Reescrever o histórico só é necessário se a chave não puder ser trocada.', '');
+    for (const s of d.segredosHistorico.achados) {
+      lines.push(`- [ ] \`${s.arquivo}:${s.linha}\` no commit \`${short(s.commit)}\` — ${s.descricao} (\`${s.regra}\`)`);
+      itens.push(`historico:${s.regra}:${s.arquivo}:${s.linha}:${short(s.commit)}`);
+    }
+    lines.push('');
+  }
+
+  const faltou = Object.entries({ 'auditoria de dependências': d.fontes.dependencias, 'busca de segredos': d.fontes.segredos, 'análise estática': d.fontes.sast }).filter(([, ok]) => !ok).map(([k]) => k);
+  if (faltou.length) {
+    section('⚠️ Verificações que não rodaram');
+    lines.push(`- [ ] ${faltou.join(', ')}: veja o log da ${runLink} e rode o workflow de novo (Actions → Segurança diária → Run workflow).`, '');
+    itens.push(...faltou.map((f) => `nao-executado:${f}`));
+  }
+
+  if (!n) lines.push('Nada a fazer: dependências, segredos, código e controles estão em ordem.', '');
+  lines.push('---', '', `Relatório completo (HTML em linguagem simples e XML) no artefato \`relatorio-seguranca\` da ${runLink}.`);
+
+  const hash = createHash('sha256').update(itens.sort().join('\n')).digest('hex').slice(0, 16);
+  return {
+    json: { situacao: d.situacao, total: itens.length, hash, itens, geradoEm: d.generatedAt, execucao: d.run?.url ?? null },
+    markdown: `${lines.join('\n')}\n\n<!-- seguranca-diaria hash:${hash} -->\n`,
+  };
+}
+
 const data = analyze();
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'relatorio-seguranca.html'), html(data));
 writeFileSync(join(OUT, 'seguranca.xml'), xml(data));
 writeFileSync(join(OUT, 'seguranca-junit.xml'), junitXml(data));
+const issue = issueReport(data);
+writeFileSync(join(OUT, 'issue.md'), issue.markdown);
+writeFileSync(join(OUT, 'issue.json'), `${JSON.stringify(issue.json, null, 2)}\n`);
 
 const markdown = summary(data);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);

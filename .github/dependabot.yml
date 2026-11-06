@@ -1,43 +1,61 @@
-# Atualizações automáticas de dependências: um PR por ecossistema e pasta, toda segunda-feira, com as atualizações
-# minor e patch agrupadas num PR só (as major vêm separadas, porque costumam exigir mudança de código).
-# Cada PR passa pelo CI e pelo Quality Gate como qualquer outro. Política: docs/seguranca-da-informacao/06_Gestao_de_Fornecedores.md
+# Atualizações automáticas de dependências: todo dia às 07h (Recife), o Dependabot compara o package-lock.json de
+# cada pasta com as versões publicadas e abre PR quando há versão mais nova. Para não abrir um PR por pacote,
+# as atualizações são agrupadas por pasta: um PR com as minor e patch e outro com as major (que costumam exigir
+# mudança de código). Todo PR é atribuído a victorsimasdev e passa pelo CI e pelo Quality Gate como qualquer outro.
+# Vulnerabilidades são tratadas à parte pelo workflow Segurança diária (seguranca-diaria.yml), que abre uma issue.
+# Política: docs/seguranca-da-informacao/06_Gestao_de_Fornecedores.md
 version: 2
 
 updates:
   - package-ecosystem: npm
     directory: /backend
-    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    schedule: { interval: daily, time: '07:00', timezone: America/Recife }
     open-pull-requests-limit: 5
+    assignees: [victorsimasdev]
     commit-message: { prefix: chore, include: scope }
+    ignore:
+      # Os tipos do Node acompanham a versão que roda o projeto (Node 22, a mesma do CI e do Docker)
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
     groups:
       backend-minor-patch:
         update-types: [minor, patch]
+      backend-major:
+        update-types: [major]
 
   - package-ecosystem: npm
     directory: /ai-agent
-    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    schedule: { interval: daily, time: '07:00', timezone: America/Recife }
     open-pull-requests-limit: 5
+    assignees: [victorsimasdev]
     commit-message: { prefix: chore, include: scope }
+    ignore:
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
     groups:
       ai-agent-minor-patch:
         update-types: [minor, patch]
+      ai-agent-major:
+        update-types: [major]
 
   # Testes E2E (Playwright) no package.json da raiz
   - package-ecosystem: npm
     directory: /
-    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    schedule: { interval: daily, time: '07:00', timezone: America/Recife }
     open-pull-requests-limit: 3
+    assignees: [victorsimasdev]
     commit-message: { prefix: chore, include: scope }
     groups:
-      e2e-minor-patch:
-        update-types: [minor, patch]
+      e2e:
+        patterns: ['*']
 
   # App: as versões do Expo, do React e do React Native precisam ficar alinhadas ao SDK. Trocar de SDK é uma
   # migração feita à mão (npx expo install --fix); aqui entram só as correções (patch) desses pacotes.
   - package-ecosystem: npm
     directory: /mobile
-    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    schedule: { interval: daily, time: '07:00', timezone: America/Recife }
     open-pull-requests-limit: 5
+    assignees: [victorsimasdev]
     commit-message: { prefix: chore, include: scope }
     ignore:
       - dependency-name: 'expo'
@@ -59,11 +77,14 @@ updates:
     groups:
       mobile-minor-patch:
         update-types: [minor, patch]
+      mobile-major:
+        update-types: [major]
 
   # Versões das actions usadas nos workflows
   - package-ecosystem: github-actions
     directory: /
-    schedule: { interval: weekly, day: monday, time: '07:00', timezone: America/Recife }
+    schedule: { interval: daily, time: '07:00', timezone: America/Recife }
+    assignees: [victorsimasdev]
     commit-message: { prefix: 'ci' }
     groups:
       actions:

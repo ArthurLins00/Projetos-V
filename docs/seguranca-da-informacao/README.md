@@ -280,7 +280,8 @@ mais sensíveis, como CPF.
 | Auditoria de ações administrativas | ✅ Implementado | `auditLogService.ts`, tabelas `audit_logs` e `usuario_audit` |
 | Health check e degradação graciosa (Redis, SMTP, push, agente) | ✅ Implementado | `health.ts` |
 | Dependências travadas, SBOM (CycloneDX) e `npm audit` no CI | ✅ Implementado | `dependencias.yml` |
-| Atualização semanal de dependências (Dependabot) | ✅ Implementado | `.github/dependabot.yml` |
+| Atualização diária de dependências (Dependabot) | ✅ Implementado | `.github/dependabot.yml` |
+| Varredura diária com issue de pendências | ✅ Implementado | `seguranca-diaria.yml` |
 | TOTP obrigatório para Gestor e Admin | 🟡 Especificado | Atividade 1 (hoje: e-mail, opcional) |
 | Senha com 8+ caracteres e 4 classes | 🟡 Especificado | Atividade 1 (o backend exige hoje 6+ caracteres) |
 | Troca periódica de senha (Gestor 90 dias, Admin 60) | 🟡 Especificado | Atividade 1 |
@@ -317,9 +318,9 @@ está em [`TESTES.md`](../testes-automatizados/TESTES.md).
 
 ## 7. Verificação contínua (workflow Segurança)
 
-O workflow [`seguranca.yml`](../../.github/workflows/seguranca.yml) roda em todo PR e push em `main`/`dev` e
-toda segunda-feira (vulnerabilidades novas aparecem sem mudança no código). Ele fica fora do Quality Gate e
-publica o artefato `relatorio-seguranca`:
+O workflow [`seguranca.yml`](../../.github/workflows/seguranca.yml) roda em todo PR e push em `main`/`dev` e,
+pelo [`seguranca-diaria.yml`](../../.github/workflows/seguranca-diaria.yml), todo dia às 07h (vulnerabilidades novas
+aparecem sem mudança no código). Ele fica fora do Quality Gate e publica o artefato `relatorio-seguranca`:
 
 | Verificação | Ferramenta | O que procura |
 |---|---|---|
@@ -331,6 +332,14 @@ publica o artefato `relatorio-seguranca`:
 Saídas: `relatorio-seguranca.html`, em linguagem simples e com o que fazer em cada item; `seguranca.xml`,
 com todos os achados estruturados; e `seguranca-junit.xml`, em que cada achado grave é um teste que falha.
 Detalhes e tratamento de falsos positivos em [`TESTES.md`, seção 2.2](../testes-automatizados/TESTES.md#22-registro-de-falhas-artefatos-e-relatórios-de-qualidade).
+
+**Issue diária de pendências.** Na execução diária, o resultado vira uma única issue (label `segurança`, milestone
+de Segurança, atribuída a `victorsimasdev`) com um checklist: o que está errado, o que fazer e onde, para cada
+biblioteca vulnerável, segredo, padrão inseguro e controle ausente. O corpo é atualizado todo dia; um comentário
+avisa só quando algum item aparece ou é resolvido; a issue fecha sozinha quando não sobra nada. Quando o
+`npm audit` sugere uma "correção" que volta um pacote para uma major antiga (ex.: Jest 30 → 25, Expo 58 → 53), a
+issue avisa para **não** aplicar e recomenda `overrides` no `package.json` com a versão corrigida da dependência
+vulnerável. Script: [`sync-issue.mjs`](../../.github/scripts/security/sync-issue.mjs).
 
 **Por que essas ferramentas:** gitleaks e Semgrep são gratuitos, rodam sem conta nem token e geram JSON que o
 relatório consolida. **Descartados:** SonarQube (servidor ou conta externa, regras genéricas de qualidade
