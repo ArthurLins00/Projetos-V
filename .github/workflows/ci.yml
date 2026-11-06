@@ -55,6 +55,30 @@ jobs:
           node-version: 22
       - run: node .github/scripts/tas/check-tas.mjs
 
+      # Catálogo em dados e relatórios de rastreabilidade (docs/tas.md, seção 8.5). Informativo: se falhar, o job
+      # avisa, mas quem reprova o PR é a verificação acima
+      - name: Gera o catálogo de testes
+        id: catalog
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: node .github/scripts/tas/render-catalog.mjs --out tas-report
+
+      - name: Publica o catálogo de testes
+        if: ${{ !cancelled() && steps.catalog.outcome == 'success' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: catalogo-testes
+          path: |
+            tas-report/relatorio-tecnico.html
+            tas-report/relatorio-negocio.html
+            tas-report/index.html
+            tas-report/catalogo-testes.json
+          retention-days: 30
+
+      - name: Avisa se o catálogo não foi gerado
+        if: ${{ !cancelled() && steps.catalog.outcome == 'failure' }}
+        run: echo "::warning::Não foi possível gerar o catálogo de testes; veja o log do passo 'Gera o catálogo de testes'"
+
   # Fora do Quality Gate (ci-ok): o relatório informa, não bloqueia o merge
   qualidade:
     name: Relatório de qualidade
