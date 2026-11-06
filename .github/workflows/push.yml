@@ -2,7 +2,8 @@ name: Testes (push)
 
 on:
   push:
-    branches-ignore: [main, dev]
+    # As branches do Dependabot já passam pelo CI/CD completo no PR que ele abre
+    branches-ignore: [main, dev, 'dependabot/**']
 
 # Só leitura do código; jobs que precisam de mais pedem no próprio job
 permissions:

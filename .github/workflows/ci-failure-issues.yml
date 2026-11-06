@@ -30,7 +30,10 @@ concurrency:
 jobs:
   issue:
     name: Registra a falha em uma issue
-    if: contains(fromJSON('["failure", "timed_out", "success"]'), github.event.workflow_run.conclusion)
+    # Falha num PR do Dependabot só quer dizer "não aceite esta atualização": o próprio PR mostra o CI vermelho
+    if: >-
+      contains(fromJSON('["failure", "timed_out", "success"]'), github.event.workflow_run.conclusion) &&
+      !startsWith(github.event.workflow_run.head_branch, 'dependabot/')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
