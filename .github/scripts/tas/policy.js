@@ -1,4 +1,4 @@
-// Automação da política de manutenção da TAS (docs/tas.md). Chamado pelo .github/workflows/tas-manutencao.yml
+// Automação da política de manutenção da TAS (docs/testes-automatizados/tas.md). Chamado pelo .github/workflows/tas-manutencao.yml
 // via actions/github-script; cada exportação é um job:
 //   labels     cria ou atualiza as labels de classificação, prioridade e situação
 //   prazos     marca com "prazo vencido" as issues que passaram do prazo de triagem ou de correção
@@ -94,7 +94,7 @@ async function prazos({ github, context, core }) {
       issue_number: issue.number,
       body:
         `${OVERDUE_MARKER}\n⏰ **Prazo de ${d.stage} vencido** (${d.priority}: ${d.limit} h úteis; passaram ${d.elapsed.toFixed(1)} h).\n\n` +
-        `${assignees}: pela política (docs/tas.md, seção 4), registre aqui a classificação e o encaminhamento ou, se ` +
+        `${assignees}: pela política (docs/testes-automatizados/tas.md, seção 4), registre aqui a classificação e o encaminhamento ou, se ` +
         'não for possível corrigir agora, reverta a mudança ou coloque o teste em quarentena com issue e data de expiração.',
     });
   }
@@ -135,7 +135,7 @@ async function quarentena({ github, context, core, checkFile }) {
     labels: ['quarentena', 'manutenção da TAS', 'prioridade: média', 'classificação: tas'],
     body: [
       'Testes desligados cujo registro em `.github/tas/quarentena.json` venceu, não tem issue própria ou já voltou a rodar.',
-      'Pela política (docs/tas.md, seção 5), cada um precisa de uma destas decisões, registrada aqui:',
+      'Pela política (docs/testes-automatizados/tas.md, seção 5), cada um precisa de uma destas decisões, registrada aqui:',
       '',
       '- **corrigir** e religar (remover do registro e da pasta `pending/` ou tirar o `.skip`);',
       '- **prorrogar** a quarentena com justificativa no campo `prorrogacao` (no máximo uma vez);',
@@ -167,7 +167,7 @@ async function revisao({ github, context, core, checkFile, duplicationFile }) {
   const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
 
   const body = [
-    `Revisão periódica da automação de testes de **${today}** (docs/tas.md, seção 6). Dados coletados nesta [execução](${runUrl}).`,
+    `Revisão periódica da automação de testes de **${today}** (docs/testes-automatizados/tas.md, seção 6). Dados coletados nesta [execução](${runUrl}).`,
     '',
     '| Critério | Situação atual | Limite da política |',
     '|---|---|---|',
@@ -186,7 +186,7 @@ async function revisao({ github, context, core, checkFile, duplicationFile }) {
     '- [ ] Trechos duplicados acima do limite viraram helper ou fixture',
     '- [ ] Novos casos do período estão no plano de testes (TC) e no catálogo (U/A/E/M)',
     '- [ ] Propostas de remoção do período decididas e registradas no histórico da seção 9',
-    '- [ ] Metas das métricas (docs/testes/Metricas_de_Qualidade.md) ainda fazem sentido',
+    '- [ ] Metas das métricas (docs/testes-automatizados/Metricas_de_Qualidade.md) ainda fazem sentido',
     '',
     'Registre as decisões em comentários e feche a issue ao concluir a revisão.',
   ].join('\n');

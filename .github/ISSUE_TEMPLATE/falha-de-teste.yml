@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Falhas do CI já viram issue sozinhas (label `ci-failure`). Use este formulário para as outras.
-        A triagem segue a [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/tas.md), seções 3 e 4.
+        A triagem segue a [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/testes-automatizados/tas.md), seções 3 e 4.
   - type: input
     id: teste
     attributes:

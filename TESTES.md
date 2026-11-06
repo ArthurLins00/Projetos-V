@@ -101,7 +101,7 @@ compila o app de debug, sobe o backend com seed, o Metro e um emulador Android, 
 capturas como artefato `maestro-report`. Não roda no push nem nos PRs, porque leva dezenas de minutos.
 Antes dos fluxos, o script `.github/scripts/run-maestro.sh` faz um aquecimento e reinicia o emulador se o Maestro
 não enxergar o app. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
-a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](docs/tas.md)).
+a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](docs/testes-automatizados/tas.md)).
 
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
 (configurado em `mobile/e2e/config.yaml`).
@@ -120,7 +120,7 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
 | Fim do CI/CD e da regressão | `quality-report.yml` | Métricas de qualidade e relatórios técnico e de negócio em HTML (seção 2.2) |
-| Dias úteis às 09h e dias 1 e 15 às 10h (Brasília), ou manual | `tas-manutencao.yml` | Política de manutenção da TAS ([`docs/tas.md`](docs/tas.md)): prazos vencidos, quarentenas sem decisão e a issue da revisão periódica |
+| Dias úteis às 09h e dias 1 e 15 às 10h (Brasília), ou manual | `tas-manutencao.yml` | Política de manutenção da TAS ([`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md)): prazos vencidos, quarentenas sem decisão e a issue da revisão periódica |
 
 Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
 estar habilitado no fork (aba Actions → *I understand my workflows, go ahead and enable them*). Os eventos de PR,
@@ -166,7 +166,7 @@ nunca é reportado e travaria todos os merges. Com a regra ativa, o botão de me
 que falhar (CI/CD, push, regressão, Maestro etc.), com os jobs e passos que falharam e o trecho do log. Ela recebe
 `area: backend | mobile | mobile-e2e | ai-agent` pelo job que falhou, `classificação: pendente` e `prioridade: alta`
 quando a falha é em `main`, `dev` ou na regressão diária (`prioridade: média` nos demais casos), com o prazo e os
-passos de encaminhamento da política da TAS ([`docs/tas.md`](docs/tas.md), seções 3 e 4). Quando o mesmo workflow
+passos de encaminhamento da política da TAS ([`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md), seções 3 e 4). Quando o mesmo workflow
 volta a passar na mesma branch com um commit novo, as issues abertas dele são fechadas com um comentário; se passar
 no **mesmo commit** que falhou, a issue continua aberta com a label `teste instável` (seção 5 da política). Essas
 datas de abertura e fechamento são a base do MTTR (MQ-06).
@@ -188,7 +188,7 @@ datas de abertura e fechamento são a base do MTTR (MQ-06).
 **Métricas e relatórios:** o último job do CI/CD e da regressão diária (**Relatório de qualidade**,
 `.github/workflows/quality-report.yml`) lê os artefatos acima e a API do GitHub e calcula as métricas MQ-01 a MQ-08.
 As métricas escolhidas, as descartadas e as justificativas estão em
-[`docs/testes/Metricas_de_Qualidade.md`](docs/testes/Metricas_de_Qualidade.md). O job gera:
+[`docs/testes-automatizados/Metricas_de_Qualidade.md`](docs/testes-automatizados/Metricas_de_Qualidade.md). O job gera:
 
 - **Relatório técnico** (`relatorio-tecnico.html`): métricas contra as metas, resultado por suíte, falhas com a
   mensagem, testes instáveis, cobertura e arquivos menos cobertos, jobs e estatísticas da pipeline em 30 dias,
@@ -814,10 +814,10 @@ Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído po
 Cada teste automatizado leva no próprio título o caso do plano de testes que ele verifica, entre colchetes no
 início: `it('[TC-01] login gera um JWT ...')`, ou `[TC-42, TC-43]` quando cobre mais de um caso. Nos fluxos
 Maestro, o caso vai no `name:` do cabeçalho do fluxo. O vínculo TC → HU vem da tabela de casos do
-[plano de testes](docs/testes/Template_Plano_de_Testes_e_Backlog.md) (seção 4.6).
+[plano de testes](docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md) (seção 4.6).
 
 A partir dos títulos, `node .github/scripts/tas/test-catalog.mjs --write` gera o catálogo em formato de dados,
-[`docs/testes/catalogo-testes.json`](docs/testes/catalogo-testes.json): cada teste com suíte, arquivo, grupo,
+[`docs/testes-automatizados/catalogo-testes.json`](docs/testes-automatizados/catalogo-testes.json): cada teste com suíte, arquivo, grupo,
 título, casos (TC) e HUs, e cada caso do plano com a quantidade de testes e as suítes que o verificam. O job
 **Política da TAS** reprova o PR quando um teste não tem o caso no título, cita um TC que não existe no plano ou o
 JSON não foi regenerado. Em toda execução do CI/CD, o mesmo job publica o artefato `catalogo-testes`
@@ -908,7 +908,7 @@ Os testes revelaram defeitos que foram corrigidos no código:
   Maestro, use `name: "[TC-63] M-01 ..."` no cabeçalho. Funcionalidade nova sem caso no plano ganha um TC na
   seção 4.6 do plano antes do teste.
 - Depois de criar, renomear ou remover testes, rode `node .github/scripts/tas/test-catalog.mjs --write` e faça
-  commit do `docs/testes/catalogo-testes.json`.
+  commit do `docs/testes-automatizados/catalogo-testes.json`.
 
 **Backend (Jest)**
 
@@ -952,4 +952,4 @@ Os testes revelaram defeitos que foram corrigidos no código:
   por isso eles ficam fora do `npm test`. No CI, 2 fluxos rodam como smoke em todo PR e todos os fluxos de
   `mobile/e2e/` rodam na regressão diária (`regressao.yml`). O emulador do CI às vezes falha sem relação com o
   app (houve falhas em 15/10 e 16/10); por isso o script faz um aquecimento e reinicia o emulador antes dos
-  fluxos. Os fluxos não têm nova tentativa automática (`docs/tas.md`, seção 5.4).
+  fluxos. Os fluxos não têm nova tentativa automática (`docs/testes-automatizados/tas.md`, seção 5.4).

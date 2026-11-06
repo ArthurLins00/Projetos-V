@@ -10,7 +10,7 @@ dependem só de disciplina viraram verificação automática ou issue com prazo 
 |---|---|
 | **Vigência** | a partir de 05/11/2026 |
 | **Revisão desta política** | a cada revisão periódica (seção 6), quando algum critério deixar de fazer sentido |
-| **Documentos relacionados** | [`TESTES.md`](../TESTES.md) (catálogo e execução), [plano de testes](testes/Template_Plano_de_Testes_e_Backlog.md), [métricas de qualidade](testes/Metricas_de_Qualidade.md) |
+| **Documentos relacionados** | [`TESTES.md`](../../TESTES.md) (catálogo e execução), [plano de testes](Template_Plano_de_Testes_e_Backlog.md), [métricas de qualidade](Metricas_de_Qualidade.md) |
 
 ---
 
@@ -149,7 +149,7 @@ Um teste é **instável** quando passa e falha **sem mudança de código** (mesm
 2. **Monitorar** enquanto houver **uma** ocorrência em 14 dias: o teste continua rodando e bloqueando normalmente.
 3. **Corrigir ou quarentenar** a partir de **duas** ocorrências em 14 dias, ou já na primeira se travar `main`/`dev`.
 4. **Quarentena** = desligar o teste (`it.skip`/`test.fixme` com o número da issue no comentário, ou mover o fluxo
-   Maestro para `mobile/e2e/pending/`) **e** registrar em [`.github/tas/quarentena.json`](../.github/tas/quarentena.json)
+   Maestro para `mobile/e2e/pending/`) **e** registrar em [`.github/tas/quarentena.json`](../../.github/tas/quarentena.json)
    com motivo, classificação, issue, responsável, data de início e de expiração.
 5. A quarentena dura **no máximo 14 dias** e pode ser **prorrogada uma vez**, com justificativa no campo
    `prorrogacao`. Vencida, a issue de acompanhamento cobra uma decisão: corrigir, prorrogar ou propor a remoção.
@@ -269,7 +269,7 @@ escrito impede que a remoção vire o atalho para uma falha que ninguém quis in
 | Registro manual de falha, teste instável e remoção | formulários de issue | `.github/ISSUE_TEMPLATE/*.yml` |
 | Checklist de testes e manutenção em todo PR | template de PR | `.github/pull_request_template.md` |
 | Bloqueio de `.only`, teste desligado sem registro e teste fora do catálogo | job **Política da TAS** no Quality Gate | `.github/workflows/ci.yml`, `.github/scripts/tas/check-tas.mjs` |
-| Caso do plano (`[TC-xx]`) no título de cada teste e catálogo em JSON gerado dos títulos | mesmo job (seção 8.5) | `.github/scripts/tas/test-catalog.mjs`, `docs/testes/catalogo-testes.json` |
+| Caso do plano (`[TC-xx]`) no título de cada teste e catálogo em JSON gerado dos títulos | mesmo job (seção 8.5) | `.github/scripts/tas/test-catalog.mjs`, `docs/testes-automatizados/catalogo-testes.json` |
 | Catálogo publicado a cada execução: JSON e relatórios de negócio e técnico | mesmo job, artefato `catalogo-testes` (seção 8.5) | `.github/scripts/tas/render-catalog.mjs` |
 | Registro das quarentenas | arquivo versionado | `.github/tas/quarentena.json` |
 | Prazos vencidos, quarentenas sem decisão, revisão quinzenal e labels | workflow *Manutenção da TAS* | `.github/workflows/tas-manutencao.yml`, `.github/scripts/tas/policy.js` |
@@ -314,7 +314,7 @@ Até 05/11/2026, só 14 títulos de teste citavam o caso do backlog; o vínculo 
 
 - todo teste começa com o caso do plano entre colchetes (`it('[TC-01] ...')`; nos fluxos Maestro, `name:`);
 - `.github/scripts/tas/test-catalog.mjs --write` lê os títulos e a tabela de casos do plano (seção 4.6) e gera
-  `docs/testes/catalogo-testes.json`, com cada teste (suíte, arquivo, grupo, título, TCs e HUs) e cada caso (HU,
+  `docs/testes-automatizados/catalogo-testes.json`, com cada teste (suíte, arquivo, grupo, título, TCs e HUs) e cada caso (HU,
   título, quantidade de testes e suítes);
 - o job **Política da TAS** reprova o PR quando falta o TC no título, o TC não existe no plano ou o JSON não foi
   regenerado. O vínculo passa a mudar junto com o teste, no mesmo commit;

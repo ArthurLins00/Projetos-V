@@ -49,7 +49,7 @@ cidadão acompanha o andamento pelo app até a resolução.
 | Persistência de estado com `useState` e `useEffect` | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx) |
 | Estado global com `useContext` (sessão e demandas) | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx), [`DemandContext.tsx`](mobile/src/contexts/DemandContext.tsx) |
 | Issues automáticas para falhas do CI | [`ci-failure-issues.yml`](.github/workflows/ci-failure-issues.yml) |
-| Métricas de qualidade e relatórios técnico e de negócio (HTML) | [`Metricas_de_Qualidade.md`](docs/testes/Metricas_de_Qualidade.md), [`quality-report.yml`](.github/workflows/quality-report.yml) |
+| Métricas de qualidade e relatórios técnico e de negócio (HTML) | [`Metricas_de_Qualidade.md`](docs/testes-automatizados/Metricas_de_Qualidade.md), [`quality-report.yml`](.github/workflows/quality-report.yml) |
 | Rotas privadas e por perfil (Cidadão × Gestor/Admin) | [`app/_layout.tsx`](mobile/app/_layout.tsx), [`app/(app)/_layout.tsx`](mobile/app/(app)/_layout.tsx) |
 
 ## Arquitetura do app (MVVM)
@@ -159,7 +159,7 @@ Os testes E2E precisam do banco criado e populado (`npm run seed`). O Playwright
 sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.md`](TESTES.md), que também
 descreve o que o GitHub Actions roda a cada push, antes de cada merge e na regressão diária, e o Quality Gate
 que bloqueia o merge quando algum teste falha (seção 2.1). Falhas, testes instáveis, quarentena, revisão
-periódica e remoção de testes seguem a política de manutenção em [`docs/tas.md`](docs/tas.md).
+periódica e remoção de testes seguem a política de manutenção em [`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md).
 
 ---
 
@@ -177,8 +177,8 @@ periódica e remoção de testes seguem a política de manutenção em [`docs/ta
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
 - [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
-- [`docs/tas.md`](docs/tas.md): política de manutenção da automação de testes
-- [`docs/testes/Template_Plano_de_Testes_e_Backlog.md`](docs/testes/Template_Plano_de_Testes_e_Backlog.md): plano de testes e backlog de automação
+- [`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md): política de manutenção da automação de testes
+- [`docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md`](docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md): plano de testes e backlog de automação
 
 ## Declaração de uso de I.A.
 

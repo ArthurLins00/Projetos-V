@@ -1,6 +1,6 @@
 name: Manutenção da TAS
 
-# Operacionaliza a política de manutenção da automação de testes (docs/tas.md):
+# Operacionaliza a política de manutenção da automação de testes (docs/testes-automatizados/tas.md):
 # - todo dia útil: marca issues de manutenção com prazo vencido e cobra a decisão das quarentenas;
 # - dias 1 e 15 de cada mês: abre a issue da revisão periódica com os números da TAS;
 # - manual: qualquer uma das tarefas acima e a sincronização das labels da política.

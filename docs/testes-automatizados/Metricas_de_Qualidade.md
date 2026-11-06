@@ -14,7 +14,7 @@ lido tanto pelo cálculo quanto pelos relatórios.
   importam (roteamento para o órgão certo, permissões por perfil, prazo de atendimento, isolamento entre
   cidadãos) ficam no **backend**, que é onde a cobertura de código faz sentido.
 - **Dados pessoais:** o app guarda nome, e-mail, fotos e localização, então está sujeito à LGPD
-  (`docs/seguranca/03_Conformidade_LGPD.md`). Vulnerabilidade em dependência é risco jurídico, não só técnico.
+  (`docs/seguranca-da-informacao/03_Conformidade_LGPD.md`). Vulnerabilidade em dependência é risco jurídico, não só técnico.
 - **Histórico real de instabilidade:** fluxos do Maestro foram movidos para `mobile/e2e/pending/` por falharem
   no emulador do CI, e tanto o Playwright quanto o Maestro repetem testes que falham. Um teste instável que
   "passa na segunda" esconde problemas e faz a equipe parar de confiar no CI.
@@ -30,7 +30,7 @@ lido tanto pelo cálculo quanto pelos relatórios.
 |---|---|---|---|---|---|
 | MQ-01 | **Taxa de aprovação dos testes** | aprovados ÷ executados (pulados não contam), no total e por suíte | JUnit XML / JSON do Jest de cada suíte | 100% | técnico e negócio |
 | MQ-02 | **Cobertura do backend** | linhas e branches cobertos, somando as suítes unitária e de API (`coverage-final.json`) | Jest | linhas ≥ 85%, branches ≥ 80% | técnico e negócio |
-| MQ-03 | **Testes instáveis (*flaky*)** | issues `teste instável` abertas: falhas que voltaram a passar no mesmo commit, sem mudança de código (não há nova tentativa automática; [política da TAS, seção 5.4](../tas.md)) | API de issues | 0 | técnico |
+| MQ-03 | **Testes instáveis (*flaky*)** | issues `teste instável` abertas: falhas que voltaram a passar no mesmo commit, sem mudança de código (não há nova tentativa automática; [política da TAS, seção 5.4](tas.md)) | API de issues | 0 | técnico |
 | MQ-04 | **Tempo da pipeline** | duração da execução analisada, mediana das execuções de sucesso nos últimos 30 dias e os testes mais lentos | API de execuções do GitHub e JUnit | CI/CD ≤ 10 min, regressão ≤ 60 min | técnico |
 | MQ-05 | **Taxa de sucesso da pipeline** | execuções com sucesso ÷ execuções concluídas do CI/CD e da regressão em `main`, últimos 30 dias | API de execuções do GitHub | ≥ 95% | técnico e negócio |
 | MQ-06 | **MTTR do CI** (tempo médio de recuperação) | média de (fechamento − abertura) das issues `ci-failure` fechadas nos últimos 30 dias | API de issues | ≤ 2 h | técnico e negócio |
@@ -54,11 +54,11 @@ lido tanto pelo cálculo quanto pelos relatórios.
 - **MQ-04 — Tempo da pipeline:** um CI lento atrasa o merge e incentiva pular etapas. A mediana de 30 dias evita
   que uma execução fora da curva distorça o número.
 - **MQ-05 — Taxa de sucesso da pipeline:** já era um KPI do negócio
-  (`docs/negocio/Sustentabilidade_KPIs_e_Aspectos_Legais.md`, seção 2.4, meta ≥ 95%). Reaproveitá-lo mantém um
+  (`docs/negocios-na-internet/Sustentabilidade_KPIs_e_Aspectos_Legais.md`, seção 2.4, meta ≥ 95%). Reaproveitá-lo mantém um
   único número para a equipe e para os stakeholders. Só conta `main`, porque falhas em PRs e branches de trabalho
   fazem parte do desenvolvimento.
 - **MQ-06 — MTTR:** também já era um KPI do negócio (meta ≤ 2 h). Mede quanto tempo a `main` fica quebrada, o que
-  importa mais do que quantas vezes ela quebra. Desde a política de manutenção da TAS ([`docs/tas.md`](../tas.md)),
+  importa mais do que quantas vezes ela quebra. Desde a política de manutenção da TAS ([`docs/testes-automatizados/tas.md`](tas.md)),
   uma falha que volta a passar no mesmo commit não fecha a issue (vira `teste instável`); o MTTR passa a contar
   esse tempo até a causa ser tratada, em vez de registrar a instabilidade como recuperação imediata.
 - **MQ-07 — Falhas abertas:** as labels `area:*` traduzem a falha em uma parte do produto (app, backend,

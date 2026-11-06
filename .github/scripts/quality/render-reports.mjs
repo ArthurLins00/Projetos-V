@@ -98,7 +98,7 @@ function page(title, subtitle, body, metrics) {
 <div class="muted small">Gerado em ${dateTime(metrics.generatedAt)}<br>${meta}</div></header>
 ${body}
 <footer>Fiscalize · relatório gerado automaticamente pelo workflow <b>Relatório de qualidade</b>.
-Definição das métricas e metas: <code>docs/testes/Metricas_de_Qualidade.md</code>.</footer>
+Definição das métricas e metas: <code>docs/testes-automatizados/Metricas_de_Qualidade.md</code>.</footer>
 </main></body></html>`;
 }
 

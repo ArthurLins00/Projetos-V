@@ -366,5 +366,5 @@ backend/
 - [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo
 - [`SETUP.md`](SETUP.md): script de setup automático
 - [`../TESTES.md`](../TESTES.md): estratégia e cobertura dos testes
-- [`../docs/tas.md`](../docs/tas.md): política de manutenção da automação de testes
+- [`../docs/testes-automatizados/tas.md`](../docs/testes-automatizados/tas.md): política de manutenção da automação de testes
 - [`../README.md`](../README.md): visão geral do projeto (backend + app)

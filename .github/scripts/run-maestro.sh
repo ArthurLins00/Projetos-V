@@ -25,7 +25,7 @@ if ! warmup 1; then
   warmup 2
 fi
 
-# Os fluxos rodam uma vez só, sem nova tentativa (docs/tas.md, seção 5.4): o aquecimento acima já garante
+# Os fluxos rodam uma vez só, sem nova tentativa (docs/testes-automatizados/tas.md, seção 5.4): o aquecimento acima já garante
 # que o emulador enxerga o app, então uma falha daqui em diante reprova o job e vira issue.
 maestro test "$@" \
   --format junit \

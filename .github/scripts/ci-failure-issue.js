@@ -15,7 +15,7 @@ const MAX_ASSIGNEES = 10; // limite do GitHub por issue
 
 const PRIORITY_LABEL = 'prioridade: alta';
 const DEFAULT_PRIORITY_LABEL = 'prioridade: média';
-// Política de manutenção da TAS (docs/tas.md): toda falha nasce com a triagem pendente
+// Política de manutenção da TAS (docs/testes-automatizados/tas.md): toda falha nasce com a triagem pendente
 const TRIAGE_LABEL = 'classificação: pendente';
 const FLAKY_LABEL = 'teste instável';
 const DEADLINES = {
@@ -183,7 +183,7 @@ module.exports = async ({ github, context, core }) => {
 
   if (run.conclusion === 'success') {
     // Passou no mesmo commit que tinha falhado: nada foi corrigido, então a falha é suspeita de instabilidade.
-    // A issue continua aberta para a triagem (docs/tas.md, seção 5) em vez de sumir com o verde.
+    // A issue continua aberta para a triagem (docs/testes-automatizados/tas.md, seção 5) em vez de sumir com o verde.
     const flaky = openIssues.filter((issue) => issue.body.includes(shaMarker));
     if (flaky.length) await ensureLabels(github, owner, repo, [FLAKY_LABEL]);
     for (const issue of flaky) {
@@ -195,7 +195,7 @@ module.exports = async ({ github, context, core }) => {
         body:
           `⚠️ [${run.name} #${run.run_number}](${run.html_url}) passou no **mesmo commit** (${run.head_sha.slice(0, 7)}) que falhou. ` +
           'Sem mudança de código, a falha é suspeita de **instabilidade** e a issue continua aberta: investigue a causa, ' +
-          'classifique (`classificação: sut`, `tas` ou `ambiente`) e siga a seção 5 do docs/tas.md antes de fechar.',
+          'classifique (`classificação: sut`, `tas` ou `ambiente`) e siga a seção 5 do docs/testes-automatizados/tas.md antes de fechar.',
       });
     }
     const fixed = openIssues.filter((issue) => !flaky.includes(issue));
@@ -272,7 +272,7 @@ module.exports = async ({ github, context, core }) => {
   const policy = [
     '## Encaminhamento (política da TAS)',
     '',
-    `Prazo (\`${priority}\`): ${DEADLINES[priority]}. Veja [docs/tas.md](${run.repository.html_url}/blob/main/docs/tas.md).`,
+    `Prazo (\`${priority}\`): ${DEADLINES[priority]}. Veja [docs/testes-automatizados/tas.md](${run.repository.html_url}/blob/main/docs/testes-automatizados/tas.md).`,
     '',
     '1. **Investigue**: reproduza localmente ou com *Re-run failed jobs* e leia os artefatos da execução.',
     '2. **Classifique** trocando `classificação: pendente` por `classificação: sut` (defeito do sistema), `tas`',
