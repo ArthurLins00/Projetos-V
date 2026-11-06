@@ -1,0 +1,18 @@
+# Configuração do gitleaks usada pelo workflow Segurança (.github/workflows/seguranca.yml).
+# Usa as regras padrão e ignora só arquivos gerados ou de terceiros. Para aceitar um falso positivo,
+# prefira um comentário "gitleaks:allow" na própria linha, explicando o motivo no PR.
+title = "Fiscalize"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Arquivos gerados, dependências e relatórios da própria varredura"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.git/''',
+  '''(^|/)package-lock\.json$''',
+  '''(^|/)reports/''',
+  '''(^|/)security-report/''',
+  '''(^|/)docs/testes-automatizados/catalogo-testes\.json$''',
+]

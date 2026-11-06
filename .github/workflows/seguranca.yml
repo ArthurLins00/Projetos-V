@@ -1,0 +1,83 @@
+name: Segurança
+
+# Varredura de segurança do projeto inteiro, com resultado em linguagem simples (HTML) e em XML:
+#   npm audit   dependências com vulnerabilidade conhecida (backend, app, agente de IA e testes)
+#   gitleaks    senhas, chaves e tokens no código atual e em todo o histórico (valores nunca publicados)
+#   Semgrep     análise estática (SAST) com regras OWASP para JavaScript, TypeScript, React e JWT
+#   controles   cada controle de docs/seguranca-da-informacao/README.md conferido no código
+# Só informa: fica fora do Quality Gate e não falha a execução. Guia: docs/testes-automatizados/TESTES.md, seção 2.2.
+on:
+  workflow_call:
+  workflow_dispatch:
+  # Vulnerabilidades novas aparecem sem mudança no código: roda também toda segunda às 07h (Brasília)
+  schedule:
+    - cron: '0 10 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seguranca-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  GITLEAKS_VERSION: '8.21.2'
+  SEMGREP_VERSION: '1.95.0'
+
+jobs:
+  seguranca:
+    name: Varredura de segurança
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # o gitleaks percorre todos os commits
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Dependências (npm audit)
+        run: |
+          mkdir -p reports
+          echo "NPM_VERSION=$(npm --version)" >> "$GITHUB_ENV"
+          for project in backend mobile ai-agent e2e; do
+            dir=$project
+            [ "$project" = e2e ] && dir=.   # Playwright fica no package.json da raiz
+            # npm audit sai com código 1 quando encontra vulnerabilidade; o resultado vai para o relatório
+            npm audit --prefix "$dir" --json --package-lock-only > "reports/audit-$project.json" || true
+          done
+
+      - name: Segredos (gitleaks)
+        continue-on-error: true
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP" gitleaks
+          # --redact: o valor do segredo nunca vai para o arquivo; --exit-code 0: achado não quebra o passo
+          common=(--config .gitleaks.toml --redact --no-banner --exit-code 0 --report-format json)
+          "$RUNNER_TEMP/gitleaks" dir . "${common[@]}" --report-path reports/gitleaks-atual.json
+          "$RUNNER_TEMP/gitleaks" git . "${common[@]}" --report-path reports/gitleaks-historico.json
+
+      - name: Análise estática (Semgrep)
+        continue-on-error: true
+        run: |
+          pipx install "semgrep==${SEMGREP_VERSION}"
+          # Pastas ignoradas em .semgrepignore (testes, dependências, documentação)
+          semgrep scan \
+            --config p/javascript --config p/typescript --config p/react --config p/jwt --config p/owasp-top-ten \
+            --metrics=off --json --output reports/semgrep.json
+
+      - name: Gera os relatórios
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/security/render-security.mjs --reports reports --out security-report
+
+      - name: Publica os relatórios
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: relatorio-seguranca
+          path: |
+            security-report
+            reports
+          retention-days: 30
