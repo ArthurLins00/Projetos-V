@@ -182,6 +182,7 @@ datas de abertura e fechamento são a base do MTTR (MQ-06).
 | `ai-agent-test-reports` | JUnit dos testes do agente (sem rede e, na regressão, ao vivo contra o Gemini) | ver qual caso do agente falhou | 7 dias |
 | `dependencias` | SBOM CycloneDX e `npm audit` em JSON de cada projeto | inventário de dependências e vulnerabilidades (MQ-08) | 30 dias |
 | `relatorios-qualidade` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `metrics.json` | os relatórios de qualidade desta execução | 30 dias |
+| `catalogo-testes` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `catalogo-testes.json` | rastreabilidade: quanto do plano está automatizado por HU e a lista de testes com o caso de cada um | 30 dias |
 | `quality-history` | `history.json` com o resumo das últimas 60 execuções em `main` | tendência dos relatórios seguintes | 90 dias |
 
 **Métricas e relatórios:** o último job do CI/CD e da regressão diária (**Relatório de qualidade**,
@@ -819,7 +820,10 @@ A partir dos títulos, `node .github/scripts/tas/test-catalog.mjs --write` gera 
 [`docs/testes/catalogo-testes.json`](docs/testes/catalogo-testes.json): cada teste com suíte, arquivo, grupo,
 título, casos (TC) e HUs, e cada caso do plano com a quantidade de testes e as suítes que o verificam. O job
 **Política da TAS** reprova o PR quando um teste não tem o caso no título, cita um TC que não existe no plano ou o
-JSON não foi regenerado. Como o identificador está no título, renomear, mover ou dividir um teste não desfaz o
+JSON não foi regenerado. Em toda execução do CI/CD, o mesmo job publica o artefato `catalogo-testes`
+(`.github/scripts/tas/render-catalog.mjs`), com o JSON e dois relatórios em HTML: o **de negócio** mostra, por HU,
+quantos casos do plano estão automatizados, quantos ficam manuais por decisão do plano e quantos saíram do escopo;
+o **técnico** lista os casos, as suítes, os arquivos e cada teste com o seu TC. Como o identificador está no título, renomear, mover ou dividir um teste não desfaz o
 vínculo; as tabelas abaixo, com os IDs U-xx, A-xx, E-xx e M-xx, continuam como visão por funcionalidade.
 
 | Requisito / funcionalidade | Unitário | API | E2E (API) | E2E (telas) |

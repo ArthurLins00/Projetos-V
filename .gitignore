@@ -20,6 +20,7 @@ playwright/.cache/
 e2e-junit.xml
 maestro-report*.xml
 quality-report/
+tas-report/
 reports/
 
 coverage/
