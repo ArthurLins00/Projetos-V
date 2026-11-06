@@ -27,6 +27,18 @@ alternativas foram descartadas**.
 | [`../mobile/README.md`](../mobile/README.md) | Telas, arquitetura MVVM, navegação, build e testes de tela do app |
 | [`../ai-agent/README.md`](../ai-agent/README.md) | Instalação, arquitetura e casos de teste do agente de IA |
 
+## Relatórios gerados pela pipeline
+
+Toda execução do CI/CD publica, como artefatos (aba *Actions* → execução → *Artifacts*), relatórios montados a
+partir do repositório. Os dois abaixo usam esta documentação como fonte:
+
+| Artefato | Workflow | Conteúdo |
+|---|---|---|
+| `relatorio-tecnico-projeto` | [`relatorio-tecnico.yml`](../.github/workflows/relatorio-tecnico.yml) | Cada tecnologia com versão, onde é usada, por que foi escolhida e o que foi descartado (texto destes READMEs), rotas da API, modelo de dados, telas, testes e workflows; HTML e `tecnologias.xml` |
+| `relatorio-seguranca` | [`seguranca.yml`](../.github/workflows/seguranca.yml) | Bibliotecas vulneráveis, segredos, análise estática e os controles de Segurança conferidos no código; HTML em linguagem simples, `seguranca.xml` e JUnit XML |
+
+Lista completa de artefatos em [`TESTES.md`, seção 2.2](testes-automatizados/TESTES.md#22-registro-de-falhas-artefatos-e-relatórios-de-qualidade).
+
 ## Convenções
 
 - Documentos em português; nomes de branch e mensagens de commit em inglês (*Conventional Commits*).
@@ -34,3 +46,7 @@ alternativas foram descartadas**.
   `README.md` da pasta.
 - Ao mover um documento, procure o caminho antigo no repositório inteiro: workflows e scripts em
   `.github/` também referenciam arquivos de `docs/` (por exemplo, o catálogo de testes e a política da TAS).
+- O relatório técnico lê as seções `### N.N Tecnologia` dos READMEs e os rótulos **Como**, **Por quê** e
+  **Descartados**. Ao documentar uma tecnologia nova, mantenha esse formato e acrescente-a em
+  [`.github/scripts/tech-report/tecnologias.mjs`](../.github/scripts/tech-report/tecnologias.mjs); ao renomear
+  uma seção, o relatório avisa que não a encontrou.

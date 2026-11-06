@@ -313,3 +313,25 @@ testes de API (`auth`, `authMiddleware`, `refreshToken`, `twoFactor`, `passwordR
 `terms`, `profilePhoto`) e a jornada E2E [`e2e/seguranca.spec.ts`](../../e2e/seguranca.spec.ts)
 (acesso sem token, mensagem genérica no login, isolamento entre cidadãos/IDOR, tentativa de se cadastrar como Admin, logout por sessão e upload que não é imagem). O catálogo completo
 está em [`TESTES.md`](../testes-automatizados/TESTES.md).
+
+## 7. Verificação contínua (workflow Segurança)
+
+O workflow [`seguranca.yml`](../../.github/workflows/seguranca.yml) roda em todo PR e push em `main`/`dev` e
+toda segunda-feira (vulnerabilidades novas aparecem sem mudança no código). Ele fica fora do Quality Gate e
+publica o artefato `relatorio-seguranca`:
+
+| Verificação | Ferramenta | O que procura |
+|---|---|---|
+| Bibliotecas | `npm audit` | Dependências de backend, app, agente e testes com vulnerabilidade conhecida |
+| Segredos | gitleaks | Senhas, chaves e tokens no código atual e em todo o histórico do Git; o valor encontrado nunca é publicado (`--redact`) |
+| Código | Semgrep (regras OWASP para JavaScript, TypeScript, React e JWT) | Injeção, criptografia fraca, configuração insegura |
+| Controles do projeto | [`controls.mjs`](../../.github/scripts/security/controls.mjs) | Cada controle da seção 4 conferido no código (SEC-01 a SEC-17), com a evidência (arquivo e linha) |
+
+Saídas: `relatorio-seguranca.html`, em linguagem simples e com o que fazer em cada item; `seguranca.xml`,
+com todos os achados estruturados; e `seguranca-junit.xml`, em que cada achado grave é um teste que falha.
+Detalhes e tratamento de falsos positivos em [`TESTES.md`, seção 2.2](../testes-automatizados/TESTES.md#22-registro-de-falhas-artefatos-e-relatórios-de-qualidade).
+
+**Por que essas ferramentas:** gitleaks e Semgrep são gratuitos, rodam sem conta nem token e geram JSON que o
+relatório consolida. **Descartados:** SonarQube (servidor ou conta externa, regras genéricas de qualidade
+misturadas às de segurança), Snyk (conta e token, limite no plano gratuito) e TruffleHog (equivalente ao
+gitleaks, com configuração mais pesada para o mesmo resultado).

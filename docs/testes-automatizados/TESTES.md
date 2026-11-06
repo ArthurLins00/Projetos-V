@@ -120,6 +120,8 @@ Cada etapa do desenvolvimento roda um conjunto diferente de testes:
 | Push em `main` ou `dev` (depois do merge) | `ci.yml` | O mesmo do PR, mas com **todos** os E2E do Playwright |
 | Todo dia às 03h (Brasília) ou manual | `regressao.yml` | **Suíte completa**: unitários, de API, todos os E2E do Playwright, build, typecheck do mobile, agente de IA (inclusive ao vivo contra o Gemini) e todos os fluxos Maestro de `mobile/e2e/` no emulador |
 | Fim do CI/CD e da regressão | `quality-report.yml` | Métricas de qualidade e relatórios técnico e de negócio em HTML (seção 2.2) |
+| PR e push em `main`/`dev`, toda segunda às 07h (Brasília) ou manual | `seguranca.yml` | Varredura de segurança fora do Quality Gate: `npm audit`, segredos no código e no histórico (gitleaks), análise estática (Semgrep, regras OWASP) e os controles de [Segurança](../seguranca-da-informacao/README.md) conferidos no código; relatório em HTML e XML (seção 2.2) |
+| PR e push em `main`/`dev`, ou manual | `relatorio-tecnico.yml` | Relatório técnico do projeto fora do Quality Gate: tecnologias com versão, onde são usadas e as justificativas dos READMEs de `docs/`, rotas da API, modelo de dados, telas, testes e workflows, em HTML e XML (seção 2.2) |
 | Dias úteis às 09h e dias 1 e 15 às 10h (Brasília), ou manual | `tas-manutencao.yml` | Política de manutenção da TAS ([`docs/testes-automatizados/tas.md`](tas.md)): prazos vencidos, quarentenas sem decisão e a issue da revisão periódica |
 
 Como a equipe trabalha com forks, o `push.yml` roda no fork de quem fez o push; para isso, o GitHub Actions precisa
@@ -184,6 +186,15 @@ datas de abertura e fechamento são a base do MTTR (MQ-06).
 | `relatorios-qualidade` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `metrics.json` | os relatórios de qualidade desta execução | 30 dias |
 | `catalogo-testes` | `relatorio-tecnico.html`, `relatorio-negocio.html`, `index.html` e `catalogo-testes.json` | rastreabilidade: quanto do plano está automatizado por HU e a lista de testes com o caso de cada um | 30 dias |
 | `quality-history` | `history.json` com o resumo das últimas 60 execuções em `main` | tendência dos relatórios seguintes | 90 dias |
+| `relatorio-seguranca` | `relatorio-seguranca.html` (em linguagem simples, com o que fazer), `seguranca.xml` (todos os achados estruturados), `seguranca-junit.xml` (cada achado grave como teste que falha) e os JSON brutos do `npm audit`, gitleaks e Semgrep | situação de segurança: bibliotecas vulneráveis, segredos (valores nunca publicados), padrões inseguros no código e controles do projeto | 30 dias |
+| `relatorio-tecnico-projeto` | `relatorio-tecnico-projeto.html` e `tecnologias.xml` | visão técnica do projeto: cada tecnologia com versão, onde é usada, por que foi escolhida e o que foi descartado, além de rotas, modelo de dados, telas, testes e workflows | 30 dias |
+
+O relatório de segurança e o relatório técnico são **informativos**: ficam fora do check **CI concluído** e nunca
+reprovam a execução. Os controles de segurança verificados estão em `.github/scripts/security/controls.mjs` e o
+mapa entre tecnologias, seções dos READMEs e pacotes em `.github/scripts/tech-report/tecnologias.mjs`; ao
+documentar uma tecnologia nova num README de `docs/`, acrescente-a nesse mapa (dependências fora dele aparecem
+no relatório como "sem seção na documentação"). Falsos positivos do gitleaks vão para o `.gitleaks.toml` (ou um
+comentário `gitleaks:allow` na linha) e os do Semgrep, para um comentário `nosemgrep` com o motivo.
 
 **Métricas e relatórios:** o último job do CI/CD e da regressão diária (**Relatório de qualidade**,
 `.github/workflows/quality-report.yml`) lê os artefatos acima e a API do GitHub e calcula as métricas MQ-01 a MQ-08.
