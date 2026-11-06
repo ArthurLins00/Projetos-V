@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Papel no PI** | Definir e implementar a estratégia de testes automatizados do app e do backend: fundação da automação na U1 e *Continuous Testing* na U2, com apoio crítico de IA generativa |
-| **Catálogo e execução** | [`TESTES.md`](../../TESTES.md) (estratégia, comandos, pipeline, catálogo completo) |
+| **Catálogo e execução** | [`TESTES.md`](TESTES.md) (estratégia, comandos, pipeline, catálogo completo) |
 | **Código** | [`backend/src/tests`](../../backend/src/tests), [`e2e/`](../../e2e), [`mobile/e2e`](../../mobile/e2e), [`ai-agent/tests`](../../ai-agent/tests), [`.github/workflows`](../../.github/workflows), [`.github/scripts`](../../.github/scripts) |
 | **Conexões** | testa o app e o backend do [Mobile](../desenvolvimento-mobile/README.md) e o [agente de IA](../ia-aplicada/README.md); verifica os controles de [Segurança](../seguranca-da-informacao/README.md); valida os fluxos de valor de [Negócios](../negocios-na-internet/README.md); reporta a qualidade ao [Projeto 5](../projeto-5/README.md) |
 
@@ -13,6 +13,7 @@
 
 | Documento | Conteúdo |
 |---|---|
+| [`TESTES.md`](TESTES.md) | Estratégia (pirâmide), como executar cada nível, pipeline no GitHub Actions, artefatos e catálogo completo dos testes (verificado pelo `check-tas.mjs`) |
 | [`Template_Plano_de_Testes_e_Backlog.md`](Template_Plano_de_Testes_e_Backlog.md) | Plano de testes (escopo, níveis, riscos), casos modelados a partir dos critérios de aceite (TC-xx), matrizes de alocação e rastreabilidade, seleção e backlog de automação |
 | [`ia/saida-rodada-1.md`](ia/saida-rodada-1.md), [`ia/saida-rodada-2.md`](ia/saida-rodada-2.md) | Prompts enviados à IA e saídas recebidas, base da revisão crítica registrada no plano (seções 4.1 e 4.2) |
 | [`Metricas_de_Qualidade.md`](Metricas_de_Qualidade.md) | Métricas MQ-01 a MQ-08, metas, KPIs do relatório de negócio e métricas descartadas com justificativa |
@@ -25,7 +26,7 @@
 |---|---|---|
 | U1 | Plano de Testes, casos modelados, backlog priorizado e registro dos prompts com revisão crítica | [`Template_Plano_de_Testes_e_Backlog.md`](Template_Plano_de_Testes_e_Backlog.md), [`ia/`](ia) |
 | U1 | Testes de unidade e de API executando localmente de forma reprodutível | [`backend/src/tests`](../../backend/src/tests), `npm run test:unit`, `npm run test:api` |
-| U2 | Pipeline de testes por commit/PR (*Continuous Testing*) com Quality Gate | [`ci.yml`](../../.github/workflows/ci.yml), [`push.yml`](../../.github/workflows/push.yml), [`regressao.yml`](../../.github/workflows/regressao.yml), [TESTES.md › 2.1](../../TESTES.md#21-pipeline-no-github-actions) |
+| U2 | Pipeline de testes por commit/PR (*Continuous Testing*) com Quality Gate | [`ci.yml`](../../.github/workflows/ci.yml), [`push.yml`](../../.github/workflows/push.yml), [`regressao.yml`](../../.github/workflows/regressao.yml), [TESTES.md › 2.1](TESTES.md#21-pipeline-no-github-actions) |
 | U2 | Suíte E2E dos fluxos principais sobre o app integrado ao backend real | [`e2e/`](../../e2e) (Playwright), [`mobile/e2e`](../../mobile/e2e) (Maestro) |
 | U2 | Relatório de métricas com interpretação | [`Metricas_de_Qualidade.md`](Metricas_de_Qualidade.md), [`quality-report.yml`](../../.github/workflows/quality-report.yml) |
 | U2 | Evidência de manutenção da suíte | [`tas.md`](tas.md), [`tas-manutencao.yml`](../../.github/workflows/tas-manutencao.yml), issues automáticas de falha |
@@ -45,7 +46,7 @@
   + agente de IA: node:test com Gemini roteirizado (todo push) e ao vivo (regressão diária)
 ```
 
-Os números atualizados de cada nível e a cobertura ficam no topo do [`TESTES.md`](../../TESTES.md).
+Os números atualizados de cada nível e a cobertura ficam no topo do [`TESTES.md`](TESTES.md).
 
 ---
 
@@ -141,4 +142,4 @@ npm test
 npm run test:e2e:mobile
 ```
 
-Pré-requisitos, variáveis e detalhes de cada nível em [`TESTES.md`](../../TESTES.md#2-como-executar).
+Pré-requisitos, variáveis e detalhes de cada nível em [`TESTES.md`](TESTES.md#2-como-executar).

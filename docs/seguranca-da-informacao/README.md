@@ -312,4 +312,4 @@ A suíte de [Testes Automatizados](../testes-automatizados/README.md) cobre a se
 testes de API (`auth`, `authMiddleware`, `refreshToken`, `twoFactor`, `passwordReset`, `logout`,
 `terms`, `profilePhoto`) e a jornada E2E [`e2e/seguranca.spec.ts`](../../e2e/seguranca.spec.ts)
 (acesso sem token, mensagem genérica no login, isolamento entre cidadãos/IDOR, tentativa de se cadastrar como Admin, logout por sessão e upload que não é imagem). O catálogo completo
-está em [`TESTES.md`](../../TESTES.md).
+está em [`TESTES.md`](../testes-automatizados/TESTES.md).

@@ -204,7 +204,7 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 | Câmera | `camera-shutter` |
 | Detalhe | `detail-title`, `detail-edit`, `detail-delete` |
 
-Dicas para escrever fluxos novos estão em [`../TESTES.md`](../TESTES.md).
+Dicas para escrever fluxos novos estão em [`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md).
 
 ---
 

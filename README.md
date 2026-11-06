@@ -70,7 +70,6 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
 ├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
 ├── docs/             Documentação por disciplina do PI (mobile, segurança, negócios, dados, testes, projeto, IA) — ver docs/README.md
-├── TESTES.md         O que cada nível de teste cobre e como rodar
 └── package.json      Scripts que rodam toda a suíte de testes
 ```
 
@@ -156,7 +155,7 @@ npm test
 | `npm run test:e2e:mobile` | Fluxos de tela no emulador (Maestro) |
 
 Os testes E2E precisam do banco criado e populado (`npm run seed`). O Playwright sobe o backend
-sozinho se ele não estiver rodando. O que cada nível cobre está em [`TESTES.md`](TESTES.md), que também
+sozinho se ele não estiver rodando. O que cada nível cobre está em [`docs/testes-automatizados/TESTES.md`](docs/testes-automatizados/TESTES.md), que também
 descreve o que o GitHub Actions roda a cada push, antes de cada merge e na regressão diária, e o Quality Gate
 que bloqueia o merge quando algum teste falha (seção 2.1). Falhas, testes instáveis, quarentena, revisão
 periódica e remoção de testes seguem a política de manutenção em [`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md).
@@ -178,7 +177,7 @@ periódica e remoção de testes seguem a política de manutenção em [`docs/te
 - [`mobile/README.md`](mobile/README.md): telas, arquitetura MVVM, navegação e testes de tela do app
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
 - [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](mobile/COMO_RODAR_ANDROID_STUDIO.md): app no Android Studio, passo a passo
-- [`TESTES.md`](TESTES.md): estratégia e cobertura dos testes
+- [`docs/testes-automatizados/TESTES.md`](docs/testes-automatizados/TESTES.md): estratégia e cobertura dos testes
 - [`docs/testes-automatizados/tas.md`](docs/testes-automatizados/tas.md): política de manutenção da automação de testes
 - [`docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md`](docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md): plano de testes e backlog de automação
 

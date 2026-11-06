@@ -19,7 +19,7 @@ import { checkCatalog } from './test-catalog.mjs';
 
 const ROOT = process.cwd();
 const REGISTRY = '.github/tas/quarentena.json';
-const CATALOG = 'TESTES.md';
+const CATALOG = 'docs/testes-automatizados/TESTES.md';
 const MAX_QUARANTINE_DAYS = 14;
 
 // Onde ficam os testes de cada suíte da TAS

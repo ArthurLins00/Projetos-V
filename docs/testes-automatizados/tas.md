@@ -10,7 +10,7 @@ dependem só de disciplina viraram verificação automática ou issue com prazo 
 |---|---|
 | **Vigência** | a partir de 05/11/2026 |
 | **Revisão desta política** | a cada revisão periódica (seção 6), quando algum critério deixar de fazer sentido |
-| **Documentos relacionados** | [`TESTES.md`](../../TESTES.md) (catálogo e execução), [plano de testes](Template_Plano_de_Testes_e_Backlog.md), [métricas de qualidade](Metricas_de_Qualidade.md) |
+| **Documentos relacionados** | [`TESTES.md`](TESTES.md) (catálogo e execução), [plano de testes](Template_Plano_de_Testes_e_Backlog.md), [métricas de qualidade](Metricas_de_Qualidade.md) |
 
 ---
 

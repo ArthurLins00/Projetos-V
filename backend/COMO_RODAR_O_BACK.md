@@ -154,7 +154,7 @@ npm run test:unit
 npm run test:api
 ```
 
-Os testes E2E (Playwright e Maestro) ficam na raiz do repositorio; veja o TESTES.md.
+Os testes E2E (Playwright e Maestro) ficam na raiz do repositorio; veja docs/testes-automatizados/TESTES.md.
 
 ## 12) Observacoes finais
 - Para rodar em outra maquina, instale Node.js e PostgreSQL (ou Docker), clone o repositorio e siga estes passos.

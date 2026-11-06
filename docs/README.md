@@ -20,7 +20,7 @@ alternativas foram descartadas**.
 | Documento | Conteúdo |
 |---|---|
 | [`../README.md`](../README.md) | Visão geral do produto e como rodar tudo |
-| [`../TESTES.md`](../TESTES.md) | Estratégia, execução e catálogo completo dos testes |
+| [`testes-automatizados/TESTES.md`](testes-automatizados/TESTES.md) | Estratégia, execução e catálogo completo dos testes |
 | [`../backend/README.md`](../backend/README.md) | Perfis, permissões, rotas e variáveis de ambiente da API |
 | [`../mobile/README.md`](../mobile/README.md) | Telas, arquitetura MVVM, navegação, build e testes de tela do app |
 | [`../ai-agent/README.md`](../ai-agent/README.md) | Instalação, arquitetura e casos de teste do agente de IA |

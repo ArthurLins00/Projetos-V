@@ -97,7 +97,7 @@ Fonte: quadro de acompanhamento compartilhado do PI.
 
 - `main` e `dev` protegidas: PR obrigatório com 1 aprovação, check **CI concluído** obrigatório,
   branch atualizada antes do merge, sem *force push* nem exclusão. Detalhes em
-  [`TESTES.md` › Quality Gate](../../TESTES.md#21-pipeline-no-github-actions).
+  [`TESTES.md` › Quality Gate](../testes-automatizados/TESTES.md#21-pipeline-no-github-actions).
 
 ### 4.3 Templates de PR e de issue
 
