@@ -1,0 +1,138 @@
+name: Docker
+
+# Valida o ambiente do Docker (compose.yaml e Dockerfiles) do jeito que o guia docs/COMO_RODAR_COM_DOCKER.md manda usar:
+# constrói as imagens, sobe PostgreSQL, Redis e backend, confere o /health, o seed (login dos usuários de teste) e
+# roda os E2E do Playwright contra os containers. O agente de IA é construído e iniciado com uma chave falsa só
+# para confirmar que o serviço sobe. Roda quando algo que entra nas imagens muda, na regressão diária e sob demanda.
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - compose.yaml
+      - .env.example
+      - backend/**
+      - ai-agent/**
+      - e2e/**
+      - playwright.config.ts
+      - .github/workflows/docker.yml
+  push:
+    branches: [main, dev]
+    paths:
+      - compose.yaml
+      - .env.example
+      - backend/**
+      - ai-agent/**
+      - e2e/**
+      - playwright.config.ts
+      - .github/workflows/docker.yml
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stack:
+    name: Docker Compose (stack completa)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      JWT_SECRET: docker-ci-secret
+      AI_AGENT_SECRET: docker-ci-agent-secret
+      E2E_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Versões
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Constrói as imagens (backend e agente de IA)
+        run: docker compose --profile ai build
+
+      # --wait só termina quando postgres, redis e backend estão healthy (o backend aplica migrações e seed na subida)
+      - name: Sobe PostgreSQL, Redis e backend
+        run: docker compose up -d --wait --wait-timeout 240
+
+      - name: Confere o health check
+        run: |
+          curl -fsS "$E2E_API_URL/health" | tee health.json
+          echo
+          jq -e '.status == "ok" and .database == "connected" and .redis == "connected"' health.json
+
+      - name: Confere o seed (login dos usuários de teste)
+        run: |
+          for user in 'cidadao@fiscalize.gov.br:Cidadao@123456' 'gestor@fiscalize.gov.br:Gestor@123456' 'admin@fiscalize.gov.br:Admin@123456'; do
+            email=${user%%:*}; senha=${user#*:}
+            curl -fsS -X POST "$E2E_API_URL/auth/login" -H 'Content-Type: application/json' \
+              -d "{\"email\":\"$email\",\"senha\":\"$senha\"}" | jq -e '.token | length > 0' > /dev/null
+            echo "login ok: $email"
+          done
+
+      - name: Agente de IA sobe na rede interna
+        env:
+          GEMINI_API_KEY: chave-falsa-so-para-subir
+        run: |
+          docker compose --profile ai up -d ai-agent
+          for i in $(seq 1 30); do
+            if docker compose logs ai-agent | grep -q 'Assistente Fiscalize'; then
+              docker compose logs ai-agent
+              # A porta 3333 não é publicada no host: chama de dentro do container do backend, pela rede do compose
+              docker compose exec -T backend node -e "fetch('http://ai-agent:3333/chat',{method:'POST'}).then(r=>{console.log('ai-agent respondeu', r.status);process.exit(r.status<500?0:1)}).catch(e=>{console.error(e);process.exit(1)})"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs ai-agent
+          echo "::error::O agente de IA não subiu"
+          exit 1
+
+      - name: E2E (Playwright) contra os containers
+        env:
+          CI: true
+        run: |
+          npm ci
+          npm run test:e2e
+
+      - name: Sumário
+        if: ${{ !cancelled() }}
+        run: |
+          node .github/scripts/test-summary.mjs --title "Docker · E2E Playwright contra os containers" e2e-junit.xml || true
+          {
+            echo "### 🐳 Containers"
+            echo
+            echo '```'
+            docker compose --profile ai ps
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Logs dos containers
+        if: ${{ !cancelled() }}
+        run: docker compose --profile ai logs --no-color > docker-compose.log
+
+      - name: Publica logs e relatório
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: docker-e2e
+          path: |
+            docker-compose.log
+            health.json
+            e2e-report
+            e2e-junit.xml
+            test-results
+          retention-days: 7
+
+      - name: Derruba a stack
+        if: always()
+        run: docker compose --profile ai down -v
