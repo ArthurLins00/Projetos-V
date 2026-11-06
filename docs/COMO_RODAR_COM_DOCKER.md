@@ -240,6 +240,10 @@ npm run test:e2e
 O Playwright usa `http://localhost:3000` e reaproveita o backend que já está no ar. Se mudou a porta:
 `E2E_API_URL=http://localhost:3001 npm run test:e2e`.
 
+**No CI:** o workflow [`docker.yml`](../.github/workflows/docker.yml) faz exatamente este roteiro (build, `up --wait`,
+`/health`, logins do seed, agente de IA na rede interna e E2E contra os containers) sempre que `compose.yaml`,
+`backend/`, `ai-agent/` ou `e2e/` mudam, e também na regressão diária. Se ele passou, o guia funciona.
+
 ---
 
 ## 8. Problemas comuns

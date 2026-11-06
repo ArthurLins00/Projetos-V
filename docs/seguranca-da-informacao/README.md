@@ -280,6 +280,7 @@ mais sensíveis, como CPF.
 | Auditoria de ações administrativas | ✅ Implementado | `auditLogService.ts`, tabelas `audit_logs` e `usuario_audit` |
 | Health check e degradação graciosa (Redis, SMTP, push, agente) | ✅ Implementado | `health.ts` |
 | Dependências travadas, SBOM (CycloneDX) e `npm audit` no CI | ✅ Implementado | `dependencias.yml` |
+| Atualização semanal de dependências (Dependabot) | ✅ Implementado | `.github/dependabot.yml` |
 | TOTP obrigatório para Gestor e Admin | 🟡 Especificado | Atividade 1 (hoje: e-mail, opcional) |
 | Senha com 8+ caracteres e 4 classes | 🟡 Especificado | Atividade 1 (o backend exige hoje 6+ caracteres) |
 | Troca periódica de senha (Gestor 90 dias, Admin 60) | 🟡 Especificado | Atividade 1 |
