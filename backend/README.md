@@ -363,8 +363,8 @@ backend/
 
 ## Documentação complementar
 
-- [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo
-- [`SETUP.md`](SETUP.md): script de setup automático
+- [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo, sem Docker para a API
+- [`../docs/COMO_RODAR_COM_DOCKER.md`](../docs/COMO_RODAR_COM_DOCKER.md): projeto inteiro em containers
 - [`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md): estratégia e cobertura dos testes
 - [`../docs/testes-automatizados/tas.md`](../docs/testes-automatizados/tas.md): política de manutenção da automação de testes
 - [`../README.md`](../README.md): visão geral do projeto (backend + app)

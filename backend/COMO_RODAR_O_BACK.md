@@ -1,161 +1,133 @@
-# COMO RODAR O BACKEND
+# Como rodar o backend
 
-## 1) Requisitos minimo
-- Node.js 18 ou superior (ja inclui npm).
-- PostgreSQL instalado localmente ou Docker disponivel.
-- Terminal ou prompt de comando.
+Guia único de configuração do backend sem Docker para a API. Para subir **tudo em containers**
+(PostgreSQL, Redis, backend e agente de IA) com um comando, use o
+[guia do Docker](../docs/COMO_RODAR_COM_DOCKER.md).
 
-## 2) Abrir o backend no terminal
-No terminal, a partir da raiz do repositorio, acesse a pasta do backend:
+## 1. Requisitos
+
+- **Node.js 22** (mesma versão do CI) com npm.
+- **PostgreSQL 16**: via Docker (recomendado) ou instalado no sistema.
+- Opcional: **Redis 7**, para o cache de métricas. Sem ele a API funciona e só calcula as métricas sem cache.
+
+> **Windows:** clone o repositório num caminho curto e sem acentos (ex.: `C:\dev\Projetos-V`).
+
+## 2. Instalar as dependências
+
 ```bash
 cd backend
-```
-
-## 3) Instalar as dependencias
-```bash
 npm install
 ```
 
-## 4) Configurar o banco de dados PostgreSQL
-O backend usa Prisma e o arquivo backend/prisma.config.ts aponta para a URL padrao:
-```text
-postgresql://postgres:BacoExu@localhost:5432/Fiscalize?schema=public
-```
+## 3. Subir o PostgreSQL
 
-### Opcao A: PostgreSQL local
-1. Crie um banco de dados chamado Fiscalize.
-2. Garanta que usuario e senha sejam:
-   - Usuario: postgres
-   - Senha: BacoExu
-3. Garanta que o PostgreSQL aceite conexoes em localhost:5432.
+### Opção A: Docker (recomendado)
 
-### Opcao B: Usar Docker
-Se voce tiver Docker, execute:
+Na **raiz** do repositório, suba só o banco e o Redis do `compose.yaml`:
+
 ```bash
-docker run --name fiscalize-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=BacoExu -e POSTGRES_DB=Fiscalize -p 5432:5432 -d postgres:16
+docker compose up -d postgres redis
 ```
 
-## 5) Criar o arquivo de variaveis de ambiente
-Na pasta backend/, crie um arquivo .env com:
-```env
-DATABASE_URL="postgresql://postgres:BacoExu@localhost:5432/Fiscalize?schema=public"
-JWT_SECRET="troque-por-uma-chave-secreta"
+Usuário, senha e banco padrão: `fiscalize` / `fiscalize` / `fiscalize`, na porta `5432`. Para trocar,
+veja o [guia do Docker](../docs/COMO_RODAR_COM_DOCKER.md#4-variáveis-de-ambiente).
+
+### Opção B: PostgreSQL instalado no sistema
+
+- **Linux (Ubuntu/Debian):** `sudo apt install postgresql postgresql-contrib`
+- **macOS:** `brew install postgresql@16 && brew services start postgresql@16`
+- **Windows:** instalador oficial em <https://www.postgresql.org/download/windows/> (porta 5432).
+
+Crie o usuário e o banco no `psql` (Linux/macOS: `sudo -u postgres psql`; Windows: *SQL Shell (psql)*):
+
+```sql
+CREATE USER fiscalize WITH PASSWORD 'fiscalize';
+CREATE DATABASE fiscalize OWNER fiscalize;
+\q
 ```
 
-> O JWT_SECRET e obrigatorio: sem ele o servidor nao inicia.
+A extensão `uuid-ossp` é criada pela primeira migração, não é preciso habilitá-la à mão.
 
-> Ajuste a URL se usar outro usuario, senha, host, porta ou nome de banco.
+## 4. Criar o `.env`
 
-Opcional, para o chat do assistente de IA (rota `POST /ai/chat`, servico em `ai-agent/`):
-```env
-AI_AGENT_URL="http://127.0.0.1:3333"
-AI_AGENT_SECRET=""
+O `dotenv` só lê um arquivo chamado exatamente `.env`. Copie o modelo:
+
+```bash
+cp .env.example .env
 ```
 
-> Sem o servico do agente rodando, o restante da API funciona normalmente; so `/ai/chat` responde 503.
+No Windows (PowerShell): `Copy-Item .env.example .env`.
 
-## 6) Gerar o cliente Prisma e aplicar o esquema
-No diretorio backend/, execute:
+Confira a `DATABASE_URL` (usuário, senha, **porta** e banco iguais aos do passo 3) e defina um
+`JWT_SECRET`; sem ele o servidor não sobe. Com o Redis do Docker, descomente `REDIS_URL`. Todas as
+variáveis estão em [`README.md` › Variáveis de ambiente](README.md#variáveis-de-ambiente).
+
+> Nunca versione o `.env`: ele já está no `.gitignore`.
+
+## 5. Criar as tabelas e popular o banco
+
 ```bash
 npx prisma generate
-```
-
-Em seguida, aplique as migrations:
-```bash
-npx prisma migrate dev
-```
-
-Isso criara as tabelas no banco de dados com base em prisma/migrations.
-
-Opcionalmente, popule o banco com dados de exemplo:
-```bash
+npx prisma migrate deploy
 npm run seed
 ```
 
-## 7) Rodar o backend
-Ainda em backend/:
+- `prisma generate` gera o cliente tipado do Prisma (não precisa de banco).
+- `prisma migrate deploy` aplica as migrações de `prisma/migrations`.
+- `npm run seed` cria categorias, órgãos, regras de competência e os usuários de teste. Pode ser
+  rodado de novo sem duplicar dados.
+
+Para **criar uma migração nova** depois de alterar o `schema.prisma`: `npx prisma migrate dev --name descricao`.
+
+## 6. Rodar
+
 ```bash
 npm run dev
 ```
 
-O servidor deve iniciar em http://localhost:3000.
+A API sobe em `http://localhost:3000`, com health check em `/health` e Swagger em `/docs`.
+Usuários do seed: `cidadao@fiscalize.gov.br` / `Cidadao@123456`, `gestor@fiscalize.gov.br` /
+`Gestor@123456` e `admin@fiscalize.gov.br` / `Admin@123456`.
 
-## 8) Rotas de autenticacao
-As rotas disponiveis sao:
-- POST /auth/register
-- POST /auth/login
-- POST /auth/logout
-- GET /auth/me
+Para testar as rotas, use o Swagger (`/docs`): faça login em `POST /auth/login`, copie o `token` da
+resposta e clique em **Authorize** (`Bearer <token>`).
 
-## 9) Testar a API com Postman
-### 9.1) Registrar usuario
-- Metodo: POST
-- URL: http://localhost:3000/auth/register
-- Body (JSON):
-```json
-{
-  "nome": "Teste",
-  "email": "teste@teste.com",
-  "senha": "123456"
-}
-```
+Comandos úteis:
 
-### 9.2) Fazer login
-- Metodo: POST
-- URL: http://localhost:3000/auth/login
-- Body (JSON):
-```json
-{
-  "email": "teste@teste.com",
-  "senha": "123456"
-}
-```
+| Comando | O que faz |
+|---|---|
+| `npm run dev:demo` | Sobe em modo de demonstração (código do 2FA na resposta do login) |
+| `npm run etl` | Roda o pipeline ETL de métricas uma vez |
+| `npx prisma studio` | Abre uma interface web para ver e editar os dados |
+| `npm run build && npm start` | Compila para `dist/` e roda a versão compilada |
 
-O login retorna um cookie token HTTP-only. No Postman, habilite o envio de cookies automaticamente.
+## 7. Testes
 
-### 9.3) Verificar usuario logado
-- Metodo: GET
-- URL: http://localhost:3000/auth/me
-- Esta rota exige autenticacao via cookie token.
+Os testes do backend não precisam de banco (o Prisma é mockado):
 
-### 9.4) Logout
-- Metodo: POST
-- URL: http://localhost:3000/auth/logout
-- Esta rota tambem exige autenticacao via cookie token.
-
-## 10) Testar a API com curl
-Registrar:
-```bash
-curl -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"nome":"Teste","email":"teste@teste.com","senha":"123456"}'
-```
-
-Login:
-```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"teste@teste.com","senha":"123456"}'
-```
-
-> Observacao: como o backend usa cookie HTTP-only, curl nao eh ideal para testar rotas protegidas.
-
-## 11) Rodar os testes automatizados
-Os testes do backend usam Jest e nao precisam de banco de dados (o Prisma e mockado). Em backend/:
 ```bash
 npm test
 ```
 
-Tambem e possivel rodar cada grupo separadamente:
 ```bash
 npm run test:unit
 ```
+
 ```bash
 npm run test:api
 ```
 
-Os testes E2E (Playwright e Maestro) ficam na raiz do repositorio; veja docs/testes-automatizados/TESTES.md.
+Os E2E (Playwright e Maestro) ficam na raiz do repositório; veja
+[`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md).
 
-## 12) Observacoes finais
-- Para rodar em outra maquina, instale Node.js e PostgreSQL (ou Docker), clone o repositorio e siga estes passos.
-- Sempre confirme que o banco esteja online antes de rodar npm run dev.
+## 8. Problemas comuns
+
+| Sintoma | Causa | Solução |
+|---|---|---|
+| `address already in use :5432` ao subir o container | Outro PostgreSQL (nativo ou outro container) já usa a porta | Pare o outro serviço (Windows: `netstat -ano \| findstr :5432`; Linux/macOS: `sudo lsof -i :5432`) ou use outra porta (`POSTGRES_PORT=5433` no `.env` da raiz) e ajuste a `DATABASE_URL` |
+| `Missing required environment variable: DATABASE_URL` ou `JWT_SECRET` | Não existe `backend/.env`, ou a variável está vazia | Passo 4 |
+| `datasource.url property is required` no Prisma | O Prisma CLI lê a URL pelo `prisma.config.ts`, que depende do `.env` | Rode os comandos dentro de `backend/` com o `.env` criado |
+| `function uuid_generate_v4() does not exist` | Banco criado com `prisma db push` em vez das migrações | Use `npx prisma migrate deploy` (a primeira migração cria a extensão) |
+| `P1000: Authentication failed` | Usuário ou senha da `DATABASE_URL` diferentes dos do banco | Ajuste o `.env` |
+| `ERRO: a porta 3000 já está em uso` | Outro `npm run dev` (ou o backend do Docker) já está rodando | Encerre o outro processo ou pare o container: `docker compose stop backend` |
+| O celular não alcança a API | Firewall do Windows bloqueando a porta 3000 ou rede diferente | Libere a porta 3000 no firewall e use a mesma rede Wi-Fi |
