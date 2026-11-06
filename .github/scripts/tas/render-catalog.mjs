@@ -1,5 +1,5 @@
-// Publica o catálogo de testes (docs/tas.md, seção 8.5) como relatórios, no mesmo formato do relatório de qualidade:
-//   catalogo-testes.json    o catálogo em dados, idêntico ao versionado em docs/testes/
+// Publica o catálogo de testes (docs/testes-automatizados/tas.md, seção 8.5) como relatórios, no mesmo formato do relatório de qualidade:
+//   catalogo-testes.json    o catálogo em dados, idêntico ao versionado em docs/testes-automatizados/
 //   relatorio-tecnico.html  casos, suítes, arquivos e a lista de testes com o TC de cada um, para a equipe
 //   relatorio-negocio.html  quanto do plano de testes está automatizado, por história de usuário, para stakeholders
 //   index.html              os dois relatórios a um clique
@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { CSS, dateTime, esc, table } from '../lib/report-html.mjs';
 import { CATALOG_JSON, buildCatalog, serialize } from './test-catalog.mjs';
 
-const PLAN = 'docs/testes/Template_Plano_de_Testes_e_Backlog.md';
+const PLAN = 'docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md';
 
 const args = process.argv.slice(2);
 const OUT = args.includes('--out') ? args[args.indexOf('--out') + 1] : 'tas-report';
@@ -156,7 +156,7 @@ function page(title, subtitle, body, d) {
 <div class="muted small">Gerado em ${dateTime(d.generatedAt)}<br>${meta}</div></header>
 ${body}
 <footer>Fiscalize · relatório gerado automaticamente pelo job <b>Política da TAS</b> a partir dos títulos dos testes.
-Rastreabilidade: <code>docs/tas.md</code>, seção 8.5 · plano de testes: <code>${PLAN}</code>.</footer>
+Rastreabilidade: <code>docs/testes-automatizados/tas.md</code>, seção 8.5 · plano de testes: <code>${PLAN}</code>.</footer>
 </main></body></html>`;
 }
 

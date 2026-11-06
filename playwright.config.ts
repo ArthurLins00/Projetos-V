@@ -7,7 +7,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // Sem nova tentativa automática, nem no CI: falha na primeira execução reprova o job e vira issue
-  // (docs/tas.md, seção 5.4). Instabilidade se detecta pelo re-run no mesmo commit, não pelo retry.
+  // (docs/testes-automatizados/tas.md, seção 5.4). Instabilidade se detecta pelo re-run no mesmo commit, não pelo retry.
   retries: 0,
   // No CI também anota as falhas no PR (github) e grava o JUnit lido pelo sumário do job, fora de
   // e2e-report porque o reporter html limpa essa pasta

@@ -1,4 +1,4 @@
-// Calcula as métricas de qualidade (docs/testes/Metricas_de_Qualidade.md) a partir dos artefatos de uma
+// Calcula as métricas de qualidade (docs/testes-automatizados/Metricas_de_Qualidade.md) a partir dos artefatos de uma
 // execução do CI/CD ou da regressão diária e da API do GitHub (execuções e issues ci-failure).
 //
 // Uso: node collect-metrics.mjs --artifacts <pasta> --out <pasta> [--history history.json]
@@ -110,7 +110,7 @@ function collectSuites(dir) {
 
 // ---------- Testes instáveis (MQ-03) ----------
 
-// Sem nova tentativa automática (docs/tas.md, seção 5.4), a instabilidade aparece como issue `teste instável`:
+// Sem nova tentativa automática (docs/testes-automatizados/tas.md, seção 5.4), a instabilidade aparece como issue `teste instável`:
 // o script de issues de falha aplica a label quando o workflow passa no mesmo commit que falhou, e o
 // formulário "Teste instável" registra as que não se reproduzem. Conta as que seguem abertas, sem decisão.
 const FLAKY_LABEL = 'teste instável';

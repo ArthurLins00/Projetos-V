@@ -1,4 +1,4 @@
-// Metas das métricas de qualidade (docs/testes/Metricas_de_Qualidade.md). Lidas pelo cálculo
+// Metas das métricas de qualidade (docs/testes-automatizados/Metricas_de_Qualidade.md). Lidas pelo cálculo
 // (collect-metrics.mjs) e pelos relatórios (render-reports.mjs); mudar uma meta é só aqui.
 
 export const TARGETS = {

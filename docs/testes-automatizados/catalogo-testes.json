@@ -1,6 +1,6 @@
 {
   "descricao": "Catálogo de testes automatizados do Fiscalize, gerado a partir dos títulos dos testes por .github/scripts/tas/test-catalog.mjs. Não edite à mão.",
-  "plano": "docs/testes/Template_Plano_de_Testes_e_Backlog.md",
+  "plano": "docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md",
   "suites": {
     "unit": {
       "nome": "Unitários (Jest)",

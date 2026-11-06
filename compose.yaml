@@ -1,0 +1,91 @@
+# Stack local do Fiscalize. Guia completo: docs/COMO_RODAR_COM_DOCKER.md
+#
+#   docker compose up -d --build                 PostgreSQL + Redis + backend
+#   docker compose --profile ai up -d --build    + agente de IA (precisa de GEMINI_API_KEY no .env)
+#
+# As variáveis vêm do arquivo .env da raiz (modelo em .env.example); todas têm padrão para rodar localmente.
+name: fiscalize
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fiscalize}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fiscalize}
+      POSTGRES_DB: ${POSTGRES_DB:-fiscalize}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fiscalize}:${POSTGRES_PASSWORD:-fiscalize}@postgres:5432/${POSTGRES_DB:-fiscalize}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-troque-esta-chave-fora-do-ambiente-local}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      SEED_ON_START: ${SEED_ON_START:-true}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin@123456}
+      CRON_METRICS_SCHEDULE: ${CRON_METRICS_SCHEDULE:-0 * * * *}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Fiscalize}
+      AI_AGENT_URL: http://ai-agent:3333
+      AI_AGENT_SECRET: ${AI_AGENT_SECRET:-}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    restart: unless-stopped
+
+  ai-agent:
+    build: ./ai-agent
+    profiles: ["ai"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
+      GEMINI_RPM: ${GEMINI_RPM:-15}
+      FISCALIZE_API_URL: http://backend:3000
+      AI_AGENT_SECRET: ${AI_AGENT_SECRET:-}
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:

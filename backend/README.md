@@ -285,7 +285,7 @@ npm run test:api
 
 Os testes unitários e de API usam um **mock do Prisma** e não precisam de banco. Os testes E2E, que rodam
 contra o backend e o banco reais, ficam na raiz do repositório (`npm run test:e2e`). Veja
-[`../TESTES.md`](../TESTES.md) para o que cada nível cobre. Somando as duas suítes, a cobertura é de 93% das
+[`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md) para o que cada nível cobre. Somando as duas suítes, a cobertura é de 93% das
 linhas e 83% dos branches (meta MQ-02: 85% e 80%); para medir: `npx jest --coverage`.
 
 ---
@@ -363,8 +363,8 @@ backend/
 
 ## Documentação complementar
 
-- [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo
-- [`SETUP.md`](SETUP.md): script de setup automático
-- [`../TESTES.md`](../TESTES.md): estratégia e cobertura dos testes
-- [`../docs/tas.md`](../docs/tas.md): política de manutenção da automação de testes
+- [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md): configuração passo a passo, sem Docker para a API
+- [`../docs/COMO_RODAR_COM_DOCKER.md`](../docs/COMO_RODAR_COM_DOCKER.md): projeto inteiro em containers
+- [`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md): estratégia e cobertura dos testes
+- [`../docs/testes-automatizados/tas.md`](../docs/testes-automatizados/tas.md): política de manutenção da automação de testes
 - [`../README.md`](../README.md): visão geral do projeto (backend + app)

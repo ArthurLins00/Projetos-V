@@ -127,7 +127,7 @@ Saída recebida
 
 Grave a saída íntegra, sem correção, em um arquivo próprio versionado no repositório e referencie aqui.
 
-Arquivo: [`docs/testes/ia/saida-rodada-1.md`](ia/saida-rodada-1.md)
+Arquivo: [`docs/testes-automatizados/ia/saida-rodada-1.md`](ia/saida-rodada-1.md)
 
 Três perguntas sobre a saída
 
@@ -357,7 +357,7 @@ O que mudou entre as duas saídas
 
 Grave a saída íntegra em um arquivo próprio versionado no repositório e referencie aqui.
 
-Arquivo: [`docs/testes/ia/saida-rodada-2.md`](ia/saida-rodada-2.md)
+Arquivo: [`docs/testes-automatizados/ia/saida-rodada-2.md`](ia/saida-rodada-2.md)
 
 Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes já presentes no repositório (IDs U-xx, A-xx, E-xx e M-xx do `TESTES.md`). O número do TC é o mesmo do CT da HU; TC-40 a TC-48 vêm do projeto e não têm HU. TC-49 a TC-63 foram incluídos depois, a partir de funcionalidades e testes já presentes no repositório. TC-64 a TC-74 foram incluídos em 05/11/2026 para elevar a cobertura do backend acima de 80% (estava em 63% das linhas e 53% dos branches) e para cobrir os filtros e as métricas do acompanhamento de 10/11/2026. TC-75 e TC-76 também foram incluídos em 05/11/2026, quando cada teste automatizado passou a levar o TC no título: a verificação em duas etapas e o remetente dos e-mails já tinham testes (A-190 a A-202, U-86 a U-89), mas nenhum caso no plano.
 

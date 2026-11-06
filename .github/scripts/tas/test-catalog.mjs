@@ -1,12 +1,12 @@
-// Catálogo de testes em formato de dados (docs/tas.md, seção 8.5).
+// Catálogo de testes em formato de dados (docs/testes-automatizados/tas.md, seção 8.5).
 //
 //   node .github/scripts/tas/test-catalog.mjs           confere: todo teste com TC no título e o JSON em dia
-//   node .github/scripts/tas/test-catalog.mjs --write   regenera docs/testes/catalogo-testes.json
+//   node .github/scripts/tas/test-catalog.mjs --write   regenera docs/testes-automatizados/catalogo-testes.json
 //
 // Cada teste leva no próprio título o identificador do caso do plano de testes, entre colchetes no início:
 // `it('[TC-01] login gera um JWT ...')`, ou `[TC-03, TC-05]` quando cobre mais de um caso. Nos fluxos Maestro o
 // identificador vai no `name:` do cabeçalho. O vínculo com a HU vem da tabela de casos do plano
-// (docs/testes/Template_Plano_de_Testes_e_Backlog.md, seção 4.6), então renomear ou mover um teste não desfaz
+// (docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md, seção 4.6), então renomear ou mover um teste não desfaz
 // a rastreabilidade: o catálogo é gerado de novo a partir dos títulos.
 //
 // Sem dependências: roda no job "Política da TAS" antes de qualquer npm install.
@@ -14,8 +14,8 @@ import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from '
 import path from 'node:path';
 
 const ROOT = process.cwd();
-export const CATALOG_JSON = 'docs/testes/catalogo-testes.json';
-const PLAN = 'docs/testes/Template_Plano_de_Testes_e_Backlog.md';
+export const CATALOG_JSON = 'docs/testes-automatizados/catalogo-testes.json';
+const PLAN = 'docs/testes-automatizados/Template_Plano_de_Testes_e_Backlog.md';
 
 export const SUITES = [
   { id: 'unit', name: 'Unitários (Jest)', dir: 'backend/src/tests/unit', match: /\.test\.ts$/ },

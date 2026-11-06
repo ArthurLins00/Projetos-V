@@ -1,6 +1,6 @@
 name: Relatório de qualidade
 
-# Transforma os resultados da execução em métricas (docs/testes/Metricas_de_Qualidade.md) e nos
+# Transforma os resultados da execução em métricas (docs/testes-automatizados/Metricas_de_Qualidade.md) e nos
 # relatórios técnico e de negócio em HTML. Chamado no fim do ci.yml e do regressao.yml, depois de todos
 # os testes; lê os artefatos da própria execução e a API do GitHub (execuções e issues ci-failure).
 # Nunca falha a execução: um erro no relatório vira aviso, não reprova o CI.

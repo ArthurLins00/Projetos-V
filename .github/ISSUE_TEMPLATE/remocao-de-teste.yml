@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Critérios e aprovação na seção 7 da [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/tas.md). A remoção só é feita
+        Critérios e aprovação na seção 7 da [política da TAS](https://github.com/ArthurLins00/Projetos-V/blob/main/docs/testes-automatizados/tas.md). A remoção só é feita
         depois de **duas aprovações** nesta issue, uma delas do Guardião da TAS, e entra no histórico da seção 9.
   - type: input
     id: teste
@@ -48,4 +48,4 @@ body:
         - label: Caso marcado como removido no plano de testes, com o motivo
         - label: Linhas do catálogo e da rastreabilidade do TESTES.md atualizadas
         - label: Registro de quarentena removido (se havia)
-        - label: Linha adicionada ao histórico de remoções (docs/tas.md, seção 9)
+        - label: Linha adicionada ao histórico de remoções (docs/testes-automatizados/tas.md, seção 9)

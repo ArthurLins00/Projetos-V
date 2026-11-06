@@ -41,9 +41,9 @@ jobs:
     name: Dependências
     uses: ./.github/workflows/dependencias.yml
 
-  # Política de manutenção da TAS (docs/tas.md, seção 8.3): nenhum teste com .only, nenhum teste desligado
+  # Política de manutenção da TAS (docs/testes-automatizados/tas.md, seção 8.3): nenhum teste com .only, nenhum teste desligado
   # sem quarentena registrada, todo arquivo de teste no catálogo do TESTES.md, todo teste com [TC-xx] no título
-  # e docs/testes/catalogo-testes.json em dia
+  # e docs/testes-automatizados/catalogo-testes.json em dia
   tas:
     name: Política da TAS
     runs-on: ubuntu-24.04
@@ -55,7 +55,7 @@ jobs:
           node-version: 22
       - run: node .github/scripts/tas/check-tas.mjs
 
-      # Catálogo em dados e relatórios de rastreabilidade (docs/tas.md, seção 8.5). Informativo: se falhar, o job
+      # Catálogo em dados e relatórios de rastreabilidade (docs/testes-automatizados/tas.md, seção 8.5). Informativo: se falhar, o job
       # avisa, mas quem reprova o PR é a verificação acima
       - name: Gera o catálogo de testes
         id: catalog

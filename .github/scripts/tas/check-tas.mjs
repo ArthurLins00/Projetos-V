@@ -1,4 +1,4 @@
-// Verificações automáticas da política de manutenção da TAS (docs/tas.md, seção 7).
+// Verificações automáticas da política de manutenção da TAS (docs/testes-automatizados/tas.md, seção 7).
 //
 //   node .github/scripts/tas/check-tas.mjs              verificação do PR e do push (falha só nos erros)
 //   node .github/scripts/tas/check-tas.mjs --json out   também grava o resultado em JSON (revisão e quarentena)
@@ -9,7 +9,7 @@
 //     .github/tas/quarentena.json;
 //   - arquivo de teste que não aparece no catálogo do TESTES.md (rastreabilidade);
 //   - teste sem o caso do plano no título ([TC-xx]), caso inexistente no plano ou
-//     docs/testes/catalogo-testes.json desatualizado (test-catalog.mjs);
+//     docs/testes-automatizados/catalogo-testes.json desatualizado (test-catalog.mjs);
 //   - registro de quarentena malformado ou apontando para arquivo que não existe.
 // Avisos (aparecem no sumário, não reprovam): quarentena vencida, sem issue ou apontando para teste que
 // voltou a rodar (registro esquecido).
@@ -19,7 +19,7 @@ import { checkCatalog } from './test-catalog.mjs';
 
 const ROOT = process.cwd();
 const REGISTRY = '.github/tas/quarentena.json';
-const CATALOG = 'TESTES.md';
+const CATALOG = 'docs/testes-automatizados/TESTES.md';
 const MAX_QUARANTINE_DAYS = 14;
 
 // Onde ficam os testes de cada suíte da TAS
