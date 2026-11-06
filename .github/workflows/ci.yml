@@ -46,6 +46,11 @@ jobs:
     name: Segurança
     uses: ./.github/workflows/seguranca.yml
 
+  # Fora do Quality Gate (ci-ok): tecnologias, rotas, modelo de dados e telas em HTML e XML
+  relatorio-tecnico:
+    name: Relatório técnico
+    uses: ./.github/workflows/relatorio-tecnico.yml
+
   # Política de manutenção da TAS (docs/testes-automatizados/tas.md, seção 8.3): nenhum teste com .only, nenhum teste desligado
   # sem quarentena registrada, todo arquivo de teste no catálogo do TESTES.md, todo teste com [TC-xx] no título
   # e docs/testes-automatizados/catalogo-testes.json em dia
