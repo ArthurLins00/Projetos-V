@@ -93,6 +93,29 @@ Fonte: quadro de acompanhamento compartilhado do PI.
 - **Descartados:** **commits direto na `main`** (sem revisão nem Quality Gate) e **Git Flow completo**
   (branches de *release* e *hotfix* são cerimônia demais para um projeto sem deploy em produção).
 
+**Passo a passo para contribuir** (`upstream` = repositório principal, `origin` = seu fork):
+
+```bash
+git fetch upstream
+git checkout -b feat/minha-mudanca upstream/dev
+```
+
+```bash
+git commit -m "feat(backend): describe the change"
+git push -u origin feat/minha-mudanca
+```
+
+Abra o PR do seu fork para `dev` (ou `main`) do repositório principal e preencha o checklist do
+template. Teste novo leva o caso do plano no título (`[TC-xx]`), entra no catálogo do
+[`TESTES.md`](../testes-automatizados/TESTES.md) e o `catalogo-testes.json` é regenerado. Se outro PR
+entrar antes do seu, atualize a branch:
+
+```bash
+git fetch upstream
+git merge upstream/dev
+git push
+```
+
 ### 4.2 Regras de proteção (rulesets)
 
 - `main` e `dev` protegidas: PR obrigatório com 1 aprovação, check **CI concluído** obrigatório,
