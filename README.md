@@ -69,7 +69,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── mobile/           App React Native (Expo) e fluxos E2E do Maestro (mobile/e2e)
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
 ├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
-├── docs/             Segurança, negócio, plano de testes, métricas e a política de manutenção da TAS
+├── docs/             Documentação por disciplina do PI (mobile, segurança, negócios, dados, testes, projeto, IA) — ver docs/README.md
 ├── TESTES.md         O que cada nível de teste cobre e como rodar
 └── package.json      Scripts que rodam toda a suíte de testes
 ```
@@ -172,6 +172,8 @@ periódica e remoção de testes seguem a política de manutenção em [`docs/te
 
 ## Documentação complementar
 
+- [`docs/README.md`](docs/README.md): **índice da documentação por disciplina** (tecnologias, justificativas e alternativas descartadas)
+- [`docs/seguranca-da-informacao/README.md`](docs/seguranca-da-informacao/README.md): modelo de autenticação e explicação das cifras utilizadas
 - [`backend/README.md`](backend/README.md): perfis, permissões e rotas da API
 - [`mobile/README.md`](mobile/README.md): telas, arquitetura MVVM, navegação e testes de tela do app
 - [`backend/COMO_RODAR_O_BACK.md`](backend/COMO_RODAR_O_BACK.md): configuração do banco e do backend
