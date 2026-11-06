@@ -223,4 +223,15 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 ## 5. Como rodar
 
 Passo a passo no [README principal](../../README.md#como-rodar), em [`backend/COMO_RODAR_O_BACK.md`](../../backend/COMO_RODAR_O_BACK.md)
-e em [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](../../mobile/COMO_RODAR_ANDROID_STUDIO.md).
+e em [`mobile/COMO_RODAR_ANDROID_STUDIO.md`](../../mobile/COMO_RODAR_ANDROID_STUDIO.md). Para subir o backend inteiro
+em containers, veja [`COMO_RODAR_COM_DOCKER.md`](../COMO_RODAR_COM_DOCKER.md).
+
+### Docker e Docker Compose
+
+- **Como:** [`compose.yaml`](../../compose.yaml) na raiz sobe PostgreSQL 16, Redis 7, o backend
+  ([`backend/Dockerfile`](../../backend/Dockerfile), que aplica as migrações e o seed na subida) e, com
+  `--profile ai`, o agente de IA. O app continua rodando fora do Docker.
+- **Por quê:** mesmo ambiente e mesmas versões do CI em qualquer sistema operacional, sem instalar
+  PostgreSQL e Redis na máquina.
+- **Descartados:** instalação nativa (versões diferentes por integrante; Redis sem versão oficial para
+  Windows) e Kubernetes (complexo demais para quatro containers locais).

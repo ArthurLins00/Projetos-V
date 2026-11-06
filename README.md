@@ -77,6 +77,11 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 
 ## Como rodar
 
+> **Caminho mais rápido:** com o Docker instalado, `docker compose up -d --build` na raiz sobe
+> PostgreSQL, Redis e o backend (com migrações e seed). Depois é só rodar o app (passo 2).
+> Instalação do Docker, variáveis, agente de IA e solução de problemas em
+> [`docs/COMO_RODAR_COM_DOCKER.md`](docs/COMO_RODAR_COM_DOCKER.md).
+
 ### Pré-requisitos
 
 - **Node.js 22**

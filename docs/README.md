@@ -20,6 +20,8 @@ alternativas foram descartadas**.
 | Documento | Conteúdo |
 |---|---|
 | [`../README.md`](../README.md) | Visão geral do produto e como rodar tudo |
+| [`COMO_RODAR_COM_DOCKER.md`](COMO_RODAR_COM_DOCKER.md) | Instalar o Docker e subir PostgreSQL, Redis, backend e agente de IA em containers |
+| [`../backend/COMO_RODAR_O_BACK.md`](../backend/COMO_RODAR_O_BACK.md) | Configurar e rodar o backend sem Docker |
 | [`testes-automatizados/TESTES.md`](testes-automatizados/TESTES.md) | Estratégia, execução e catálogo completo dos testes |
 | [`../backend/README.md`](../backend/README.md) | Perfis, permissões, rotas e variáveis de ambiente da API |
 | [`../mobile/README.md`](../mobile/README.md) | Telas, arquitetura MVVM, navegação, build e testes de tela do app |
