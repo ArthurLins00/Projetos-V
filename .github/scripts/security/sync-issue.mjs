@@ -64,7 +64,14 @@ function describe(key) {
 const title = report.total
   ? `[SEG] Segurança diária: ${report.total} ${report.total === 1 ? 'item' : 'itens'} a tratar`
   : '[SEG] Segurança diária: nada pendente';
-const body = `${markdown}${MARKER} itens:${JSON.stringify(report.itens)} -->\n`;
+// O GitHub aceita até 65.536 caracteres no corpo; com centenas de achados, o resto fica no artefato
+const MAX_BODY = 60_000;
+const itemsMarker = `${MARKER} itens:${JSON.stringify(report.itens)} -->\n`;
+const room = MAX_BODY - itemsMarker.length;
+const body =
+  markdown.length <= room
+    ? `${markdown}${itemsMarker}`
+    : `${markdown.slice(0, room - 200)}\n\n…\n\n> Lista cortada pelo limite de tamanho da issue: a lista completa está no artefato \`relatorio-seguranca\`.\n\n${itemsMarker}`;
 const runLink = report.execucao ? `[execução](${report.execucao})` : 'execução local';
 
 const open = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'open', '--label', LABEL, '--limit', '50', '--json', 'number,body,title,assignees'))
