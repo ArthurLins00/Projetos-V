@@ -270,6 +270,7 @@ escrito impede que a remoção vire o atalho para uma falha que ninguém quis in
 | Checklist de testes e manutenção em todo PR | template de PR | `.github/pull_request_template.md` |
 | Bloqueio de `.only`, teste desligado sem registro e teste fora do catálogo | job **Política da TAS** no Quality Gate | `.github/workflows/ci.yml`, `.github/scripts/tas/check-tas.mjs` |
 | Caso do plano (`[TC-xx]`) no título de cada teste e catálogo em JSON gerado dos títulos | mesmo job (seção 8.5) | `.github/scripts/tas/test-catalog.mjs`, `docs/testes/catalogo-testes.json` |
+| Catálogo publicado a cada execução: JSON e relatórios de negócio e técnico | mesmo job, artefato `catalogo-testes` (seção 8.5) | `.github/scripts/tas/render-catalog.mjs` |
 | Registro das quarentenas | arquivo versionado | `.github/tas/quarentena.json` |
 | Prazos vencidos, quarentenas sem decisão, revisão quinzenal e labels | workflow *Manutenção da TAS* | `.github/workflows/tas-manutencao.yml`, `.github/scripts/tas/policy.js` |
 | Métricas de instabilidade, tempo, cobertura e MTTR | relatório de qualidade | `.github/workflows/quality-report.yml` |
@@ -316,7 +317,11 @@ Até 05/11/2026, só 14 títulos de teste citavam o caso do backlog; o vínculo 
   `docs/testes/catalogo-testes.json`, com cada teste (suíte, arquivo, grupo, título, TCs e HUs) e cada caso (HU,
   título, quantidade de testes e suítes);
 - o job **Política da TAS** reprova o PR quando falta o TC no título, o TC não existe no plano ou o JSON não foi
-  regenerado. O vínculo passa a mudar junto com o teste, no mesmo commit.
+  regenerado. O vínculo passa a mudar junto com o teste, no mesmo commit;
+- o mesmo job publica, em toda execução do CI/CD, o artefato `catalogo-testes` (`render-catalog.mjs`): o
+  `catalogo-testes.json`, um relatório de negócio (casos do plano automatizados, manuais e fora do escopo, por HU) e
+  um relatório técnico (casos, suítes, arquivos e cada teste com o seu TC), no mesmo formato do relatório de
+  qualidade. A geração é informativa: se falhar, o job só avisa.
 
 **Por quê:** o identificador no título aparece no relatório do Jest, do Playwright e do Maestro, na issue de
 falha e no relatório de qualidade, então quem investiga uma falha chega ao caso e à HU sem consultar outra
