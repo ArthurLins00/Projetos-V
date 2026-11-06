@@ -13,6 +13,7 @@
 
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { expressRoutes } from '../lib/api-routes.mjs';
 import { CSS, dateTime, esc, table } from '../lib/report-html.mjs';
 import { el, xmlDocument } from '../lib/xml.mjs';
 import { CATEGORIAS, DISCIPLINAS, PROJETOS, TECNOLOGIAS } from './tecnologias.mjs';
@@ -157,29 +158,7 @@ function usage(t) {
 
 // ---------- Visão do sistema ----------
 
-function apiRoutes() {
-  const app = read('backend/src/app.ts');
-  const imports = Object.fromEntries([...app.matchAll(/import\s+(\w+)\s+from\s+'\.\/routes\/(\w+)'/g)].map((m) => [m[1], `backend/src/routes/${m[2]}.ts`]));
-  const routes = [];
-  for (const [, prefix, name] of app.matchAll(/app\.use\('([^']+)',\s*(\w+Routes)\)/g)) {
-    const file = imports[name];
-    const src = read(file);
-    const fileAuth = /router\.use\(\s*authenticate/.test(src);
-    const fileRoles = src.match(/router\.use\(\s*requireRole\(\[([^\]]*)\]/)?.[1];
-    for (const [, method, sub, rest] of src.matchAll(/router\.(get|post|put|patch|delete)\(\s*'([^']+)'([\s\S]*?)\);/g)) {
-      const roles = rest.match(/requireRole\(\[([^\]]*)\]/)?.[1] ?? fileRoles;
-      const auth = fileAuth || /authenticate/.test(rest);
-      routes.push({
-        metodo: method.toUpperCase(),
-        caminho: `${prefix}${sub === '/' ? '' : sub}` || '/',
-        acesso: roles ? roles.replace(/['"\s]/g, '').split(',').join(', ') : auth ? 'autenticado' : 'público',
-        arquivo: file,
-      });
-    }
-  }
-  routes.push({ metodo: 'GET', caminho: '/health', acesso: 'público', arquivo: 'backend/src/app.ts' });
-  return routes;
-}
+const apiRoutes = () => expressRoutes(ROOT);
 
 function dataModel() {
   const schema = read('backend/prisma/schema.prisma');

@@ -1,0 +1,45 @@
+name: Contrato da API
+
+# Compara as rotas registradas no Express com as documentadas no Swagger (backend/src/config/swagger.ts):
+# rota sem documentação, rota documentada que não existe ou rota protegida documentada como pública reprovam o job.
+# Faz parte do Quality Gate (ci.yml → CI concluído). Script: .github/scripts/contract/check-contract.mjs
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contrato:
+    name: Rotas × Swagger
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --prefix backend
+
+      # O Swagger é um objeto TypeScript: o ts-node carrega o módulo e grava a especificação em JSON
+      - name: Exporta a especificação OpenAPI
+        working-directory: backend
+        env:
+          JWT_SECRET: contrato-api
+        run: npx ts-node -T -e "process.stdout.write(JSON.stringify(require('./src/config/swagger').openApiSpec, null, 2))" > ../openapi.json
+
+      - name: Compara rotas e Swagger
+        run: node .github/scripts/contract/check-contract.mjs openapi.json --out contract-report
+
+      - name: Publica o resultado
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: contrato-api
+          path: |
+            contract-report
+            openapi.json
+          retention-days: 30
