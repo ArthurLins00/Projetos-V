@@ -1,0 +1,107 @@
+name: Build do APK
+
+# Gera o app Android pelo EAS Build (nuvem da Expo) e publica o arquivo:
+#   - manual (Actions → Build do APK → Run workflow): escolhe o perfil e baixa o resultado no artefato da execução;
+#   - ao publicar uma release no GitHub: gera o APK (perfil preview) e o anexa à própria release.
+# Pré-requisitos (uma vez): secret EXPO_TOKEN no repositório (token de acesso da conta dona do projeto no EAS) e a
+# variável EXPO_PUBLIC_API_URL cadastrada no ambiente do EAS (sem ela o APK aponta para o emulador).
+# Passo a passo: mobile/README.md, seção "Build empacotado (EAS)".
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      perfil:
+        description: 'Perfil do eas.json: preview gera APK para instalar direto; production gera AAB para a Play Store'
+        type: choice
+        options: [preview, production]
+        default: preview
+
+# contents: write só para anexar o arquivo à release
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS Build (Android)
+    runs-on: ubuntu-24.04
+    # A fila gratuita do EAS pode levar dezenas de minutos
+    timeout-minutes: 90
+    env:
+      PERFIL: ${{ inputs.perfil || 'preview' }}
+      TAG: ${{ github.event.release.tag_name }}
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Confere o token do EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        working-directory: .
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Cadastre o secret EXPO_TOKEN (expo.dev → Account settings → Access tokens) em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Gera o build no EAS
+        run: eas build --platform android --profile "$PERFIL" --non-interactive --wait --json > ../eas-build.json
+
+      - name: Baixa o arquivo gerado
+        id: file
+        run: |
+          url=$(jq -r '.[0].artifacts.buildUrl // empty' ../eas-build.json)
+          if [ -z "$url" ]; then
+            echo "::error::O EAS não devolveu o link do arquivo"; cat ../eas-build.json; exit 1
+          fi
+          version=$(node -p "require('./app.json').expo.version")
+          ext=$([ "$PERFIL" = production ] && echo aab || echo apk)
+          label=${TAG:-v$version}
+          name="fiscalize-${label//\//-}-${PERFIL}.${ext}"
+          curl -fsSL -o "../$name" "$url"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          {
+            echo "## 📱 Build do app Android"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Arquivo | \`$name\` ($(du -h "../$name" | cut -f1)) |"
+            echo "| Perfil | \`$PERFIL\` |"
+            echo "| Versão do app | $version |"
+            echo "| Build no EAS | \`$(jq -r '.[0].id' ../eas-build.json)\` |"
+            echo
+            echo "O arquivo está no artefato \`app-android\` desta execução${TAG:+ e anexado à release $TAG}."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publica o arquivo
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-android
+          path: ${{ steps.file.outputs.name }}
+          retention-days: 30
+
+      - name: Anexa à release
+        if: github.event_name == 'release'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FILE: ${{ steps.file.outputs.name }}
+        run: gh release upload "$TAG" "$FILE" --clobber -R "$GITHUB_REPOSITORY"
