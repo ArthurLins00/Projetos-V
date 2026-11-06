@@ -61,9 +61,30 @@ const BACKEND = 'backend/src';
 const AUTH = ['backend/src/services/authService.ts', 'backend/src/services/adminService.ts'];
 const DOC = 'docs/seguranca-da-informacao/README.md';
 
+// O que fazer quando o controle não está "ok": vai para o relatório e para a issue da Segurança diária
+const CORRECOES = {
+  'SEC-01': 'Gere o hash das senhas com bcrypt.hash(senha, 10) (ou mais) em todo cadastro, troca e recuperação de senha, e remova qualquer MD5/SHA-1 aplicado a senhas.',
+  'SEC-02': "Volte a ler a chave com requireEnv('JWT_SECRET') em backend/src/config/env.ts, para o servidor não subir sem ela.",
+  'SEC-03': "Mantenha o padrão de JWT_EXPIRATION em até 1 hora (hoje '15m') em backend/src/config/env.ts; a sessão longa fica com o refresh token.",
+  'SEC-04': 'Grave no banco apenas hashRefreshToken(token) (SHA-256), nunca o refresh token em texto, e busque o registro pelo hash.',
+  'SEC-05': 'Compare códigos de 2FA, de recuperação e o x-agent-secret com crypto.timingSafeEqual sobre buffers do mesmo tamanho, nunca com ===.',
+  'SEC-06': "Troque Math.random() por crypto.randomInt / crypto.randomBytes (de 'node:crypto') nos pontos indicados; no sufixo do protocolo, randomInt(36 ** 4).toString(36).",
+  'SEC-07': 'Guarde tokens e dados de sessão com SecureStore.setItemAsync (expo-secure-store) e remova o AsyncStorage desses dados.',
+  'SEC-08': 'Antes de publicar o app, aponte EXPO_PUBLIC_API_URL para uma URL HTTPS e remova "usesCleartextTraffic": true do plugin expo-build-properties em mobile/app.json.',
+  'SEC-09': 'Volte a usar a lista ALLOWED_ORIGINS (getAllowedOrigins) em backend/src/config/cors.ts; nunca origin "*" ou true com credenciais.',
+  'SEC-10': 'Mantenha em backend/src/config/env.ts o erro que impede DEMO_MODE=true junto com NODE_ENV=production.',
+  'SEC-11': 'Valide as fotos com detectImageExtension (assinatura de bytes) antes de gravar e mantenha o limite de express.json (15 MB só nas rotas de foto).',
+  'SEC-12': 'Troque $queryRawUnsafe/$executeRawUnsafe por métodos do Prisma ou por $queryRaw com template literal, que parametriza os valores.',
+  'SEC-13': 'Exija no mínimo 8 caracteres (e as 4 classes da Atividade 1) nas três validações de backend/src/controllers/authController.ts e na tela de cadastro do app; ajuste os testes de cadastro e troca de senha.',
+  'SEC-14': 'Instale o helmet (npm install helmet --prefix backend) e registre app.use(helmet()) no início de backend/src/app.ts, antes das rotas.',
+  'SEC-15': 'Instale express-rate-limit com armazenamento no Redis e aplique limites por IP: geral (ex.: 100/min) e mais baixo em /auth/login, /auth/forgot-password, /auth/login/2fa e /ai/chat; bloqueie a conta por 15 min após 5 logins errados (issue #90).',
+  'SEC-16': 'Remova o arquivo do Git (git rm --cached <arquivo>), confirme que .env está no .gitignore e troque todas as senhas e chaves que estavam nele.',
+  'SEC-17': "Volte o padrão de AI_AGENT_HOST para '127.0.0.1' em ai-agent/src/config.ts; no Docker o agente fica só na rede interna.",
+};
+
 export function checkControls() {
   const controls = [];
-  const add = (c) => controls.push({ referencia: DOC, ...c });
+  const add = (c) => controls.push({ referencia: DOC, correcao: CORRECOES[c.id], ...c });
 
   // ---------- Autenticação e sessão ----------
   const bcryptHash = grep(BACKEND, /bcrypt\.hash\(/);
