@@ -42,7 +42,7 @@ describe('authController (unitário)', () => {
   it.each([
     ['register', { body: {} }, /nome, email, senha/],
     ['register', { body: { nome: 'M', email: 'sem-arroba', senha: '123456' } }, /E-mail inválido/],
-    ['register', { body: { nome: 'M', email: 'm@t.com', senha: '123' } }, /6 caracteres/],
+    ['register', { body: { nome: 'M', email: 'm@t.com', senha: '123' } }, /8 a 72 caracteres/],
     ['login', { body: { email: 'm@t.com' } }, /email, senha/],
     ['verifyTwoFactor', { body: {} }, /desafioId, codigo/],
     ['verifyTwoFactor', { body: { desafioId: 'd1', codigo: '12ab56' } }, /Código inválido/],
@@ -51,7 +51,7 @@ describe('authController (unitário)', () => {
     ['forgotPassword', { body: { email: 'invalido' } }, /E-mail inválido/],
     ['resetPassword', { body: { email: 'm@t.com' } }, /email, codigo, novaSenha/],
     ['resetPassword', { body: { email: 'm@t.com', codigo: '12', novaSenha: '123456' } }, /Código inválido/],
-    ['resetPassword', { body: { email: 'm@t.com', codigo: '123456', novaSenha: '123' } }, /6 caracteres/],
+    ['resetPassword', { body: { email: 'm@t.com', codigo: '123456', novaSenha: '123' } }, /8 a 72 caracteres/],
     ['updateTwoFactor', { ...logged, body: { ativo: 'sim' } }, /booleano/],
     ['updateTwoFactor', { ...logged, body: { ativo: true } }, /senha atual/],
     ['uploadPhoto', { ...logged, body: {} }, /photo/],
@@ -61,7 +61,7 @@ describe('authController (unitário)', () => {
     ['updateMe', { ...logged, body: {} }, /ao menos um campo/],
     ['updateMe', { ...logged, body: { nome: '   ' } }, /Nome/],
     ['updateMe', { ...logged, body: { email: 'x' } }, /E-mail inválido/],
-    ['updateMe', { ...logged, body: { novaSenha: '1' } }, /6 caracteres/],
+    ['updateMe', { ...logged, body: { novaSenha: '1' } }, /8 a 72 caracteres/],
   ] as const)('[TC-73] %s recusa entrada inválida (400): %j', async (method, req, message) => {
     const { error } = await call(method, req);
 
@@ -81,11 +81,11 @@ describe('authController (unitário)', () => {
   it('[TC-73] register cria o cidadão e devolve 201 sem a senha', async () => {
     service.register!.mockResolvedValue({ ...usuario, senha: 'hash' });
 
-    const { status, body } = await call('register', { body: { nome: 'Maria', email: 'maria@t.com', senha: '123456', ignorarSenhaRepetida: true } });
+    const { status, body } = await call('register', { body: { nome: 'Maria', email: 'maria@t.com', senha: 'Abc@1234', ignorarSenhaRepetida: true } });
 
     expect(status).toBe(201);
     expect(body).toEqual({ id: 'u1', nome: 'Maria', email: 'maria@t.com', perfil: 'Cidadao' });
-    expect(service.register).toHaveBeenCalledWith('Maria', 'maria@t.com', '123456', true);
+    expect(service.register).toHaveBeenCalledWith('Maria', 'maria@t.com', 'Abc@1234', true);
   });
 
   it('[TC-73] login com 2FA devolve o desafio e, em demonstração, o código', async () => {
@@ -138,10 +138,10 @@ describe('authController (unitário)', () => {
 
   it('[TC-73] forgotPassword e resetPassword normalizam o e-mail e o código', async () => {
     await call('forgotPassword', { body: { email: ' maria@t.com ' } });
-    await call('resetPassword', { body: { email: ' maria@t.com ', codigo: ' 123456 ', novaSenha: 'nova123' } });
+    await call('resetPassword', { body: { email: ' maria@t.com ', codigo: ' 123456 ', novaSenha: 'Nova@1234' } });
 
     expect(service.requestPasswordReset).toHaveBeenCalledWith('maria@t.com');
-    expect(service.resetPassword).toHaveBeenCalledWith('maria@t.com', '123456', 'nova123');
+    expect(service.resetPassword).toHaveBeenCalledWith('maria@t.com', '123456', 'Nova@1234');
   });
 
   it('[TC-73] logout revoga o token do header e o refresh token da sessão', async () => {
@@ -186,14 +186,14 @@ describe('authController (unitário)', () => {
     await call('acceptTerms', { ...logged, body: { versao: 2 } });
     const push = await call('registerPushToken', { ...logged, body: { token: 'ExponentPushToken[x]' } });
     const unpush = await call('removePushToken', { ...logged, body: { token: 'ExponentPushToken[x]' } });
-    await call('updateMe', { ...logged, body: { nome: ' Maria ', email: ' maria@t.com ', senhaAtual: 'a', novaSenha: 'nova123' } });
+    await call('updateMe', { ...logged, body: { nome: ' Maria ', email: ' maria@t.com ', senhaAtual: 'a', novaSenha: 'Nova@1234' } });
 
     expect(service.setTwoFactor).toHaveBeenCalledWith('u1', true, 'senha123');
     expect(service.acceptTerms).toHaveBeenCalledWith('u1', 2);
     expect(push.status).toBe(204);
     expect(unpush.status).toBe(204);
     expect(notificationService.registerPushToken).toHaveBeenCalledWith('u1', 'ExponentPushToken[x]');
-    expect(service.updateProfile).toHaveBeenCalledWith('u1', { nome: 'Maria', email: 'maria@t.com', senhaAtual: 'a', novaSenha: 'nova123' });
+    expect(service.updateProfile).toHaveBeenCalledWith('u1', { nome: 'Maria', email: 'maria@t.com', senhaAtual: 'a', novaSenha: 'Nova@1234' });
   });
 
   it('[TC-73] erro do serviço é repassado ao middleware de erro', async () => {

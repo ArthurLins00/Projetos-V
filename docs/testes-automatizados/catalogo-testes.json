@@ -1862,7 +1862,7 @@
       "suite": "api",
       "arquivo": "backend/src/tests/api/authRegister.test.ts",
       "grupo": "POST /auth/register › TC-41 | validação dos campos do cadastro",
-      "titulo": "aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)",
+      "titulo": "aceita senha forte no limite de 8, 9 e 72 caracteres: %s",
       "casos": [
         "TC-41"
       ],

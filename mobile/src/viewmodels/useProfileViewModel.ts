@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
 import { UpdateProfilePayload, UserProfile } from '../models/User';
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
 import { ThemePreference, useTheme } from '../theme';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -81,7 +82,7 @@ export function useProfileViewModel() {
 
   const savePassword = async () => {
     if (!senhaAtual || !novaSenha) return Alert.alert('Erro', 'Preencha a senha atual e a nova senha.');
-    if (novaSenha.length < 6) return Alert.alert('Erro', 'A nova senha deve ter no mínimo 6 caracteres.');
+    if (!meetsPasswordPolicy(novaSenha)) return Alert.alert('Senha fraca', PASSWORD_POLICY_MESSAGE);
     if (novaSenha !== confirmarSenha) return Alert.alert('Erro', 'A confirmação não confere com a nova senha.');
 
     try {

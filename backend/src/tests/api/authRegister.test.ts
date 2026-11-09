@@ -33,7 +33,7 @@ describe('POST /auth/register', () => {
       .send({
         nome: 'Usuário Teste',
         email: 'teste@exemplo.com',
-        senha: 'senha-super-segura',
+        senha: 'Senha-Super-Segura1',
       });
 
     expect(response.status).toBe(201);
@@ -55,7 +55,7 @@ describe('POST /auth/register', () => {
       .send({
         nome: 'Hacker Invasor',
         email: 'hacker@exemplo.com',
-        senha: 'senha-super-segura',
+        senha: 'Senha-Super-Segura1',
         perfil: 'Admin',
         role: 'Admin',
         isAdmin: true,
@@ -81,7 +81,7 @@ describe('POST /auth/register', () => {
       .send({
         nome: 'Outro Usuário',
         email: 'jaexiste@exemplo.com',
-        senha: 'senha-super-segura',
+        senha: 'Senha-Super-Segura1',
       });
 
     expect(response.status).toBe(409);
@@ -92,7 +92,8 @@ describe('POST /auth/register', () => {
   });
 
   describe('TC-41 | validação dos campos do cadastro', () => {
-    const valido = { nome: 'Maria', email: 'maria@exemplo.com', senha: 'abc123' };
+    const valido = { nome: 'Maria', email: 'maria@exemplo.com', senha: 'Abc@1234' };
+    const politica = /8 a 72 caracteres, com letra maiúscula, letra minúscula, número e símbolo/i;
 
     it.each([
       [{ ...valido, nome: undefined }, /Campos obrigatórios/i],
@@ -100,7 +101,12 @@ describe('POST /auth/register', () => {
       [{ ...valido, senha: undefined }, /Campos obrigatórios/i],
       [{ ...valido, email: 'maria.exemplo.com' }, /E-mail inválido/i],
       [{ ...valido, email: 'maria@exemplo' }, /E-mail inválido/i],
-      [{ ...valido, senha: '12345' }, /mínimo 6 caracteres/i],
+      [{ ...valido, senha: 'Abc@123' }, politica],
+      [{ ...valido, senha: 'abc@1234' }, politica],
+      [{ ...valido, senha: 'ABC@1234' }, politica],
+      [{ ...valido, senha: 'Abcd@efg' }, politica],
+      [{ ...valido, senha: 'Abcd1234' }, politica],
+      [{ ...valido, senha: `Ab@1${'x'.repeat(69)}` }, politica],
     ])('[TC-41] recusa %j com 400 e não grava nada', async (body, mensagem) => {
       const response = await request(app).post(ROUTE).send(body);
 
@@ -109,11 +115,14 @@ describe('POST /auth/register', () => {
       expect(prisma.usuario.create).not.toHaveBeenCalled();
     });
 
-    it.each(['123456', '1234567'])('[TC-41] aceita senha com %s (6 e 7 caracteres, limite inferior e logo acima)', async (senha) => {
-      const response = await request(app).post(ROUTE).send({ ...valido, senha });
+    it.each(['Abc@1234', 'Abc@12345', `Ab@1${'x'.repeat(68)}`])(
+      '[TC-41] aceita senha forte no limite de 8, 9 e 72 caracteres: %s',
+      async (senha) => {
+        const response = await request(app).post(ROUTE).send({ ...valido, senha });
 
-      expect(response.status).toBe(201);
-      expect(prisma.usuario.create).toHaveBeenCalled();
-    });
+        expect(response.status).toBe(201);
+        expect(prisma.usuario.create).toHaveBeenCalled();
+      }
+    );
   });
 });

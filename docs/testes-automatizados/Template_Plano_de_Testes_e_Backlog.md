@@ -235,7 +235,7 @@ O que mudou entre as duas saídas
 | `HU-08 CA-1 e CA-2: /api/v1 funciona e rota legada tem tratamento claro` | `Partição de equivalência` | `/api/v1/demands; /demands sem prefixo; versão do app abaixo da mínima` | `TC-33, TC-34, TC-35` |
 | `HU-09 CA-1 e CA-2: app nativo aceito e domínio não autorizado bloqueado` | `Partição de equivalência` | `sem Origin; Origin na whitelist; Origin fora da whitelist` | `TC-36, TC-37, TC-38` |
 | `CT-39: perfil errado recebe 403 pelo requireRole` | `Tabela de decisão` | `perfil (Admin, Gestor, Cidadão, anônimo) × rota (Admin, Gestor, Cidadão)` | `TC-39` |
-| `Cadastro: campos obrigatórios, e-mail válido e único, senha ≥ 6, perfil sempre Cidadão` | `Partição de equivalência + Valor limite` | `senha com 5, 6 e 7 caracteres; e-mail sem @; e-mail duplicado; perfil/role/isAdmin = Admin` | `TC-40, TC-41` |
+| `Cadastro: campos obrigatórios, e-mail válido e único, senha de 8 a 72 caracteres com maiúscula, minúscula, número e símbolo, perfil sempre Cidadão` | `Partição de equivalência + Valor limite` | `senha com 7, 8, 9, 72 e 73 caracteres; sem maiúscula, sem minúscula, sem número ou sem símbolo; e-mail sem @; e-mail duplicado; perfil/role/isAdmin = Admin` | `TC-40, TC-41` |
 | `Editar e remover só enquanto o chamado não está em andamento` | `Tabela de decisão` | `perfil (Cidadão/Gestor) × dono (sim/não) × status (Aberto, Em Andamento, Resolvido, Fechado)` | `TC-42, TC-43` |
 | `Encaminhamento só para categoria e órgão ativos` | `Partição de equivalência` | `categoria ativa; inativa; inexistente; órgão ativo; órgão inativo` | `TC-44` |
 | `Captura de localização pelo GPS no aparelho` | `Partição de equivalência` | `permissão concedida; negada; GPS desligado; sem sinal` | `TC-45, TC-46` |
@@ -405,7 +405,7 @@ Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes j
 | TC-38 | HU-09 | CA-2 | Domínio não autorizado | `ALLOWED_ORIGINS` configurado | Requisição com Origin fora da whitelist | Bloqueada pelo CORS | — |
 | TC-39 | HU-09 | CT-39 | Perfil errado | Tokens de Admin, Gestor e Cidadão | Acessar rotas de cada perfil com cada token | Herança Admin ⊃ Gestor ⊃ Cidadão; 403 fora do perfil | — |
 | TC-40 | — | — | Cadastro | E-mail não cadastrado | Cadastrar válido; repetir e-mail; cadastrar com perfil Admin | 201 Cidadão; 409; perfil forçado para Cidadão | Usuário gravado |
-| TC-41 | — | — | Validação de campos do cadastro | — | Campo ausente; e-mail sem @; senha com 5, 6 e 7 caracteres | 400 nos inválidos; 6 e 7 aceitos | Nada gravado nos inválidos |
+| TC-41 | — | — | Validação de campos do cadastro | — | Campo ausente; e-mail sem @; senha com 7 e 73 caracteres; senha de 8 caracteres sem uma das 4 classes; senha forte com 8, 9 e 72 caracteres | 400 nos inválidos, com a mensagem da política; 8, 9 e 72 aceitos | Nada gravado nos inválidos |
 | TC-42 | — | — | Editar/remover por dono e status | Chamados em cada status | Aplicar a tabela de decisão da 4.4 | Só o dono com status Aberto; gestor remove qualquer; demais 403 | Histórico registrado |
 | TC-43 | — | — | Isolamento entre cidadãos | Dois cidadãos; chamado do primeiro | O segundo tenta ver, editar, anexar foto e remover | 403 em todas; chamado do dono intacto | — |
 | TC-44 | HU-04 | — | Categoria e órgão ativos | Seed com itens ativos e inativos | Listar categorias; criar chamado em categoria inativa ou com órgão inativo | Só ativas listadas; 400 na inativa; nunca roteia a órgão inativo | — |
@@ -583,7 +583,7 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 13 | `TC-09` | `HU-02` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-42, A-43; sem token, expirado, malformado ou já revogado retorna 401, nunca 500)` |
 | 14 | `TC-13` | `HU-03` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-46)` |
 | 15 | `TC-37` | `HU-09` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-51, A-52)` |
-| 16 | `TC-41` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-56, A-57; senha com 5 caracteres recusada, 6 e 7 aceitas)` |
+| 16 | `TC-41` | `—` | `Componente` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-56, A-57; senha com 7 ou 73 caracteres ou sem uma das 4 classes recusada, 8, 9 e 72 aceitas)` |
 | 17 | `TC-52` | `—` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-105 a A-110, E-28, E-29)` |
 | 18 | `TC-57` | `HU-06` | `Integração` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-16 a U-19, A-17, E-05, E-06)` |
 | 19 | `TC-58` | `—` | `Sistema` | `2` | `1` | `3` | `(2×3)÷1 = 6,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-18, E-07)` |

@@ -319,8 +319,9 @@ login (atrito para o cidadão e serviço externo no app mobile); bloqueio perman
 | Cabeçalhos de segurança com `helmet` (HSTS, `nosniff`, `X-Frame-Options`, CSP) | ✅ Implementado | `security.ts`, `app.ts` |
 | HTTPS/TLS 1.2+ na frente da API | ✅ Implementado no deploy | Caddy com Let's Encrypt em [`docs/deploy/`](../deploy/README.md) |
 | Backup cifrado (AES-256) do banco e das fotos, com SHA-256 e rotação; restauração testada a cada execução do workflow Docker | ✅ Implementado | [`scripts/backup.sh`](../../scripts/backup.sh), [`scripts/restore.sh`](../../scripts/restore.sh), [`docker.yml`](../../.github/workflows/docker.yml) |
+| Senha nova com 8 a 72 caracteres e 4 classes (cadastro, troca, recuperação e criação pelo admin), checada no backend e no app | ✅ Implementado | `passwordPolicy.ts` (backend), `PasswordPolicy.ts` (app) |
+| Geradores criptográficos também nos nomes de foto e no sufixo do protocolo | ✅ Implementado | `demandService.ts` (`crypto.randomInt`) |
 | TOTP obrigatório para Gestor e Admin | 🟡 Especificado | Atividade 1 (hoje: e-mail, opcional) |
-| Senha com 8+ caracteres e 4 classes | 🟡 Especificado | Atividade 1 (o backend exige hoje 6+ caracteres) |
 | Troca periódica de senha (Gestor 90 dias, Admin 60) | 🟡 Especificado | Atividade 1 |
 | Exclusão da conta com anonimização | 🟡 Especificado | Atividade 3, fluxo 5 |
 | AES-256 em disco e nos backups; WAF/CDN; réplica do banco | 🟡 Especificado (infraestrutura) | Atividades 2, 4 e 5 |

@@ -59,7 +59,7 @@ export function RegisterView() {
         testID="register-password"
         label="Senha"
         icon="lock-closed-outline"
-        placeholder="Crie uma senha"
+        placeholder="Mín. 8, com A-Z, a-z, 0-9 e símbolo"
         value={vm.password}
         onChangeText={vm.setPassword}
         secureTextEntry

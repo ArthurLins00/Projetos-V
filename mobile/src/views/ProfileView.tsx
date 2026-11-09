@@ -132,7 +132,7 @@ export function ProfileView() {
 
         <Card title="Segurança" icon="lock-closed-outline">
           <TextField testID="profile-input-current-password" label="Senha atual" icon="key-outline" value={vm.senhaAtual} onChangeText={vm.setSenhaAtual} secureTextEntry />
-          <TextField testID="profile-input-new-password" label="Nova senha" icon="lock-closed-outline" placeholder="Mínimo de 6 caracteres" value={vm.novaSenha} onChangeText={vm.setNovaSenha} secureTextEntry />
+          <TextField testID="profile-input-new-password" label="Nova senha" icon="lock-closed-outline" placeholder="Mín. 8, com A-Z, a-z, 0-9 e símbolo" value={vm.novaSenha} onChangeText={vm.setNovaSenha} secureTextEntry />
           <TextField testID="profile-input-confirm-password" label="Confirmar nova senha" icon="lock-closed-outline" value={vm.confirmarSenha} onChangeText={vm.setConfirmarSenha} secureTextEntry />
           <Button
             testID="profile-save-password"

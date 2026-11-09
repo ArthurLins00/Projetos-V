@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { adminService } from '../services/adminService';
 import { auditLogService } from '../services/auditLogService';
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../utils/passwordPolicy';
 
 export const adminController = {
   async listarUsuarios(
@@ -182,6 +183,10 @@ export const adminController = {
         return res.status(400).json({
           error: "Role inválida. Use 'Cidadao' ou 'Gestor'.",
         });
+      }
+
+      if (!meetsPasswordPolicy(password)) {
+        return res.status(400).json({ error: PASSWORD_POLICY_MESSAGE });
       }
 
       const usuario = await adminService.createUser(

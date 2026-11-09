@@ -238,7 +238,7 @@ export const openApiSpec = {
                 properties: {
                   nome: { type: 'string', example: 'Maria Silva' },
                   email: { type: 'string', format: 'email' },
-                  senha: { type: 'string', format: 'password', minLength: 6 },
+                  senha: { type: 'string', format: 'password', minLength: 8, maxLength: 72, description: 'De 8 a 72 caracteres, com letra maiúscula, letra minúscula, número e símbolo' },
                 },
               },
             },
@@ -411,7 +411,7 @@ export const openApiSpec = {
                 properties: {
                   email: { type: 'string', format: 'email' },
                   codigo: { type: 'string', example: '123456' },
-                  novaSenha: { type: 'string', format: 'password', minLength: 6 },
+                  novaSenha: { type: 'string', format: 'password', minLength: 8, maxLength: 72, description: 'De 8 a 72 caracteres, com letra maiúscula, letra minúscula, número e símbolo' },
                 },
               },
             },
@@ -535,7 +535,7 @@ export const openApiSpec = {
                   nome: { type: 'string', maxLength: 150, example: 'Maria da Silva' },
                   email: { type: 'string', format: 'email', maxLength: 100, example: 'maria@email.com' },
                   senhaAtual: { type: 'string', example: 'Cidadao@123456' },
-                  novaSenha: { type: 'string', minLength: 6, example: 'NovaSenha@123' },
+                  novaSenha: { type: 'string', minLength: 8, maxLength: 72, description: 'De 8 a 72 caracteres, com letra maiúscula, letra minúscula, número e símbolo', example: 'NovaSenha@123' },
                 },
               },
             },
