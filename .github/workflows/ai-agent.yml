@@ -35,8 +35,8 @@ jobs:
       run:
         working-directory: ai-agent
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -66,7 +66,7 @@ jobs:
           echo "<sub>Modelo: \`${GEMINI_MODEL:-padrão do agente}\`</sub>" >> "$GITHUB_STEP_SUMMARY"
       - name: Relatório dos testes
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ai-agent-test-reports
           path: ai-agent/reports
