@@ -260,6 +260,38 @@ mais sensíveis, como CPF.
 - **Geohash** (Atividade 2) para anonimizar localização em relatórios: não é criptografia, é
   *generalização* (a coordenada exata vira uma célula de 150 m a 1,2 km).
 
+### 3.9 helmet e rate limiting: proteção da API contra abuso
+
+**Como.** Três camadas, todas em [`backend/src`](../../backend/src) e cobertas pelo TC-77
+([`protecaoAtaques.test.ts`](../../backend/src/tests/api/protecaoAtaques.test.ts)):
+
+- **Cabeçalhos de segurança** com `helmet` ([`security.ts`](../../backend/src/config/security.ts)):
+  HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options`, `Referrer-Policy` e uma CSP restritiva;
+  só o Swagger (`/docs`) tem CSP própria, que libera o unpkg de onde ele carrega a interface. O
+  `X-Powered-By` do Express é removido.
+- **Limite por IP** ([`rateLimit.ts`](../../backend/src/middlewares/rateLimit.ts)): 300 requisições por
+  minuto em toda a API e 100 tentativas em 15 minutos nas rotas de autenticação sem sessão (cadastro,
+  login, 2FA e recuperação de senha). Acima disso a resposta é 429 com `Retry-After`. Os valores mudam
+  por `RATE_LIMIT_GLOBAL_MAX` e `RATE_LIMIT_AUTH_MAX`; atrás de proxy, `TRUST_PROXY` faz o limite usar o
+  IP real do cliente.
+- **Bloqueio da conta** ([`authService.ts`](../../backend/src/services/authService.ts)): 5 senhas erradas
+  seguidas em 15 minutos bloqueiam o login daquele e-mail por 15 minutos, mesmo com a senha certa
+  (429). O contador vale também para e-mails inexistentes, para o bloqueio não revelar quais contas
+  existem; login certo zera a contagem e a recuperação de senha desfaz o bloqueio.
+
+Os contadores ficam no **Redis** ([`attemptStore.ts`](../../backend/src/utils/attemptStore.ts)), valendo
+para todas as instâncias da API; sem Redis, ou se ele cair, ficam na memória do processo, e a API
+continua respondendo (o limite falha aberto para não derrubar o serviço).
+
+**Por quê.** O limite por IP corta varreduras e robôs que testam muitas contas; o bloqueio por conta
+corta a força bruta distribuída contra uma conta só, que o limite por IP não pega. Os dois juntos
+cumprem a Atividade 4 sem depender de WAF.
+
+**Descartados:** `express-rate-limit` com `rate-limit-redis` (duas dependências para um contador de
+janela fixa que cabe em poucas linhas e reaproveita o cliente Redis que o projeto já tem); CAPTCHA no
+login (atrito para o cidadão e serviço externo no app mobile); bloqueio permanente até ação do admin
+(viraria um jeito fácil de negar acesso a qualquer conta conhecida).
+
 ---
 
 ## 4. Implementado × especificado para produção
@@ -282,11 +314,13 @@ mais sensíveis, como CPF.
 | Dependências travadas, SBOM (CycloneDX) e `npm audit` no CI | ✅ Implementado | `dependencias.yml` |
 | Atualização diária de dependências (Dependabot) | ✅ Implementado | `.github/dependabot.yml` |
 | Varredura diária com issue de pendências | ✅ Implementado | `seguranca-diaria.yml` |
+| *Rate limiting* por IP: 300 req/min na API e 100 tentativas em 15 min nas rotas de autenticação (Redis, com memória como reserva) | ✅ Implementado | `rateLimit.ts`, `attemptStore.ts` |
+| Bloqueio da conta por 15 min após 5 senhas erradas seguidas (também para e-mail inexistente) | ✅ Implementado | `authService.ts` (`login`) |
+| Cabeçalhos de segurança com `helmet` (HSTS, `nosniff`, `X-Frame-Options`, CSP) | ✅ Implementado | `security.ts`, `app.ts` |
+| HTTPS/TLS 1.2+ na frente da API | ✅ Implementado no deploy | Caddy com Let's Encrypt em [`docs/deploy/`](../deploy/README.md) |
 | TOTP obrigatório para Gestor e Admin | 🟡 Especificado | Atividade 1 (hoje: e-mail, opcional) |
 | Senha com 8+ caracteres e 4 classes | 🟡 Especificado | Atividade 1 (o backend exige hoje 6+ caracteres) |
 | Troca periódica de senha (Gestor 90 dias, Admin 60) | 🟡 Especificado | Atividade 1 |
-| *Rate limiting* por IP/usuário (Redis) e bloqueio após 5 logins errados | 🟡 Especificado | Atividades 3 e 4 |
-| Cabeçalhos de segurança com `helmet` e HTTPS/TLS 1.2+ | 🟡 Especificado | Atividade 4 |
 | Exclusão da conta com anonimização | 🟡 Especificado | Atividade 3, fluxo 5 |
 | AES-256 em disco e nos backups; WAF/CDN; réplica do banco | 🟡 Especificado (infraestrutura) | Atividades 2, 4 e 5 |
 

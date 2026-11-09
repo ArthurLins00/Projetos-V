@@ -269,6 +269,7 @@ O que mudou entre as duas saídas
 | `Filtros por categoria e região` | `Partição de equivalência` | `categoria inteira positiva ou não; UF válida, minúscula ou inexistente; zona Urbana, Rural ou outra; combinados com status e pesquisa` | `TC-74` |
 | `Verificação em duas etapas` | `Tabela de decisão` | `2FA ativo ou não × código correto, incorreto, repetido ou de desafio desconhecido × tentativas até 5 × reenvio antes ou depois de 1 min; ativação com senha correta ou não; modo demonstração` | `TC-75` |
 | `Remetente dos e-mails` | `Partição de equivalência` | `MAIL_FROM com endereço, só com o nome ou vazio × conta do SMTP configurada ou não` | `TC-76` |
+| `Proteção contra força bruta e cabeçalhos de segurança` | `Valor limite + Transição de estados` | `4, 5 e 6 senhas erradas seguidas; e-mail existente ou não; login certo antes da 5ª falha; antes e depois de 15 min de bloqueio; e-mail em maiúsculas; tentativas por IP até o limite e uma acima; cabeçalhos na API e no Swagger` | `TC-77` |
 
 ### 4.5 Matriz de rastreabilidade de evidências
 
@@ -352,6 +353,7 @@ O que mudou entre as duas saídas
 | `TC-74` | `HU-06` | `—` | `"Filtros funcionais de demandas por categoria/tipo, região e status integrados à API" (acompanhamento de 10/11/2026)` | `N` |
 | `TC-75` | `HU-01` | `—` | `— (a HU trata do login; a verificação em duas etapas vem do código)` | `S` |
 | `TC-76` | `—` | `—` | `— (remetente dos e-mails vem do código e da configuração de SMTP)` | `S` |
+| `TC-77` | `HU-01` | `—` | `— (a HU trata do login; bloqueio, limite por IP e cabeçalhos vêm da Atividade 4 de Segurança)` | `S` |
 
 ### 4.6 Casos de teste
 
@@ -439,6 +441,7 @@ Casos consolidados pela squad a partir da segunda rodada, das HUs e dos testes j
 | TC-74 | HU-06 | — | Filtros por categoria e região | Cidadão e gestor logados | Listar combinando status, pesquisa, categoria, UF, cidade e zona; enviar categoria, UF e zona inválidas | Filtros combinados; UF em maiúsculas; 400 sem consultar o banco | — |
 | TC-75 | HU-01 | — | Verificação em duas etapas | Usuário com 2FA ativo e outro sem; envio de e-mail substituído por duplo | Login; informar o código certo, repetir o código, errar 5 vezes, usar desafio desconhecido, reenviar antes de 1 min; ativar com senha certa e errada; repetir em modo demonstração | Login sem tokens até o código; código vale uma vez; desafio invalidado após 5 erros; reenvio limitado; ativação exige a senha atual; em demonstração o código vem na resposta | Sessão aberta só após o código |
 | TC-76 | — | — | Remetente dos e-mails | — | Resolver o remetente com MAIL_FROM com endereço, só com o nome, vazio e sem conta do SMTP | Endereço mantido; nome combinado com a conta do SMTP; nome padrão; no-reply sem conta | — |
+| TC-77 | HU-01 | — | Proteção contra força bruta e cabeçalhos de segurança | Usuário ativo; contadores zerados | Errar a senha 5 vezes e tentar com a senha certa; errar 5 vezes com e-mail inexistente; acertar depois de 4 erros; esperar 15 min; exceder o limite de tentativas por IP; ler os cabeçalhos da API e do `/docs` | 401 até a 4ª falha e 429 a partir da 5ª, mesmo com a senha certa; bloqueio também para e-mail inexistente; login certo zera a contagem; liberado após 15 min; 429 com `Retry-After` acima do limite por IP; HSTS, `nosniff`, `X-Frame-Options` e CSP presentes | Conta bloqueada por 15 min ou IP limitado até o fim da janela |
 
 ---
 
@@ -533,6 +536,7 @@ execuções até o retorno  =  Ti ÷ (Tm − Ta − Mn/F)
 | `TC-74` | `Integração` | `10 min` | `45 min` | `1 s` | `5 min` | `20` | `Sim` |
 | `TC-75` | `Integração` | `15 min` | `60 min` | `2 s` | `5 min` | `20` | `Sim` |
 | `TC-76` | `Componente` | `10 min` | `15 min` | `1 s` | `1 min` | `20` | `Sim` |
+| `TC-77` | `Integração` | `15 min` | `60 min` | `2 s` | `5 min` | `20` | `Sim` |
 
 Os onze casos incluídos em 05/11/2026 (TC-64 a TC-74) se pagam em menos de 10 execuções cada (o pior é TC-65: 90 ÷ (20 − 0,03 − 1) ≈ 4,7), dentro das ~12 do horizonte do projeto, porque rodam com o banco mockado em todo push e PR.
 
@@ -625,6 +629,9 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 59 | `TC-69` | `—` | `Integração` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-167 a A-173)` |
 | 60 | `TC-75` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-190 a A-199, U-54, U-56, U-57)` |
 | 61 | `TC-76` | `—` | `Componente` | `1` | `1` | `2` | `(1×2)÷1 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-86 a U-89)` |
+| 62 | `TC-77` | `HU-01` | `Integração` | `3` | `1` | `3` | `(3×3)÷1 = 9,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-203 a A-208)` |
+
+A linha 62 foi incluída em 09/11/2026, junto com a implementação do bloqueio de login, do limite por IP e dos cabeçalhos de segurança especificados na Atividade 4 de Segurança.
 
 As linhas 49 a 61 foram incluídas em 05/11/2026 depois que o backlog original já estava todo automatizado; estão ordenadas entre si pela mesma regra e não alteram a ordem das 48 anteriores. Com elas, a cobertura do backend passou de 63% para 93% das linhas e de 53% para 83% dos branches.
 

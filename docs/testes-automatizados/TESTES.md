@@ -3,8 +3,8 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend, app mobile e agente de IA).
 
-**Situação em 05/11/2026:** 420 testes automatizados: 128 unitários e
-233 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
+**Situação em 09/11/2026:** 431 testes automatizados: 133 unitários e
+239 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
 branches), além de 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado) e 3 fluxos de tela (Maestro)
 no emulador do CI, conforme a última execução da pipeline. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
 rodam ao vivo contra o Gemini só na regressão diária.
@@ -22,9 +22,9 @@ e completos no topo.
               ┌─┴──────────────────────────┴─┐
               │ E2E da API (Playwright) 36   │  backend + banco reais
             ┌─┴──────────────────────────────┴─┐
-            │ API (Jest + Supertest) 233       │  rotas HTTP, banco mockado
+            │ API (Jest + Supertest) 239       │  rotas HTTP, banco mockado
           ┌─┴──────────────────────────────────┴─┐
-          │ Unitários (Jest) 128                 │  regras de negócio isoladas
+          │ Unitários (Jest) 133                 │  regras de negócio isoladas
           └──────────────────────────────────────┘
 ```
 
@@ -233,7 +233,7 @@ Com `GITHUB_REPOSITORY`, `GITHUB_TOKEN` e `SOURCE_RUN_ID` definidos, também ent
 
 ## 3. Catálogo de testes
 
-### 3.1 Unitários — `backend/src/tests/unit` (128)
+### 3.1 Unitários — `backend/src/tests/unit` (133)
 
 Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas numa pasta temporária.
 
@@ -379,7 +379,17 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-88 | `MAIL_FROM` vazio | Nome padrão com a conta do SMTP |
 | U-89 | Sem conta do SMTP | Endereço no-reply |
 
-### 3.2 API — `backend/src/tests/api` (233)
+**`attemptStore.test.ts`: contadores do rate limit e do bloqueio de login (`attemptStore`, `trustProxySetting`)**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| U-90 | Redis pronto | Conta no Redis; a janela aberta não é estendida (`PEXPIRE ... NX`) |
+| U-91 | Leitura e limpeza no Redis | Devolve a contagem ou nada; apaga a chave |
+| U-92 | Redis com erro ou ainda conectando | Usa a memória sem lançar erro |
+| U-93 | Janela expirada na memória | Contagem recomeça |
+| U-94 | `TRUST_PROXY` vazio, `false`, número, `true` ou lista | Desligado, desligado, número de proxies, `true` ou a lista |
+
+### 3.2 API — `backend/src/tests/api` (239)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -737,6 +747,17 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-201 | Pessoa decide prosseguir | Usuário criado |
 | A-202 | Senha que não se repete | Usuário criado direto |
 
+**`protecaoAtaques.test.ts`: bloqueio de login, limite por IP e cabeçalhos de segurança**
+
+| ID | Caso | Esperado |
+|---|---|---|
+| A-203 | 5 senhas erradas seguidas | 401 nas 4 primeiras, 429 na 5ª e também com a senha certa depois |
+| A-204 | 5 erros com e-mail inexistente | Bloqueado do mesmo jeito; outra conta segue entrando |
+| A-205 | Login certo depois de 4 erros | Contagem zerada |
+| A-206 | Após 15 min; e-mail em maiúsculas | Bloqueio vale para o e-mail em qualquer caixa e termina em 15 min |
+| A-207 | Tentativas por IP acima de `RATE_LIMIT_AUTH_MAX` | 429 com `Retry-After`; rotas fora da autenticação não entram no limite |
+| A-208 | Cabeçalhos da API e do `/docs` | HSTS, `nosniff`, `X-Frame-Options`, CSP e sem `X-Powered-By`; CSP do Swagger libera o unpkg |
+
 ### 3.3 E2E da API — `e2e/` (Playwright, 36)
 
 Rodam contra o backend e o banco reais, na ordem em que o usuário usaria o app. Os testes de cada
@@ -887,6 +908,7 @@ vínculo; as tabelas abaixo, com os IDs U-xx, A-xx, E-xx e M-xx, continuam como 
 | Verificação em duas etapas | — | A-190 a A-199 | — | — |
 | Cadastro em modo demonstração | — | A-200 a A-202 | — | — |
 | Remetente dos e-mails | U-86 a U-89 | — | — | — |
+| Bloqueio de login, limite por IP e cabeçalhos de segurança | U-90 a U-94 | A-203 a A-208 | — | — |
 | Tradução de erros HTTP | U-81 a U-85 | A-54, A-55 | — | — |
 
 ---

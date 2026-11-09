@@ -49,6 +49,9 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-troque-esta-chave-fora-do-ambiente-local}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      RATE_LIMIT_GLOBAL_MAX: ${RATE_LIMIT_GLOBAL_MAX:-300}
+      RATE_LIMIT_AUTH_MAX: ${RATE_LIMIT_AUTH_MAX:-100}
       DEMO_MODE: ${DEMO_MODE:-false}
       SEED_ON_START: ${SEED_ON_START:-true}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin@123456}

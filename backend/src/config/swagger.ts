@@ -299,6 +299,11 @@ export const openApiSpec = {
           },
           400: { $ref: '#/components/responses/BadRequest' },
           401: { $ref: '#/components/responses/Unauthorized' },
+          429: {
+            description:
+              'Conta bloqueada por 15 min após 5 senhas erradas seguidas (vale também para e-mail inexistente), ou limite de tentativas por IP nas rotas de autenticação excedido (`RATE_LIMIT_AUTH_MAX` em 15 min). O cabeçalho `Retry-After` indica os segundos de espera no limite por IP.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
         },
       },
     },

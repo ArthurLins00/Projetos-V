@@ -14,11 +14,21 @@ import { createCorsMiddleware } from './config/cors';
 import { healthCheckHandler } from './config/health';
 import { openApiSpec, swaggerHtml } from './config/swagger';
 import { PHOTO_BODY_LIMIT, UPLOADS_DIR, UPLOADS_ROUTE } from './config/uploads';
+import { docsContentSecurityPolicy, securityHeaders, trustProxySetting } from './config/security';
+import { globalRateLimit } from './middlewares/rateLimit';
 import 'dotenv/config';
 
 const app = express();
 
+const trustProxy = trustProxySetting();
+if (trustProxy !== undefined) {
+  app.set('trust proxy', trustProxy);
+}
+app.disable('x-powered-by');
+
+app.use(securityHeaders);
 app.use(createCorsMiddleware());
+app.use(globalRateLimit);
 app.use('/demands/:id/photos', express.json({ limit: PHOTO_BODY_LIMIT }));
 app.use('/auth/me/photo', express.json({ limit: PHOTO_BODY_LIMIT }));
 app.use(express.json());
@@ -34,7 +44,7 @@ app.get('/docs.json', (_req, res) => {
   res.json(openApiSpec);
 });
 
-app.get('/docs', (_req, res) => {
+app.get('/docs', docsContentSecurityPolicy, (_req, res) => {
   res.type('html').send(swaggerHtml);
 });
 
