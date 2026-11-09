@@ -30,15 +30,15 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Baixa os artefatos de teste desta execução
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           pattern: '{backend-test-reports,e2e-report,maestro-report,ai-agent-test-reports,dependencias}'
@@ -74,7 +74,7 @@ jobs:
 
       - name: Publica os relatórios
         if: steps.metrics.outcome == 'success'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: relatorios-qualidade
           path: |
@@ -87,7 +87,7 @@ jobs:
       # Guardado à parte e por mais tempo, para o relatório seguinte mostrar a tendência
       - name: Grava o histórico
         if: steps.metrics.outcome == 'success' && inputs.publish-history
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: quality-history
           path: quality-report/history.json
