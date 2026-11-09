@@ -4,6 +4,7 @@ import { invalidateMetricsCache } from '../utils/cache';
 import { status_chamado, zona } from '@prisma/client';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { randomInt } from 'crypto';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
 import { detectImageExtension } from '../utils/image';
 import { notificationService } from './notificationService';
@@ -66,12 +67,15 @@ async function loadEditableChamado(chamadoId: string, userId: string) {
   return chamado;
 }
 
+// 4 caracteres base 36 do gerador criptográfico (1,6 milhão de combinações), sempre com o mesmo tamanho
+const randomSuffix = () => randomInt(36 ** 4).toString(36).padStart(4, '0');
+
 async function savePhotoFile(chamadoId: string, base64: string) {
   const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
   const extension = detectImageExtension(buffer);
   if (!extension) throw new AppError(422, 'Formato de imagem inválido. Envie JPEG ou PNG.');
 
-  const fileName = `${chamadoId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${extension}`;
+  const fileName = `${chamadoId}-${Date.now()}-${randomSuffix()}.${extension}`;
   await fs.mkdir(UPLOADS_DIR, { recursive: true });
   await fs.writeFile(path.join(UPLOADS_DIR, fileName), buffer);
 
@@ -100,7 +104,7 @@ interface CreateDemandInput {
 function generateProtocolo(): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10).replace(/-/g, '');
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const rand = randomSuffix().toUpperCase();
   return `DEM-${date}-${rand}`;
 }
 
