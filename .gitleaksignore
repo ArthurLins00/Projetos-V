@@ -1,0 +1,7 @@
+# Falsos positivos do gitleaks que existem só no histórico do Git, onde não dá para pôr "gitleaks:allow"
+# na linha. Cada entrada é a impressão digital do achado (commit:arquivo:regra:linha) e um motivo.
+# Segredo de verdade não entra aqui: troque a chave no serviço de origem.
+
+# Senha de exemplo ("senhaSegura…") de um teste antigo de logout, com usuário fictício de example.com;
+# o arquivo foi removido do repositório e o valor nunca foi credencial real.
+be99319596fe81bec2a5abd86d419b43521d7be7:backend/src/tests/logoutE2E.test.ts:generic-api-key:17
