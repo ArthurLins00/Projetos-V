@@ -1,0 +1,79 @@
+name: Atualização OTA do app
+
+# Publica uma atualização over-the-air (EAS Update) para quem já instalou o APK: o app baixa o JavaScript
+# e os assets novos ao abrir e passa a usá-los na abertura seguinte, sem reinstalar.
+# Só funciona para mudanças de JavaScript, estilos e imagens. Biblioteca nativa nova, permissão ou plugin
+# exigem subir a "version" do mobile/app.json e gerar um APK novo (workflow Build do APK).
+# Pré-requisitos: os mesmos do mobile-release.yml (secret EXPO_TOKEN e EXPO_PUBLIC_API_URL no ambiente do EAS).
+# Passo a passo: mobile/README.md, seção "Atualizações OTA (EAS Update)".
+on:
+  workflow_dispatch:
+    inputs:
+      canal:
+        description: 'Canal do eas.json: preview chega no APK de teste; production no app das lojas'
+        type: choice
+        options: [preview, production]
+        default: preview
+      mensagem:
+        description: 'Descrição da atualização (aparece no painel do EAS)'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-update-${{ inputs.canal }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: EAS Update
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Confere o token do EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        working-directory: .
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Cadastre o secret EXPO_TOKEN (expo.dev → Account settings → Access tokens) em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Publica a atualização
+        env:
+          CANAL: ${{ inputs.canal }}
+          MENSAGEM: ${{ inputs.mensagem }}
+        run: |
+          eas update --channel "$CANAL" --environment "$CANAL" --message "$MENSAGEM" --non-interactive --json > ../eas-update.json
+          {
+            echo "## 📲 Atualização OTA publicada"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Canal | \`$CANAL\` |"
+            echo "| Mensagem | $MENSAGEM |"
+            echo "| Versão do app (runtime) | $(node -p "require('./app.json').expo.version") |"
+            echo "| Grupo no EAS | \`$(jq -r '.[0].group // "?"' ../eas-update.json)\` |"
+            echo
+            echo "Os aparelhos com o APK do mesmo canal e da mesma versão recebem a atualização ao abrir o app."
+          } >> "$GITHUB_STEP_SUMMARY"

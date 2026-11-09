@@ -57,7 +57,11 @@ export const TECNOLOGIAS = [
     id: 'notificacoes', nome: 'expo-notifications + Expo Push API', categoria: 'Aplicativo mobile',
     fontes: [{ d: 'mob', secao: '3.9' }], pacotes: { mobile: ['expo-notifications'] }, caminhos: ['backend/src/services/notificationService.ts'],
   },
-  { id: 'eas', nome: 'EAS Build', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.10' }], caminhos: ['mobile/eas.json'] },
+  {
+    id: 'eas', nome: 'EAS Build e EAS Update (OTA)', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.10' }],
+    pacotes: { mobile: ['expo-updates'] },
+    caminhos: ['mobile/eas.json', '.github/workflows/mobile-release.yml', '.github/workflows/mobile-update.yml'],
+  },
 
   // ---------- Backend e API ----------
   {
@@ -85,6 +89,11 @@ export const TECNOLOGIAS = [
   // ---------- Segurança ----------
   { id: 'bcrypt', nome: 'bcrypt (bcryptjs e bcrypt)', categoria: 'Segurança', fontes: [{ d: 'seg', secao: '3.1' }], pacotes: { backend: ['bcryptjs', 'bcrypt'] } },
   { id: 'jwt', nome: 'JWT HS256 (jsonwebtoken)', categoria: 'Segurança', fontes: [{ d: 'seg', secao: '3.2' }], pacotes: { backend: ['jsonwebtoken'] } },
+  {
+    id: 'helmet-rate-limit', nome: 'helmet, rate limiting e bloqueio de login', categoria: 'Segurança',
+    fontes: [{ d: 'seg', secao: '3.9' }], pacotes: { backend: ['helmet'] },
+    caminhos: ['backend/src/middlewares/rateLimit.ts', 'backend/src/utils/attemptStore.ts'],
+  },
   {
     id: 'node-crypto', nome: 'node:crypto (CSPRNG, SHA-256, comparação em tempo constante)', categoria: 'Segurança',
     fontes: [{ d: 'seg', secao: '3.3' }, { d: 'seg', secao: '3.4' }], builtin: { backend: ['crypto'], 'ai-agent': ['crypto'] },

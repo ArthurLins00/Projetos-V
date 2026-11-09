@@ -171,6 +171,7 @@ Preencha o `.env` (todas as variáveis estão no [`producao.env.example`](produc
 | `JWT_SECRET` | Aleatória e longa: `openssl rand -base64 48` |
 | `NODE_ENV` | `production` |
 | `ALLOWED_ORIGINS` | `https://` + o subdomínio. Obrigatória em produção (a API não sobe sem ela). O app não envia `Origin`, então não depende disso |
+| `TRUST_PROXY` | `1`. O Caddy fica na frente da API; sem isso o limite de requisições por IP trataria todos os testadores como um só cliente |
 | `DEMO_MODE` | `false`. A API **recusa** `true` com `NODE_ENV=production` |
 | `SEED_ON_START` | `true` na primeira subida; o seed não duplica dados |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | Login do administrador. **Troque a senha padrão** |

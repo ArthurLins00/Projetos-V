@@ -181,8 +181,31 @@ Configuração, uma vez:
    (`owner` no `app.json`).
 2. No GitHub: *Settings* → *Secrets and variables* → *Actions* → *New repository secret*, nome `EXPO_TOKEN`.
 3. Cadastre `EXPO_PUBLIC_API_URL` no ambiente do EAS (comando `env:create` acima) com a URL que o APK deve usar.
+4. Crie a chave de assinatura Android (*keystore*) no EAS. O workflow roda sem interação e não consegue
+   criá-la sozinho, então o primeiro build sem ela falha. Rode uma vez, na pasta `mobile/`, e escolha o
+   perfil `preview` → *Keystore* → *Set up a new keystore* (o EAS gera e guarda a chave):
+
+   ```bash
+   npx eas-cli credentials --platform android
+   ```
+
+   Rodar `npm run build:apk` uma vez pela máquina também cria a chave (o CLI pergunta e gera).
 
 O build roda na fila gratuita do EAS e pode levar de 10 a 40 minutos.
+
+### Atualizações OTA (EAS Update)
+
+Com o `expo-updates`, quem já instalou o APK recebe correções de JavaScript, estilos e imagens sem
+reinstalar: o app consulta o canal ao abrir, baixa a atualização e passa a usá-la na abertura seguinte.
+Cada perfil do [`eas.json`](eas.json) está ligado ao canal de mesmo nome (`preview` e `production`).
+
+- **Pela máquina:** `npm run update:preview -- --message "o que mudou"`.
+- **Pelo GitHub Actions:** aba *Actions* → *Atualização OTA do app* → *Run workflow*, com o canal e a mensagem
+  ([`mobile-update.yml`](../.github/workflows/mobile-update.yml)). Usa o mesmo secret `EXPO_TOKEN`.
+
+O `runtimeVersion` segue a `version` do [`app.json`](app.json). Mudança nativa (biblioteca com código
+nativo, permissão, plugin, ícone) não vai por OTA: suba a `version` e gere um APK novo. Uma atualização só
+chega aos aparelhos com o APK da mesma versão e do mesmo canal.
 
 ### Permissões
 

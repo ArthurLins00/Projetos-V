@@ -22,7 +22,7 @@ Gestores e administradores usam o mesmo app para atender a fila de chamados.
 | U2 | Signup, login e logout com o backend e `sessionToken` (access + refresh token) | [`AuthContext.tsx`](../../mobile/src/contexts/AuthContext.tsx), [`api.ts`](../../mobile/src/services/api.ts), [`authService.ts`](../../backend/src/services/authService.ts) |
 | U2 | Estado com hooks (`useState`, `useEffect`, `useContext`) | [`AuthContext.tsx`](../../mobile/src/contexts/AuthContext.tsx), [`DemandContext.tsx`](../../mobile/src/contexts/DemandContext.tsx), [`src/viewmodels`](../../mobile/src/viewmodels) |
 | U2 | Notificações (push, e-mail e na tela) | [`usePushNotifications.ts`](../../mobile/src/hooks/usePushNotifications.ts), [`notificationService.ts`](../../backend/src/services/notificationService.ts) |
-| U2 | Build empacotado (APK/IPA via EAS) | [`eas.json`](../../mobile/eas.json), [`mobile/README.md` › Build empacotado](../../mobile/README.md#build-empacotado-eas) |
+| U2 | Build empacotado (APK/IPA via EAS) e atualizações OTA | [`eas.json`](../../mobile/eas.json), [`mobile-release.yml`](../../.github/workflows/mobile-release.yml), [`mobile-update.yml`](../../.github/workflows/mobile-update.yml), [`mobile/README.md` › Build empacotado](../../mobile/README.md#build-empacotado-eas) |
 
 ### Funcionalidades entregues
 
@@ -79,7 +79,7 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 | App | **expo-notifications** | Push |
 | App | **react-native-webview** + Leaflet + OpenStreetMap | Mapa da ocorrência |
 | App | Nominatim (OSM) e API do IBGE | Endereço a partir do GPS; lista de municípios |
-| App | **EAS Build** | APK/AAB/IPA |
+| App | **EAS Build** + **EAS Update** (`expo-updates`) | APK/AAB/IPA e atualizações OTA |
 | Backend | **Node.js 22 + Express 5** | API REST |
 | Backend | **Prisma 7** + **PostgreSQL** | ORM, migrações e banco relacional |
 | Backend | **jsonwebtoken**, **bcryptjs**, `node:crypto` | Sessão e criptografia (ver [Segurança › Criptografia](../seguranca-da-informacao/README.md#3-criptografia-e-cifras-utilizadas)) |
@@ -166,12 +166,23 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 - **Descartados:** **Firebase Cloud Messaging direto** (exigiria integração separada com APNs no iOS)
   e **OneSignal** (fornecedor extra recebendo dados de usuários, ver [Gestão de fornecedores](../seguranca-da-informacao/06_Gestao_de_Fornecedores.md)).
 
-### 3.10 EAS Build
+### 3.10 EAS Build e EAS Update (OTA)
 
-- **Como:** perfis `preview` (APK para instalar direto) e `production` (AAB/IPA) em [`eas.json`](../../mobile/eas.json).
-- **Por quê:** compila na nuvem, inclusive iOS sem Mac, e assina os binários.
-- **Descartado:** build local com Android Studio/Xcode para distribuição (continua possível para
-  desenvolvimento, mas o iOS exigiria um Mac).
+- **Como:** perfis `preview` (APK para instalar direto) e `production` (AAB/IPA) em [`eas.json`](../../mobile/eas.json),
+  gerados pela máquina (`npm run build:apk`) ou pelo workflow [`mobile-release.yml`](../../.github/workflows/mobile-release.yml).
+  Cada perfil está ligado a um **canal** de atualização de mesmo nome. Com `expo-updates`, o app instalado
+  consulta o canal ao abrir (`checkAutomatically: ON_LOAD`) e baixa a versão nova do JavaScript e dos
+  assets, que passa a valer na próxima abertura. A publicação é feita com `npm run update:preview` ou pelo
+  workflow [`mobile-update.yml`](../../.github/workflows/mobile-update.yml). O `runtimeVersion` segue a
+  versão do app (`policy: appVersion`): mudança em código nativo (biblioteca nova, permissão, plugin)
+  exige subir a `version` do `app.json` e gerar um APK novo, e o OTA só chega a quem tem o mesmo runtime.
+- **Por quê:** o EAS Build compila na nuvem, inclusive iOS sem Mac, e assina os binários. O EAS Update
+  leva correções de tela e de regra para quem já instalou o APK em minutos, sem pedir que os testadores
+  baixem e reinstalem o arquivo.
+- **Descartados:** build local com Android Studio/Xcode para distribuição (continua possível para
+  desenvolvimento, mas o iOS exigiria um Mac); **CodePush** (App Center, descontinuado pela Microsoft) e
+  servidor de atualização próprio com o protocolo do `expo-updates` (mais infraestrutura para manter, sem
+  ganho para o tamanho do projeto).
 
 ### 3.11 Backend: Node.js + Express 5
 
@@ -216,7 +227,6 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 | Item | Situação | Motivo |
 |---|---|---|
 | **GlueStack UI / NativeWind** | Não adotado | O app tem um design system próprio pequeno ([`src/components/ui`](../../mobile/src/components/ui) e [`src/theme`](../../mobile/src/theme), com tema claro/escuro). Migrar todas as telas no fim do semestre trazia risco de regressão nos `testID` usados pelo Maestro sem ganho funcional. |
-| **Expo OTA (expo-updates)** | Não adotado | As versões são distribuídas por APK (EAS). O OTA é o próximo passo natural para correções sem reinstalar. |
 | **Modo offline (AsyncStorage)** | Não adotado (diferencial opcional) | O fluxo depende de dados do servidor (status e roteamento); o cache local ficou fora do escopo. |
 | **Zustand** | Não adotado | Ver 3.4. |
 

@@ -5,12 +5,12 @@
     "unit": {
       "nome": "Unitários (Jest)",
       "pasta": "backend/src/tests/unit",
-      "testes": 87
+      "testes": 92
     },
     "api": {
       "nome": "API (Jest + Supertest)",
       "pasta": "backend/src/tests/api",
-      "testes": 201
+      "testes": 207
     },
     "e2e-api": {
       "nome": "E2E da API (Playwright)",
@@ -28,8 +28,68 @@
       "testes": 33
     }
   },
-  "total": 362,
+  "total": 373,
   "testes": [
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/attemptStore.test.ts",
+      "grupo": "attemptStore (unitário)",
+      "titulo": "com o Redis pronto conta no Redis, sem estender a janela já aberta",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/attemptStore.test.ts",
+      "grupo": "attemptStore (unitário)",
+      "titulo": "lê e apaga contadores no Redis",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/attemptStore.test.ts",
+      "grupo": "attemptStore (unitário)",
+      "titulo": "se o Redis falhar ou não estiver pronto, usa a memória e a API segue respondendo",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/attemptStore.test.ts",
+      "grupo": "attemptStore (unitário)",
+      "titulo": "na memória a janela expira e a contagem recomeça",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/attemptStore.test.ts",
+      "grupo": "attemptStore (unitário)",
+      "titulo": "TRUST_PROXY aceita vazio, número de proxies, true ou uma lista de endereços",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/authController.test.ts",
@@ -2992,6 +3052,78 @@
     },
     {
       "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "cinco senhas erradas seguidas bloqueiam a conta, inclusive para a senha certa",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "e-mail inexistente também é bloqueado, sem revelar quais contas existem",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "login certo antes da quinta falha zera a contagem",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "o bloqueio termina depois de 15 minutos e vale para o e-mail em maiúsculas",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "as rotas de autenticação limitam as tentativas por IP com 429 e Retry-After",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/protecaoAtaques.test.ts",
+      "grupo": "Proteção contra ataques",
+      "titulo": "as respostas trazem os cabeçalhos de segurança e o Swagger tem CSP própria",
+      "casos": [
+        "TC-77"
+      ],
+      "hus": [
+        "HU-01"
+      ]
+    },
+    {
+      "suite": "api",
       "arquivo": "backend/src/tests/api/refreshToken.test.ts",
       "grupo": "HU-01 / HU-02 | Sessão com access token e refresh token (API)",
       "titulo": "login devolve access token de curta duração e refresh token de longa duração",
@@ -4738,6 +4870,15 @@
       "testes": 4,
       "suites": [
         "unit"
+      ]
+    },
+    "TC-77": {
+      "hu": "HU-01",
+      "titulo": "Proteção contra força bruta e cabeçalhos de segurança",
+      "testes": 11,
+      "suites": [
+        "unit",
+        "api"
       ]
     }
   }
