@@ -19,7 +19,7 @@ export const managementService = {
 
   async metrics(): Promise<OperationalMetrics> {
     const [total, porCategoria, tempo] = await Promise.all([
-      api.get<{ total: number; resolvida: number; encerrada: number }>('/metrics/total-demands'),
+      api.get<{ total: number; resolvida: number; encerrada: number; geradoEm?: string }>('/metrics/total-demands'),
       api.get<{ data: CategoryMetric[] }>('/metrics/demands-by-category'),
       api.get<{ media_horas: number | null; total_demandas_consideradas: number }>('/metrics/average-response-time'),
     ]);
@@ -30,6 +30,7 @@ export const managementService = {
       mediaHoras: tempo.data.media_horas,
       consideradas: tempo.data.total_demandas_consideradas,
       porCategoria: [...porCategoria.data.data].sort((a, b) => b.total - a.total),
+      geradoEm: total.data.geradoEm ?? null,
     };
   },
 
