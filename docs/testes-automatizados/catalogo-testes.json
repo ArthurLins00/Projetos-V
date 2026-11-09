@@ -5,12 +5,12 @@
     "unit": {
       "nome": "Unitários (Jest)",
       "pasta": "backend/src/tests/unit",
-      "testes": 92
+      "testes": 96
     },
     "api": {
       "nome": "API (Jest + Supertest)",
       "pasta": "backend/src/tests/api",
-      "testes": 207
+      "testes": 208
     },
     "e2e-api": {
       "nome": "E2E da API (Playwright)",
@@ -28,7 +28,7 @@
       "testes": 33
     }
   },
-  "total": 373,
+  "total": 378,
   "testes": [
     {
       "suite": "unit",
@@ -864,7 +864,7 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
+      "grupo": "Transform do pipeline de métricas (unitário)",
       "titulo": "tempo médio considera só chamados com evento de resolução e arredonda para 1 casa",
       "casos": [
         "TC-67"
@@ -874,7 +874,7 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
+      "grupo": "Transform do pipeline de métricas (unitário)",
       "titulo": "tempo médio é nulo quando nenhum chamado foi concluído",
       "casos": [
         "TC-67"
@@ -884,7 +884,7 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
+      "grupo": "Transform do pipeline de métricas (unitário)",
       "titulo": "distribuição por categoria inclui categorias sem chamados e calcula o percentual",
       "casos": [
         "TC-67"
@@ -894,7 +894,7 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
+      "grupo": "Transform do pipeline de métricas (unitário)",
       "titulo": "distribuição sem nenhum chamado fica em 0%, sem divisão por zero",
       "casos": [
         "TC-67"
@@ -904,8 +904,8 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
-      "titulo": "total de demandas conta por status",
+      "grupo": "Transform do pipeline de métricas (unitário)",
+      "titulo": "junta totais por status, categorias e tempo médio no produto do painel",
       "casos": [
         "TC-67"
       ],
@@ -914,8 +914,8 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
-      "titulo": "com Redis, devolve o valor em cache sem consultar o banco",
+      "grupo": "Pipeline de métricas: Extract → Transform → Load (unitário)",
+      "titulo": "grava o snapshot com os indicadores e a quantidade de chamados considerados",
       "casos": [
         "TC-67"
       ],
@@ -924,8 +924,59 @@
     {
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "metricsService (unitário)",
-      "titulo": "com Redis vazio, calcula e grava no cache com TTL de 5 minutos",
+      "grupo": "Pipeline de métricas: Extract → Transform → Load (unitário)",
+      "titulo": "falha do pipeline vira uma linha com jobstatus error, sem lançar erro",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService: leitura do snapshot pelo painel (unitário)",
+      "titulo": "reaproveita o snapshot recente quando nenhum chamado mudou depois dele",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService: leitura do snapshot pelo painel (unitário)",
+      "titulo": "roda o pipeline de novo quando %s",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": [],
+      "parametrizado": true
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService: leitura do snapshot pelo painel (unitário)",
+      "titulo": "snapshot vencido (mais velho que METRICS_SNAPSHOT_MAX_AGE_MINUTES) ou no formato antigo é regenerado",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService: leitura do snapshot pelo painel (unitário)",
+      "titulo": "três pedidos ao mesmo tempo disparam uma única execução do pipeline",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "unit",
+      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
+      "grupo": "metricsService: leitura do snapshot pelo painel (unitário)",
+      "titulo": "se o pipeline falhar, mostra o último snapshot válido; sem nenhum, responde 503",
       "casos": [
         "TC-67"
       ],
@@ -965,17 +1016,7 @@
       "suite": "unit",
       "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
       "grupo": "utils/cache (unitário)",
-      "titulo": "invalidação apaga as chaves da plataforma e, com gestor, também as dele",
-      "casos": [
-        "TC-67"
-      ],
-      "hus": []
-    },
-    {
-      "suite": "unit",
-      "arquivo": "backend/src/tests/unit/metricsAndCache.test.ts",
-      "grupo": "utils/cache (unitário)",
-      "titulo": "monta as chaves de escopo e de snapshot",
+      "titulo": "o pipeline guarda a cópia do snapshot mais recente no Redis por 24 h",
       "casos": [
         "TC-67"
       ],
@@ -2640,7 +2681,7 @@
       "suite": "api",
       "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
       "grupo": "Métricas (/metrics)",
-      "titulo": "GET /metrics/total-demands devolve os totais por status no escopo da plataforma",
+      "titulo": "GET /metrics/total-demands devolve os totais por status do snapshot, com a data de geração",
       "casos": [
         "TC-67"
       ],
@@ -2650,7 +2691,7 @@
       "suite": "api",
       "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
       "grupo": "Métricas (/metrics)",
-      "titulo": "GET /metrics/demands-by-category devolve a distribuição",
+      "titulo": "GET /metrics/demands-by-category devolve a distribuição do snapshot",
       "casos": [
         "TC-67"
       ],
@@ -2660,7 +2701,17 @@
       "suite": "api",
       "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
       "grupo": "Métricas (/metrics)",
-      "titulo": "GET /metrics/average-response-time devolve a média em horas",
+      "titulo": "GET /metrics/average-response-time devolve a média em horas do snapshot",
+      "casos": [
+        "TC-67"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "api",
+      "arquivo": "backend/src/tests/api/metricsHealthUsers.test.ts",
+      "grupo": "Métricas (/metrics)",
+      "titulo": "sem snapshot ainda, a rota roda o pipeline, grava o snapshot e devolve os valores dele",
       "casos": [
         "TC-67"
       ],
@@ -4793,8 +4844,8 @@
     },
     "TC-67": {
       "hu": null,
-      "titulo": "Indicadores operacionais e cache",
-      "testes": 21,
+      "titulo": "Indicadores operacionais a partir do snapshot do pipeline de dados",
+      "testes": 26,
       "suites": [
         "unit",
         "api"
