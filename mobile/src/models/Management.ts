@@ -87,7 +87,7 @@ export interface CategoryMetric {
   percentage: number;
 }
 
-/** Indicadores operacionais vindos de /metrics (camada de Dados). */
+/** Indicadores operacionais vindos de /metrics: o snapshot gerado pelo pipeline da camada de Dados. */
 export interface OperationalMetrics {
   total: number;
   resolvidas: number;
@@ -95,6 +95,17 @@ export interface OperationalMetrics {
   mediaHoras: number | null;
   consideradas: number;
   porCategoria: CategoryMetric[];
+  /** Quando o pipeline gerou o snapshot exibido (ISO 8601). */
+  geradoEm: string | null;
+}
+
+export function formatSnapshotTime(iso: string | null) {
+  if (!iso) return null;
+  const data = new Date(iso);
+  if (Number.isNaN(data.getTime())) return null;
+  const hora = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const hoje = new Date().toDateString() === data.toDateString();
+  return hoje ? `hoje às ${hora}` : `${data.toLocaleDateString('pt-BR')} às ${hora}`;
 }
 
 export function formatHours(hours: number | null) {

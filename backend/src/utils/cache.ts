@@ -1,6 +1,7 @@
 import { getRedisClient } from '../config/redis';
 
-export const METRICS_CACHE_TTL = 5 * 60;
+// Acesso ao Redis que nunca derruba a requisição: sem REDIS_URL ou com o Redis fora do ar,
+// leitura devolve null e gravação/remoção não fazem nada.
 
 export async function getCache<T>(key: string): Promise<T | null> {
   const redis = getRedisClient();
@@ -33,35 +34,4 @@ export async function deleteCache(key: string): Promise<void> {
     await redis.del(key);
   } catch {
   }
-}
-
-export function metricsScopeKey(scope: { orgaoid?: string }): string {
-  return scope.orgaoid ? `orgao:${scope.orgaoid}` : 'platform';
-}
-
-export function metricsCacheKeys(gestorId?: string | null): string[] {
-  const keys = [
-    'metrics:total:platform',
-    'metrics:category:platform',
-    'metrics:avg-response:platform',
-  ];
-
-  if (gestorId) {
-    keys.push(
-      `metrics:total:gestor:${gestorId}`,
-      `metrics:category:gestor:${gestorId}`,
-      `metrics:avg-response:gestor:${gestorId}`,
-    );
-  }
-
-  return keys;
-}
-
-export async function invalidateMetricsCache(gestorId?: string | null): Promise<void> {
-  const keys = metricsCacheKeys(gestorId);
-  await Promise.all(keys.map(deleteCache));
-}
-
-export function snapshotRedisKey(date: string, scope: { orgaoid?: string }): string {
-  return `metrics:snapshot:${date}:${metricsScopeKey(scope)}`;
 }

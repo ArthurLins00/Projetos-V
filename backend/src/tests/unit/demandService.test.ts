@@ -9,7 +9,6 @@ jest.mock('../../config/uploads', () => ({
   PHOTO_BODY_LIMIT: '15mb',
 }));
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
-jest.mock('../../utils/cache', () => ({ invalidateMetricsCache: jest.fn() }));
 // Sem o duplo, a remoção pelo gestor notificaria o cidadão de verdade: com SMTP no .env local o envio
 // tenta conectar e o teste estoura o tempo (a falha intermitente do caso 1 da docs/testes-automatizados/tas.md, seção 10)
 jest.mock('../../services/notificationService', () => ({ notificationService: { notifyDemandUpdate: jest.fn() } }));

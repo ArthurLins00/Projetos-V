@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { OperationalMetrics, formatHours } from '../models/Management';
+import { OperationalMetrics, formatHours, formatSnapshotTime } from '../models/Management';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 const TOP_CATEGORIES = 5;
@@ -84,6 +84,11 @@ export function MetricsPanel({ metrics, error, onRetry }: Props) {
               ))
             )}
             {outras > 0 && <Text style={styles.more}>+ {outras} em outras categorias</Text>}
+            {formatSnapshotTime(metrics.geradoEm) && (
+              <Text testID="metrics-generated-at" style={styles.generatedAt}>
+                Indicadores gerados {formatSnapshotTime(metrics.geradoEm)}
+              </Text>
+            )}
           </>
         ))}
     </View>
@@ -114,4 +119,5 @@ const useStyles = makeStyles((colors) => ({
   track: { height: 8, borderRadius: radius.pill, backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
   fill: { height: 8, borderRadius: radius.pill, backgroundColor: colors.primary },
   more: { fontSize: 12, color: colors.textSubtle },
+  generatedAt: { fontSize: 11, color: colors.textSubtle, marginTop: 10 },
 }));

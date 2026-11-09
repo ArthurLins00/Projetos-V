@@ -195,11 +195,12 @@ As respostas usam o texto de exibição. O filtro `status` de `GET /demands` usa
 | `GET` | `/metrics/demands-by-category` | Chamados por categoria, com percentual (inclui categorias sem chamados) |
 | `GET` | `/metrics/average-response-time` | Tempo médio entre a abertura e a resolução, em horas (`null` sem chamados concluídos) |
 
-O painel do gestor no app consome as três rotas. As respostas ficam em cache no Redis por 5 minutos (quando
-`REDIS_URL` está definido) e o cache é invalidado a cada mudança de status.
-
-As métricas são consolidadas periodicamente em `metrics_snapshot` por um job agendado (padrão: a cada hora,
-configurável em `CRON_METRICS_SCHEDULE`). Para rodar manualmente: `npm run etl`.
+O painel do gestor no app consome as três rotas. Elas não calculam nada: leem o snapshot mais recente que
+o pipeline de dados (Extract → Transform → Load) gravou em `metrics_snapshot` e devolvem `geradoEm`, a hora
+em que ele foi gerado. O pipeline roda por um job agendado (padrão: a cada hora, `CRON_METRICS_SCHEDULE`),
+por `npm run etl` e pela própria API quando um chamado mudou depois do último snapshot, quando ele passou de
+`METRICS_SNAPSHOT_MAX_AGE_MINUTES` ou quando ainda não existe. Detalhes em
+[Engenharia de Dados](../docs/engenharia-de-dados/README.md#2-arquitetura-dos-dados).
 
 ### Usuários — `/users` (perfil Gestor)
 
@@ -330,7 +331,8 @@ linhas e 83% dos branches (meta MQ-02: 85% e 80%); para medir: `npx jest --cover
 | `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
 | `MAIL_FROM` | não | `Fiscalize <SMTP_USER>` | Remetente dos e-mails. Se tiver só o nome (ex.: `Fiscalize`), o endereço usado é o do `SMTP_USER` |
 | `DEMO_MODE` | não | `false` | Modo de demonstração: devolve o código da verificação em duas etapas na resposta do login e, no cadastro, avisa qual conta já usa a senha escolhida. Proibido em produção |
-| `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) da consolidação de métricas |
+| `CRON_METRICS_SCHEDULE` | não | `0 * * * *` | Agenda (cron) do pipeline de métricas |
+| `METRICS_SNAPSHOT_MAX_AGE_MINUTES` | não | `60` | Idade máxima do snapshot servido ao painel; mais velho que isso, a API roda o pipeline de novo |
 | `SEED_ADMIN_EMAIL` | não | `admin@fiscalize.gov.br` | E-mail do admin criado pelo seed |
 | `SEED_ADMIN_PASSWORD` | não | `Admin@123456` | Senha do admin criado pelo seed |
 | `SEED_ADMIN_NAME` | não | `Administrador` | Nome do admin criado pelo seed |

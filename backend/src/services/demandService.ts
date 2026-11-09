@@ -1,6 +1,5 @@
 import { prisma } from '../config/prisma';
 import { AppError } from '../middlewares/errorMiddleware';
-import { invalidateMetricsCache } from '../utils/cache';
 import { status_chamado, zona } from '@prisma/client';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -350,9 +349,6 @@ export const demandService = {
       return result;
     });
 
-    if (categoryId !== undefined) {
-      await invalidateMetricsCache(chamado.gestorid);
-    }
 
     return {
       id: updated.id,
@@ -459,8 +455,6 @@ export const demandService = {
       return created;
     });
 
-    await invalidateMetricsCache(chamado.gestorid);
-
     return {
       id: chamado.id,
       protocolo: chamado.protocolo,
@@ -550,8 +544,6 @@ export const demandService = {
       return result;
     });
 
-    await invalidateMetricsCache(chamado.gestorid);
-
     await notificationService.notifyDemandUpdate(chamadoId, {
       titulo: newStatus === 'Resolvido' ? 'Chamado resolvido' : 'Status atualizado',
       mensagem: `Seu chamado agora está "${displayStatus(updated.status)}".`,
@@ -603,8 +595,6 @@ export const demandService = {
         },
       });
     });
-
-    await invalidateMetricsCache(chamado.gestorid);
 
     if (perfil !== 'Cidadao') {
       await notificationService.notifyDemandUpdate(chamadoId, {

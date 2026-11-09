@@ -1,52 +1,67 @@
-import { status_chamado } from '@prisma/client';
+import type { DadosExtraidos } from './Extract';
 
-export interface ChamadoBruto {
-  id: string;
-  status: status_chamado;
-  criadoem: Date;
-  atualizadoem: Date;
-  categoria?: { nome: string } | null;
+// Transform: função pura (sem banco) que transforma os dados extraídos no produto de dados do painel.
+
+export interface MetricsSnapshotPayload {
+  totalByStatus: {
+    total: number;
+    aberta: number;
+    em_andamento: number;
+    resolvida: number;
+    encerrada: number;
+  };
+  byCategory: Array<{ category: string; total: number; percentage: number }>;
+  averageResponseTime: { total_demandas_consideradas: number; media_horas: number | null };
 }
 
-const STATUS_DISPLAY: Record<status_chamado, string> = {
-  [status_chamado.Aberto]: 'Aberto',
-  [status_chamado.Em_An_lise]: 'Em Análise',
-  [status_chamado.Em_Andamento]: 'Em Andamento',
-  [status_chamado.Aguardando]: 'Aguardando',
-  [status_chamado.Resolvido]: 'Resolvido',
-  [status_chamado.Fechado]: 'Fechado',
-};
+const STATUS_DE_CONCLUSAO = ['Resolvido', 'Fechado'];
+
+// Tempo até o primeiro evento que levou o chamado a Resolvido ou Fechado; chamados concluídos sem
+// esse evento (ex.: importados) ficam fora da média
+export function tempoMedioDeResolucao(concluidos: DadosExtraidos['concluidos']) {
+  const horas: number[] = [];
+
+  for (const chamado of concluidos) {
+    const resolucao = chamado.timeline_event.find((evento) => {
+      const dados = evento.dadosnovos as Record<string, unknown> | null;
+      return STATUS_DE_CONCLUSAO.includes(String(dados?.status));
+    });
+    if (resolucao) {
+      horas.push((resolucao.timestamp.getTime() - chamado.criadoem.getTime()) / 3_600_000);
+    }
+  }
+
+  const media = horas.length === 0 ? null : horas.reduce((a, b) => a + b, 0) / horas.length;
+  return {
+    total_demandas_consideradas: horas.length,
+    media_horas: media === null ? null : Math.round(media * 10) / 10,
+  };
+}
+
+// Inclui as categorias sem chamados (com 0%), para o painel mostrar todas
+export function distribuicaoPorCategoria(
+  categorias: DadosExtraidos['categorias'],
+  porCategoria: DadosExtraidos['porCategoria'],
+) {
+  const contagem = new Map(porCategoria.map((grupo) => [grupo.categoriaid, grupo._count.id]));
+  const total = porCategoria.reduce((soma, grupo) => soma + grupo._count.id, 0);
+
+  return categorias.map((categoria) => {
+    const quantidade = contagem.get(categoria.id) ?? 0;
+    return {
+      category: categoria.nome,
+      total: quantidade,
+      percentage: total === 0 ? 0 : Math.round((quantidade / total) * 1000) / 10,
+    };
+  });
+}
 
 export class Transform {
-  processarMetricas(chamados: ChamadoBruto[]) {
-    const porStatus: Record<string, number> = {};
-    const porCategoria: Record<string, number> = {};
-    let tempoTotalHoras = 0;
-    let totalResolvidos = 0;
-
-    chamados.forEach((chamado) => {
-      const statusLegivel = STATUS_DISPLAY[chamado.status] ?? chamado.status;
-      porStatus[statusLegivel] = (porStatus[statusLegivel] || 0) + 1;
-
-      if (chamado.categoria?.nome) {
-        const catNome = chamado.categoria.nome;
-        porCategoria[catNome] = (porCategoria[catNome] || 0) + 1;
-      }
-
-      if (chamado.status === status_chamado.Resolvido || chamado.status === status_chamado.Fechado) {
-        const horas = (chamado.atualizadoem.getTime() - chamado.criadoem.getTime()) / 3600000;
-        tempoTotalHoras += Math.max(0, horas);
-        totalResolvidos++;
-      }
-    });
-
-    const media = totalResolvidos > 0 ? tempoTotalHoras / totalResolvidos : 0;
-
+  processarMetricas(dados: DadosExtraidos): MetricsSnapshotPayload {
     return {
-      porstatus: porStatus,
-      porcategoria: porCategoria,
-      tempomedioresolucao: Number(media.toFixed(2)),
-      jobstatus: 'success',
+      totalByStatus: dados.contagem,
+      byCategory: distribuicaoPorCategoria(dados.categorias, dados.porCategoria),
+      averageResponseTime: tempoMedioDeResolucao(dados.concluidos),
     };
   }
 }

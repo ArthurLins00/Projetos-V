@@ -3,8 +3,8 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend, app mobile e agente de IA).
 
-**Situação em 09/11/2026:** 438 testes automatizados: 133 unitários e
-246 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
+**Situação em 09/11/2026:** 444 testes automatizados: 138 unitários e
+247 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
 branches), além de 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado) e 3 fluxos de tela (Maestro)
 no emulador do CI, conforme a última execução da pipeline. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
 rodam ao vivo contra o Gemini só na regressão diária.
@@ -22,9 +22,9 @@ e completos no topo.
               ┌─┴──────────────────────────┴─┐
               │ E2E da API (Playwright) 36   │  backend + banco reais
             ┌─┴──────────────────────────────┴─┐
-            │ API (Jest + Supertest) 246       │  rotas HTTP, banco mockado
+            │ API (Jest + Supertest) 247       │  rotas HTTP, banco mockado
           ┌─┴──────────────────────────────────┴─┐
-          │ Unitários (Jest) 133                 │  regras de negócio isoladas
+          │ Unitários (Jest) 138                 │  regras de negócio isoladas
           └──────────────────────────────────────┘
 ```
 
@@ -236,7 +236,7 @@ Com `GITHUB_REPOSITORY`, `GITHUB_TOKEN` e `SOURCE_RUN_ID` definidos, também ent
 
 ## 3. Catálogo de testes
 
-### 3.1 Unitários — `backend/src/tests/unit` (133)
+### 3.1 Unitários — `backend/src/tests/unit` (138)
 
 Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas numa pasta temporária.
 
@@ -337,22 +337,26 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-63 | 2FA, foto, termos, push e perfil | Repassados ao serviço com os dados normalizados (push responde 204) |
 | U-64 | Erro do serviço | Repassado ao middleware de erro |
 
-**`metricsAndCache.test.ts`: indicadores operacionais e cache Redis (TC-67)**
+**`metricsAndCache.test.ts`: pipeline de métricas (Extract → Transform → Load), snapshot lido pelo painel e acesso ao Redis (TC-67)**
 
 | ID | Caso | Esperado |
 |---|---|---|
-| U-65 | Tempo médio de atendimento | Só chamados com evento Resolvido/Fechado; média arredondada para 1 casa |
-| U-66 | Nenhum chamado concluído | `media_horas` nulo; escopo do órgão respeitado |
+| U-65 | Tempo médio de atendimento (Transform) | Só chamados com evento Resolvido/Fechado; média arredondada para 1 casa |
+| U-66 | Nenhum chamado concluído | `media_horas` nulo |
 | U-67 | Distribuição por categoria | Inclui categorias sem chamados; percentual com 1 casa |
 | U-68 | Nenhum chamado | 0%, sem divisão por zero |
-| U-69 | Total de demandas | Contagem por status |
-| U-70 | Valor em cache | Devolvido sem consultar o banco |
-| U-71 | Cache vazio | Calcula e grava com TTL de 5 minutos |
+| U-69 | Produto do painel | Junta totais por status, categorias e tempo médio |
+| U-70 | Pipeline grava o snapshot | Linha em `metrics_snapshot` com os indicadores e os chamados considerados; nenhum campo pessoal extraído |
+| U-71 | Pipeline falha | Linha com `jobstatus` `error` e a mensagem, sem lançar erro |
 | U-72 | Sem Redis configurado | Leitura, gravação e remoção viram no-op |
 | U-73 | Redis falhando | Nunca derruba a requisição |
 | U-74 | Valor ausente ou JSON inválido | `null` |
-| U-75 | Invalidação | Apaga as chaves da plataforma e, com gestor, também as dele |
-| U-76 | Chaves de escopo e de snapshot | Formato esperado |
+| U-75 | Snapshot recente e nenhum chamado mudou | Reaproveitado, sem rodar o pipeline |
+| U-76 | Chamado alterado, criado ou apagado depois do snapshot | Pipeline roda de novo e o snapshot novo é devolvido |
+| U-95 | Snapshot mais velho que `METRICS_SNAPSHOT_MAX_AGE_MINUTES` ou no formato antigo | Regenerado |
+| U-96 | Três indicadores pedidos ao mesmo tempo | Uma única execução do pipeline |
+| U-97 | Pipeline falha na hora de regenerar | Último snapshot válido; sem nenhum, 503 |
+| U-98 | Cópia no Redis | `metrics:latest` com TTL de 24 h |
 
 **`redis.test.ts`: cliente Redis opcional (TC-67)**
 
@@ -392,7 +396,7 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-93 | Janela expirada na memória | Contagem recomeça |
 | U-94 | `TRUST_PROXY` vazio, `false`, número, `true` ou lista | Desligado, desligado, número de proxies, `true` ou a lista |
 
-### 3.2 API — `backend/src/tests/api` (246)
+### 3.2 API — `backend/src/tests/api` (247)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -686,11 +690,12 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 
 | ID | Caso | Esperado |
 |---|---|---|
-| A-160 | `GET /metrics/total-demands` | Totais por status, escopo plataforma |
-| A-161 | `GET /metrics/demands-by-category` | Distribuição com percentual |
-| A-162 | `GET /metrics/average-response-time` | Média em horas (nula sem concluídos) |
+| A-160 | `GET /metrics/total-demands` | Totais por status do snapshot mais recente, com `geradoEm`; nenhum snapshot novo gravado |
+| A-161 | `GET /metrics/demands-by-category` | Distribuição com percentual, do snapshot |
+| A-162 | `GET /metrics/average-response-time` | Média em horas e chamados considerados, do snapshot |
 | A-163 | Cidadão nas métricas | 403 |
 | A-164 | Banco falhando nas 3 rotas | 500 |
+| A-209 | Ainda sem snapshot | A rota roda o pipeline, grava o snapshot e devolve os valores dele |
 | A-165 | `/health` com banco no ar | 200 `ok`; Redis `unavailable` quando não responde |
 | A-166 | `/health` com banco fora | 503 `degraded` |
 | A-167 | `GET /users` | Paginação e campos da API |
@@ -903,7 +908,7 @@ vínculo; as tabelas abaixo, com os IDs U-xx, A-xx, E-xx e M-xx, continuam como 
 | Órgãos | — | A-115 a A-133 | — | — |
 | Regras de competência | — | A-134 a A-149 | — | — |
 | Ciclo de vida dos usuários e auditoria | — | A-150 a A-159 | — | — |
-| Métricas do painel do gestor e cache | U-65 a U-80 | A-160 a A-164 | — | — |
+| Painel do gestor a partir do snapshot do pipeline de dados, cache e Redis | U-65 a U-80, U-95 a U-98 | A-160 a A-164, A-209 | — | — |
 | Health check | — | A-165, A-166 | — | — |
 | Consulta de usuários e categorias | — | A-167 a A-173 | — | — |
 | Painel, fila e atendimento do gestor | — | A-174 a A-189 | — | — |

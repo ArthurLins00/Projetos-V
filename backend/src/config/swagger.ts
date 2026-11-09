@@ -1354,7 +1354,7 @@ export const openApiSpec = {
         summary: 'Total de demandas (escopo gestor/admin)',
         security: BEARER,
         responses: {
-          200: { description: 'Total de demandas' },
+          200: { description: 'Totais por status do snapshot mais recente do pipeline de dados; `geradoEm` informa quando ele foi gerado' },
           401: { $ref: '#/components/responses/Unauthorized' },
           403: { $ref: '#/components/responses/Forbidden' },
         },
@@ -1366,7 +1366,7 @@ export const openApiSpec = {
         summary: 'Demandas por categoria',
         security: BEARER,
         responses: {
-          200: { description: 'Distribuição por categoria' },
+          200: { description: 'Distribuição por categoria (`data`) do snapshot mais recente, com `geradoEm`' },
           401: { $ref: '#/components/responses/Unauthorized' },
           403: { $ref: '#/components/responses/Forbidden' },
         },
@@ -1378,7 +1378,7 @@ export const openApiSpec = {
         summary: 'Tempo médio de resposta',
         security: BEARER,
         responses: {
-          200: { description: 'Tempo médio de resolução' },
+          200: { description: 'Tempo médio de resolução em horas e chamados considerados, do snapshot mais recente, com `geradoEm`' },
           401: { $ref: '#/components/responses/Unauthorized' },
           403: { $ref: '#/components/responses/Forbidden' },
         },

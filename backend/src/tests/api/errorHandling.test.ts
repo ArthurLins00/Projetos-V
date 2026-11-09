@@ -4,7 +4,6 @@ import { app } from '../../app';
 import { JWT_SECRET } from '../../config/env';
 
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
-jest.mock('../../utils/cache', () => ({ invalidateMetricsCache: jest.fn() }));
 import { prisma } from '../../config/__mocks__/prisma';
 
 describe('TC-27 | Erro inesperado não expõe detalhes internos (API)', () => {
