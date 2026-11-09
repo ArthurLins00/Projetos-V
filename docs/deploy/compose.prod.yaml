@@ -1,0 +1,40 @@
+# Ajustes de produção sobre o compose.yaml da raiz. Guia: docs/deploy/README.md
+#
+#   docker compose -f compose.yaml -f docs/deploy/compose.prod.yaml --profile ai up -d --build
+#
+# O que muda em relação ao ambiente local:
+#   - banco, Redis e backend deixam de publicar portas no servidor (só a rede interna do Docker os alcança);
+#   - o Caddy passa a ser a única porta de entrada (80 e 443) e emite o certificado HTTPS do domínio sozinho.
+# Precisa do Docker Compose 2.24 ou mais novo (por causa do !reset).
+# Os caminhos relativos valem a partir da raiz do repositório (a pasta do primeiro arquivo -f).
+
+services:
+  postgres:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  backend:
+    ports: !reset []
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      DOMINIO: ${DOMINIO:?Defina DOMINIO no .env da raiz (ex.: fiscalize.seudominio.com.br)}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docs/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

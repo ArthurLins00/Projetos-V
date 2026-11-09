@@ -1,0 +1,8 @@
+# Proxy reverso do Fiscalize em produção. Guia: docs/deploy/README.md
+# O Caddy obtém e renova sozinho o certificado HTTPS (Let's Encrypt) do domínio em DOMINIO,
+# desde que o registro DNS já aponte para o servidor e as portas 80 e 443 estejam abertas.
+
+{$DOMINIO} {
+	encode gzip
+	reverse_proxy backend:3000
+}
