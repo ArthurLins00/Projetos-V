@@ -5,10 +5,11 @@ name: "[TC-63] M-02 Cadastro pela tela e login com a conta nova"
 
 - launchApp:
     clearState: true
+# 60 s: no primeiro fluxo do CI o app ainda carrega o JavaScript do Metro; a espera termina assim que o login aparece
 - extendedWaitUntil:
     visible:
       id: "login-email"
-    timeout: 20000
+    timeout: 60000
 - scrollUntilVisible:
     element:
       id: "login-go-register"

@@ -68,12 +68,24 @@ jobs:
             backend/package-lock.json
             mobile/package-lock.json
 
+      # O APK de debug não embute o JavaScript (vem do Metro): só muda quando mudam as dependências nativas, a
+      # configuração do Expo ou os ícones. Com o cache, o build do Gradle (de 4 a 11 min) só roda quando algo assim muda.
+      # Troque o "v1" para forçar um build novo.
+      - name: Cache do APK de debug
+        id: apk-cache
+        uses: actions/cache@v6
+        with:
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          key: maestro-apk-v1-x86_64-${{ hashFiles('mobile/package-lock.json', 'mobile/package.json', 'mobile/app.json', 'mobile/assets/**') }}
+
       - uses: actions/setup-java@v6
+        if: steps.apk-cache.outputs.cache-hit != 'true'
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v6
+        if: steps.apk-cache.outputs.cache-hit != 'true'
 
       - name: Backend (dependências, migrações, seed e build)
         working-directory: backend
@@ -93,13 +105,18 @@ jobs:
           done
           echo "Backend não respondeu em /health"; cat backend.log; exit 1
 
+      # As dependências do app são necessárias mesmo com o APK em cache: o Metro serve o JavaScript a partir delas
+      - name: Dependências do app
+        working-directory: mobile
+        run: npm ci
+
       - name: Build do app Android (debug)
+        if: steps.apk-cache.outputs.cache-hit != 'true'
         working-directory: mobile
         run: |
-          npm ci
           npx expo prebuild --platform android --no-install
           cd android
-          ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
+          ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon --build-cache
 
       # O binário nativo exato que foi testado. É debug e só x86_64: roda em emulador (não em celular)
       # e carrega o JavaScript do Metro, então precisa de `npx expo start` rodando para abrir
@@ -133,6 +150,7 @@ jobs:
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          echo "MAESTRO_CLI_NO_ANALYTICS=1" >> "$GITHUB_ENV"
 
       - name: Habilita KVM para o emulador
         run: |
@@ -147,6 +165,10 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          # Com os 2 núcleos e a RAM padrão do perfil, o launcher do emulador entrava em ANR e o diálogo
+          # "Pixel Launcher isn't responding" cobria o app (execução de 09/11, 18 min perdidos no aquecimento)
+          cores: 4
+          ram-size: 4096M
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
           script: bash .github/scripts/run-maestro.sh ${{ inputs.flows }}
@@ -170,7 +192,6 @@ jobs:
             maestro-report.xml
             maestro-debug
             logcat.txt
-            logcat-warmup-1.txt
             backend.log
             metro.log
           retention-days: 7

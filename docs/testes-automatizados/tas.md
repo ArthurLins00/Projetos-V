@@ -93,7 +93,7 @@ Toda falha de teste segue o mesmo caminho, do registro ao encaminhamento:
 |---|---|---|---|
 | **SUT** — defeito no sistema sob teste | `classificação: sut` | o comportamento observado contraria o requisito; reproduz à mão no app ou na API | corrigir o código **com** o teste que pegou o defeito; registrar na seção 5 do `TESTES.md` |
 | **TAS** — defeito na automação | `classificação: tas` | seletor ou `testID` desatualizado, dado de teste compartilhado, mock incompleto, espera mal feita, script de CI | corrigir o teste ou o script; se não der no prazo, quarentena (seção 5) |
-| **Ambiente** | `classificação: ambiente` | emulador sem resposta, timeout de rede, serviço externo (Gemini, Expo Push, IBGE) fora, runner sem recurso | um *Re-run failed jobs* manual para confirmar (a issue continua aberta e vira `teste instável`); se repetir, ajuste do workflow no nível do ambiente (aquecimento, espera, serviço), nunca nova tentativa do teste |
+| **Ambiente** | `classificação: ambiente` | emulador sem resposta, timeout de rede, serviço externo (Gemini, Expo Push, IBGE) fora, runner sem recurso | um *Re-run failed jobs* manual para confirmar (a issue continua aberta e vira `teste instável`); se repetir, ajuste do workflow no nível do ambiente (recursos do emulador, espera, serviço), nunca nova tentativa do teste |
 | **Variação esperada** | `classificação: variação esperada` | mudança intencional (texto de tela, regra de negócio, contrato da API) que o teste ainda não acompanha | atualizar o teste e o caso no plano/catálogo no **mesmo PR** da mudança; citar a decisão ou a HU |
 
 Regras de classificação:
@@ -188,10 +188,12 @@ agente de IA.
    e o PostgreSQL do próprio job, com o `webServer` esperando o `/health`. Uma falha ali é defeito do sistema
    (concorrência, transação) ou da automação (dado compartilhado, espera mal feita), e as duas causas se
    corrigem, não se repetem.
-3. **No E2E de telas, a instabilidade do emulador já é tratada no nível certo.** O `run-maestro.sh` faz um
-   aquecimento (`maestro-warmup.yaml`) e reinicia o emulador quando o Maestro não enxerga o app, **antes** de
-   rodar qualquer fluxo. Esse é o problema conhecido de 15/10 e 16/10 (seção 9). Repetir o fluxo inteiro depois
-   disso tratava um sintoma e atrasava a regressão em dezenas de minutos.
+3. **No E2E de telas, a instabilidade do emulador é tratada na causa, não na repetição.** O problema conhecido
+   de 15/10 e 16/10 (seção 9), em que o Maestro não enxergava o app, era o launcher do emulador em ANR com o
+   diálogo "isn't responding" cobrindo a tela (confirmado pelas capturas da execução de 09/11). O
+   `run-maestro.sh` esconde esses diálogos do sistema e o emulador ganhou 4 núcleos e 4 GB de RAM. Desde 09/11
+   também não há aquecimento com nova tentativa nem reinício do emulador: os fluxos rodam uma vez só, e a
+   espera pela primeira tela (60 s) termina assim que o login aparece.
 4. **A orientação da disciplina** para a manutenção da TAS é não ter reexecução automática nas suítes de API e
    E2E. Com os motivos acima, o projeto não tinha razão para manter uma exceção.
 
@@ -338,6 +340,7 @@ tabela. O JSON permite responder por script quais casos não têm teste e quais 
 | 2026-11-05 | Caso do plano no título de todos os testes e catálogo gerado em JSON; TC-75 e TC-76 incluídos no plano | todos (362 títulos) | rastreabilidade manual se desfazia a cada refatoração (seção 8.5) | equipe, a partir do feedback do acompanhamento do PI |
 | 2026-11-05 | Removida a nova tentativa automática do Playwright (`retries: 1` no CI) e do `run-maestro.sh` | E2E da API e E2E de telas | escondia a falha do registro em issue; orientação da disciplina (seção 5.4) | equipe, a partir do feedback do acompanhamento do PI |
 | 2026-11-05 | Quarentena dos dois fluxos registrada com prorrogação até 15/11/2026 | M-02, M-05 | regularização pela seção 5; decidir na revisão de 15/11 | registro em `.github/tas/quarentena.json` e issue #63 |
+| 2026-11-09 | Removidos o aquecimento com nova tentativa e o reinício do emulador do `run-maestro.sh` e o `retryTapIfNoChange` do M-05; diálogos de ANR escondidos, emulador com 4 núcleos e 4 GB e APK de debug em cache | E2E de telas | o launcher em ANR cobria o app e o aquecimento repetido gastava 18 min antes de falhar; os fluxos devem rodar uma vez só (seção 5.4) | equipe |
 
 ---
 
