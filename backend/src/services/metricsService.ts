@@ -1,91 +1,85 @@
-import { metricsRepository } from '../repositories/metricsRepository';
-import { getCache, setCache, metricsScopeKey, METRICS_CACHE_TTL } from '../utils/cache';
+import { prisma } from '../config/prisma';
+import { AppError } from '../middlewares/errorMiddleware';
+import type { MetricsSnapshotPayload } from '../etl/Transform';
+import { runMetricsConsolidation } from './metricsConsolidationService';
 
-type Scope = { orgaoid?: string };
+// O painel do gestor não calcula nada: lê o produto de dados gerado pelo pipeline (metrics_snapshot).
+// O snapshot mais recente é reaproveitado enquanto nenhum chamado mudou depois dele e enquanto ele tem
+// menos de METRICS_SNAPSHOT_MAX_AGE_MINUTES (padrão 60, o intervalo do agendamento). Se algo mudou, se
+// passou da idade ou se ainda não existe snapshot, a API roda o pipeline e devolve o snapshot novo.
 
-async function computeAverageResponseTime(scope: Scope) {
-  const where = scope.orgaoid ? { orgaoid: scope.orgaoid } : {};
-  const chamados = await metricsRepository.averageResponseTime(where);
+export type PanelSnapshot = MetricsSnapshotPayload & { geradoEm: Date };
 
-  const diferencasHoras: number[] = [];
+function maxAgeMs() {
+  const minutes = Number(process.env.METRICS_SNAPSHOT_MAX_AGE_MINUTES);
+  return (Number.isFinite(minutes) && minutes > 0 ? minutes : 60) * 60_000;
+}
 
-  for (const chamado of chamados) {
-    const eventoResolucao = chamado.timeline_event.find(e => {
-      const dados = e.dadosnovos as Record<string, unknown> | null;
-      return dados?.status === 'Resolvido' || dados?.status === 'Fechado';
-    });
-
-    if (eventoResolucao) {
-      const diffMs = eventoResolucao.timestamp.getTime() - chamado.criadoem.getTime();
-      diferencasHoras.push(diffMs / (1000 * 60 * 60));
-    }
-  }
-
-  const media =
-    diferencasHoras.length === 0
-      ? null
-      : diferencasHoras.reduce((a, b) => a + b, 0) / diferencasHoras.length;
+async function latestSnapshot(): Promise<PanelSnapshot | null> {
+  const row = await prisma.metrics_snapshot.findFirst({
+    where: { jobstatus: 'success' },
+    orderBy: { criadoem: 'desc' },
+  });
+  const porStatus = row?.porstatus as MetricsSnapshotPayload['totalByStatus'] | null;
+  // Snapshots gravados no formato antigo do ETL (sem os totais do painel) não servem
+  if (!row || typeof porStatus?.total !== 'number' || !Array.isArray(row.porcategoria)) return null;
 
   return {
-    total_demandas_consideradas: diferencasHoras.length,
-    media_horas: media === null ? null : Math.round(media * 10) / 10,
+    totalByStatus: porStatus,
+    byCategory: row.porcategoria as MetricsSnapshotPayload['byCategory'],
+    averageResponseTime: {
+      total_demandas_consideradas: row.demandasconsideradas,
+      media_horas: row.demandasconsideradas === 0 ? null : Number(row.tempomedioresolucao),
+    },
+    geradoEm: row.criadoem,
   };
 }
 
-async function computeDemandsByCategory(scope: Scope) {
-  const where = scope.orgaoid ? { orgaoid: scope.orgaoid } : {};
-  const { categorias, grupos } = await metricsRepository.demandsByCategory(where);
+async function isFresh(snapshot: PanelSnapshot) {
+  if (Date.now() - snapshot.geradoEm.getTime() > maxAgeMs()) return false;
 
-  const countMap = new Map(grupos.map(g => [g.categoriaid, g._count.id]));
-  const total = grupos.reduce((sum, g) => sum + g._count.id, 0);
-
-  return categorias.map(cat => {
-    const count = countMap.get(cat.id) ?? 0;
-    return {
-      category: cat.nome,
-      total: count,
-      percentage: total === 0 ? 0 : Math.round((count / total) * 1000) / 10,
-    };
-  });
+  const atual = await prisma.chamado.aggregate({ _count: { id: true }, _max: { atualizadoem: true } });
+  const ultimaMudanca = atual._max.atualizadoem;
+  return atual._count.id === snapshot.totalByStatus.total && (!ultimaMudanca || ultimaMudanca <= snapshot.geradoEm);
 }
 
-async function computeTotalDemands(scope: Scope) {
-  const where = scope.orgaoid ? { orgaoid: scope.orgaoid } : {};
-  return metricsRepository.countByScope(where);
+// O app pede os três indicadores ao mesmo tempo: uma única execução do pipeline atende os três
+let regenerating: ReturnType<typeof runMetricsConsolidation> | null = null;
+
+function regenerate() {
+  regenerating ??= runMetricsConsolidation().finally(() => {
+    regenerating = null;
+  });
+  return regenerating;
+}
+
+async function panelSnapshot(): Promise<PanelSnapshot> {
+  const atual = await latestSnapshot();
+  if (atual && (await isFresh(atual))) return atual;
+
+  const resultado = await regenerate();
+  const novo = resultado.success ? await latestSnapshot() : null;
+  if (novo) return novo;
+  // Pipeline falhou: mostra o último snapshot válido, mesmo antigo, em vez de deixar o painel vazio
+  if (atual) return atual;
+  throw new AppError(503, 'Indicadores indisponíveis no momento. Tente novamente em instantes.');
 }
 
 export const metricsService = {
-  computeAverageResponseTime,
-  computeDemandsByCategory,
-  computeTotalDemands,
+  panelSnapshot,
 
-  async averageResponseTime(scope: Scope) {
-    const cacheKey = `metrics:avg-response:${metricsScopeKey(scope)}`;
-    const cached = await getCache<Awaited<ReturnType<typeof computeAverageResponseTime>>>(cacheKey);
-    if (cached) return cached;
-
-    const result = await computeAverageResponseTime(scope);
-    await setCache(cacheKey, result, METRICS_CACHE_TTL);
-    return result;
+  async averageResponseTime() {
+    const snapshot = await panelSnapshot();
+    return { ...snapshot.averageResponseTime, geradoEm: snapshot.geradoEm };
   },
 
-  async demandsByCategory(scope: Scope) {
-    const cacheKey = `metrics:category:${metricsScopeKey(scope)}`;
-    const cached = await getCache<Awaited<ReturnType<typeof computeDemandsByCategory>>>(cacheKey);
-    if (cached) return cached;
-
-    const result = await computeDemandsByCategory(scope);
-    await setCache(cacheKey, result, METRICS_CACHE_TTL);
-    return result;
+  async demandsByCategory() {
+    const snapshot = await panelSnapshot();
+    return { data: snapshot.byCategory, geradoEm: snapshot.geradoEm };
   },
 
-  async totalDemands(scope: Scope) {
-    const cacheKey = `metrics:total:${metricsScopeKey(scope)}`;
-    const cached = await getCache<Awaited<ReturnType<typeof computeTotalDemands>>>(cacheKey);
-    if (cached) return cached;
-
-    const result = await computeTotalDemands(scope);
-    await setCache(cacheKey, result, METRICS_CACHE_TTL);
-    return result;
+  async totalDemands() {
+    const snapshot = await panelSnapshot();
+    return { ...snapshot.totalByStatus, geradoEm: snapshot.geradoEm };
   },
 };

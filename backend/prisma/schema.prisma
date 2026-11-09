@@ -301,6 +301,8 @@ model metrics_snapshot {
   porstatus           Json
   porcategoria        Json
   tempomedioresolucao Decimal  @db.Decimal(10, 2)
+  /// Chamados concluídos com evento de resolução que entraram no tempo médio
+  demandasconsideradas Int     @default(0)
   jobstatus           String   @default("success") @db.VarChar(20)
   errormessage        String?
   criadoem            DateTime @default(now()) @db.Timestamp(6)

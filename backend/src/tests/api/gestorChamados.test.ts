@@ -6,9 +6,6 @@ import { JWT_SECRET } from '../../config/env';
 jest.mock('../../config/prisma', () => require('../../config/__mocks__/prisma'));
 import { prisma } from '../../config/__mocks__/prisma';
 
-jest.mock('../../utils/cache', () => ({
-  invalidateMetricsCache: jest.fn(),
-}));
 
 describe('PUT /gestor/chamados/:id/status', () => {
   const ROUTE = '/gestor/chamados/uuid-chamado/status';

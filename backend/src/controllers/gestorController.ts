@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorMiddleware';
 import { Prisma, status_chamado } from '@prisma/client';
 import { prisma } from '../config/prisma';
-import { invalidateMetricsCache } from '../utils/cache';
 import { notificationService } from '../services/notificationService';
 import { demandFilterWhere, parseDemandListFilters } from '../utils/demandFilters';
 
@@ -299,8 +298,6 @@ export const gestorController = {
         return result;
       });
 
-      await invalidateMetricsCache(chamado.gestorid);
-
       const detalhe = resolutionNote ? ` ${resolutionNote}` : justificativa ? ` Motivo: ${justificativa}` : '';
       await notificationService.notifyDemandUpdate(id, {
         titulo: novoStatus === 'Resolvido' ? 'Chamado resolvido' : 'Status atualizado',
@@ -370,8 +367,6 @@ export const gestorController = {
 
         return result;
       });
-
-      await invalidateMetricsCache(responsavelId);
 
       if (chamado.status === 'Aberto') {
         await notificationService.notifyDemandUpdate(id, {
@@ -463,8 +458,6 @@ export const gestorController = {
           },
         });
       });
-
-      await invalidateMetricsCache(chamado.gestorid);
 
       await notificationService.notifyDemandUpdate(id, {
         titulo: 'Chamado encaminhado',

@@ -23,34 +23,67 @@ beforeEach(() => {
     Object.values(users).find((u) => u.id === where.id) ?? null) as any);
 });
 
-// TC-67: rotas de métricas do painel do gestor
+// TC-67: rotas de métricas do painel do gestor, servidas a partir do snapshot do pipeline de dados
 describe('Métricas (/metrics)', () => {
-  it('[TC-67] GET /metrics/total-demands devolve os totais por status no escopo da plataforma', async () => {
+  const geradoEm = new Date(Date.now() - 60_000);
+  const snapshot = {
+    id: 'snap-1',
+    porstatus: { total: 5, aberta: 2, em_andamento: 1, resolvida: 1, encerrada: 1 },
+    porcategoria: [{ category: 'Infraestrutura', total: 5, percentage: 100 }],
+    tempomedioresolucao: 12.5,
+    demandasconsideradas: 2,
+    jobstatus: 'success',
+    errormessage: null,
+    criadoem: geradoEm,
+  };
+
+  beforeEach(() => {
+    prisma.metrics_snapshot.findFirst.mockResolvedValue(snapshot as any);
+    prisma.chamado.aggregate.mockResolvedValue({ _count: { id: 5 }, _max: { atualizadoem: new Date(geradoEm.getTime() - 1000) } } as any);
+  });
+
+  it('[TC-67] GET /metrics/total-demands devolve os totais por status do snapshot, com a data de geração', async () => {
+    const response = await request(app).get('/metrics/total-demands').set(authAs('Gestor'));
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      escopo: 'plataforma', total: 5, aberta: 2, em_andamento: 1, resolvida: 1, encerrada: 1, geradoEm: geradoEm.toISOString(),
+    });
+    expect(prisma.metrics_snapshot.findFirst.mock.calls[0]![0]).toMatchObject({ where: { jobstatus: 'success' }, orderBy: { criadoem: 'desc' } });
+    expect(prisma.metrics_snapshot.create).not.toHaveBeenCalled();
+  });
+
+  it('[TC-67] GET /metrics/demands-by-category devolve a distribuição do snapshot', async () => {
+    const response = await request(app).get('/metrics/demands-by-category').set(authAs('Admin'));
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual([{ category: 'Infraestrutura', total: 5, percentage: 100 }]);
+    expect(response.body.geradoEm).toBe(geradoEm.toISOString());
+  });
+
+  it('[TC-67] GET /metrics/average-response-time devolve a média em horas do snapshot', async () => {
+    const response = await request(app).get('/metrics/average-response-time').set(authAs('Gestor'));
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ escopo: 'plataforma', total_demandas_consideradas: 2, media_horas: 12.5, geradoEm: geradoEm.toISOString() });
+  });
+
+  it('[TC-67] sem snapshot ainda, a rota roda o pipeline, grava o snapshot e devolve os valores dele', async () => {
+    const novo = { ...snapshot, id: 'snap-2', criadoem: new Date() };
+    prisma.metrics_snapshot.findFirst.mockReset();
+    prisma.metrics_snapshot.findFirst.mockResolvedValueOnce(null).mockResolvedValue(novo as any);
+    prisma.categoria.findMany.mockResolvedValue([{ id: 1, nome: 'Infraestrutura' }] as any);
+    (prisma.chamado.groupBy as jest.Mock).mockResolvedValue([{ categoriaid: 1, _count: { id: 5 } }]);
     prisma.chamado.count.mockResolvedValue(5);
+    prisma.chamado.findMany.mockResolvedValue([]);
+    prisma.metrics_snapshot.create.mockResolvedValue(novo as any);
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const response = await request(app).get('/metrics/total-demands').set(authAs('Gestor'));
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ escopo: 'plataforma', total: 5, aberta: 5, em_andamento: 5, resolvida: 5, encerrada: 5 });
-  });
-
-  it('[TC-67] GET /metrics/demands-by-category devolve a distribuição', async () => {
-    prisma.categoria.findMany.mockResolvedValue([{ id: 1, nome: 'Infraestrutura' }] as any);
-    (prisma.chamado.groupBy as jest.Mock).mockResolvedValue([{ categoriaid: 1, _count: { id: 3 } }]);
-
-    const response = await request(app).get('/metrics/demands-by-category').set(authAs('Admin'));
-
-    expect(response.status).toBe(200);
-    expect(response.body.data).toEqual([{ category: 'Infraestrutura', total: 3, percentage: 100 }]);
-  });
-
-  it('[TC-67] GET /metrics/average-response-time devolve a média em horas', async () => {
-    prisma.chamado.findMany.mockResolvedValue([]);
-
-    const response = await request(app).get('/metrics/average-response-time').set(authAs('Gestor'));
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ escopo: 'plataforma', total_demandas_consideradas: 0, media_horas: null });
+    expect(prisma.metrics_snapshot.create).toHaveBeenCalledTimes(1);
+    expect(response.body.geradoEm).toBe(novo.criadoem.toISOString());
   });
 
   it('[TC-67] cidadão não acessa as métricas (403)', async () => {
@@ -62,9 +95,7 @@ describe('Métricas (/metrics)', () => {
   it.each(['/metrics/total-demands', '/metrics/demands-by-category', '/metrics/average-response-time'])(
     '[TC-67] falha do banco em %s vira 500',
     async (rota) => {
-      prisma.chamado.count.mockRejectedValue(new Error('db'));
-      prisma.categoria.findMany.mockRejectedValue(new Error('db'));
-      prisma.chamado.findMany.mockRejectedValue(new Error('db'));
+      prisma.metrics_snapshot.findFirst.mockRejectedValue(new Error('db'));
 
       const response = await request(app).get(rota).set(authAs('Gestor'));
 

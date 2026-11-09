@@ -1,12 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { getRedisClient } from '../config/redis';
+import { setCache } from '../utils/cache';
+import type { MetricsSnapshotPayload } from './Transform';
 
-export interface MetricasPayload {
-  porstatus: Record<string, number>;
-  porcategoria: Record<string, number>;
-  tempomedioresolucao: number;
-  jobstatus: string;
-}
+// Load: grava o produto de dados em metrics_snapshot (histórico, uma linha por execução) e uma cópia
+// do mais recente no Redis. A API do painel do gestor lê esse snapshot (services/metricsService.ts).
+
+export const LATEST_SNAPSHOT_KEY = 'metrics:latest';
 
 export class Load {
   private prisma: PrismaClient;
@@ -15,18 +14,25 @@ export class Load {
     this.prisma = prisma;
   }
 
-  async salvarSnapshot(metricas: MetricasPayload) {
-    await this.prisma.metrics_snapshot.create({
-      data: metricas,
+  async salvarSnapshot(payload: MetricsSnapshotPayload) {
+    const snapshot = await this.prisma.metrics_snapshot.create({
+      data: {
+        porstatus: payload.totalByStatus,
+        porcategoria: payload.byCategory,
+        tempomedioresolucao: payload.averageResponseTime.media_horas ?? 0,
+        demandasconsideradas: payload.averageResponseTime.total_demandas_consideradas,
+        jobstatus: 'success',
+      },
     });
 
-    try {
-      const redis = getRedisClient();
-      if (redis) {
-        await redis.set('metrics:latest', JSON.stringify(metricas), 'EX', 86400);
-      }
-    } catch (error) {
-      console.warn('[ETL - Load] Aviso: Falha ao sincronizar com Redis (cache ignorado):', error);
-    }
+    // Sem Redis o setCache não faz nada: o snapshot continua no PostgreSQL
+    await setCache(LATEST_SNAPSHOT_KEY, { ...payload, geradoEm: snapshot.criadoem }, 24 * 60 * 60);
+    return snapshot;
+  }
+
+  async salvarFalha(mensagem: string) {
+    await this.prisma.metrics_snapshot.create({
+      data: { porstatus: {}, porcategoria: [], tempomedioresolucao: 0, jobstatus: 'error', errormessage: mensagem },
+    });
   }
 }
