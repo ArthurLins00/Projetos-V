@@ -321,7 +321,10 @@ linhas e 83% dos branches (meta MQ-02: 85% e 80%); para medir: `npx jest --cover
 | `NODE_ENV` | não | `development` | Ambiente (`development` ou `production`) |
 | `ALLOWED_ORIGINS` | em produção | — | Origens liberadas no CORS, separadas por vírgula |
 | `FRONTEND_URL` | não | — | Origem extra liberada no CORS em desenvolvimento |
-| `REDIS_URL` | não | — | Redis para cache de métricas (sem ele, o cache fica desligado) |
+| `REDIS_URL` | não | — | Redis para o cache de métricas e para os contadores do rate limit e do bloqueio de login (sem ele, o cache fica desligado e os contadores ficam na memória do processo) |
+| `RATE_LIMIT_GLOBAL_MAX` | não | `300` | Requisições por IP por minuto em toda a API (`0` desliga) |
+| `RATE_LIMIT_AUTH_MAX` | não | `100` | Tentativas por IP em 15 min nas rotas de autenticação sem sessão: cadastro, login, 2FA e recuperação de senha (`0` desliga) |
+| `TRUST_PROXY` | atrás de proxy | — | Quantos proxies confiáveis ficam na frente da API (ex.: `1` com o Caddy do [deploy](../docs/deploy/README.md)). Sem isso, o rate limit vê todos os clientes com o IP do proxy |
 | `SMTP_HOST` | em produção | — | Servidor SMTP para os e-mails de recuperação de senha (sem ele, em desenvolvimento o código é exibido no log do servidor) |
 | `SMTP_PORT` | não | `587` | Porta SMTP (`465` usa TLS direto) |
 | `SMTP_USER` / `SMTP_PASS` | não | — | Credenciais do SMTP |
