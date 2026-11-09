@@ -48,8 +48,8 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -92,7 +92,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publica o arquivo
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: app-android
           path: ${{ steps.file.outputs.name }}
