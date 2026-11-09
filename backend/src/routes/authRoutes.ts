@@ -1,16 +1,19 @@
 import { Router } from 'express';
 import { authController } from '../controllers/authController';
 import { authenticate } from '../middlewares/authMiddleware';
+import { authRateLimit } from '../middlewares/rateLimit';
 
 const router = Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/login/2fa', authController.verifyTwoFactor);
-router.post('/login/2fa/resend', authController.resendTwoFactor);
+// As rotas que aceitam senha ou código sem sessão têm limite próprio por IP; o bloqueio por conta
+// (5 senhas erradas seguidas) fica no authService.login
+router.post('/register', authRateLimit, authController.register);
+router.post('/login', authRateLimit, authController.login);
+router.post('/login/2fa', authRateLimit, authController.verifyTwoFactor);
+router.post('/login/2fa/resend', authRateLimit, authController.resendTwoFactor);
 router.post('/refresh', authController.refresh);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+router.post('/forgot-password', authRateLimit, authController.forgotPassword);
+router.post('/reset-password', authRateLimit, authController.resetPassword);
 router.post('/logout', authenticate, authController.logout);
 router.get('/me', authenticate, authController.me);
 router.put('/me', authenticate, authController.updateMe);

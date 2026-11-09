@@ -90,6 +90,11 @@ export const TECNOLOGIAS = [
   { id: 'bcrypt', nome: 'bcrypt (bcryptjs e bcrypt)', categoria: 'Segurança', fontes: [{ d: 'seg', secao: '3.1' }], pacotes: { backend: ['bcryptjs', 'bcrypt'] } },
   { id: 'jwt', nome: 'JWT HS256 (jsonwebtoken)', categoria: 'Segurança', fontes: [{ d: 'seg', secao: '3.2' }], pacotes: { backend: ['jsonwebtoken'] } },
   {
+    id: 'helmet-rate-limit', nome: 'helmet, rate limiting e bloqueio de login', categoria: 'Segurança',
+    fontes: [{ d: 'seg', secao: '3.9' }], pacotes: { backend: ['helmet'] },
+    caminhos: ['backend/src/middlewares/rateLimit.ts', 'backend/src/utils/attemptStore.ts'],
+  },
+  {
     id: 'node-crypto', nome: 'node:crypto (CSPRNG, SHA-256, comparação em tempo constante)', categoria: 'Segurança',
     fontes: [{ d: 'seg', secao: '3.3' }, { d: 'seg', secao: '3.4' }], builtin: { backend: ['crypto'], 'ai-agent': ['crypto'] },
   },

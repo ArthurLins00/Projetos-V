@@ -10,6 +10,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from '../config/uploads';
 import { detectImageExtension } from '../utils/image';
+import { attemptStore } from '../utils/attemptStore';
 
 const tokenBlocklist = new Set<string>();
 
@@ -50,6 +51,35 @@ type TwoFactorChallenge = {
   attempts: number;
 };
 const twoFactorChallenges = new Map<string, TwoFactorChallenge>();
+
+// Bloqueio da conta: 5 senhas erradas seguidas em 15 minutos bloqueiam o login por 15 minutos.
+// Conta também para e-mail inexistente, para o bloqueio não revelar quais contas existem.
+export const LOGIN_MAX_FAILURES = 5;
+export const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+export const LOGIN_LOCK_MS = 15 * 60 * 1000;
+
+const loginKey = (email: string) => email.trim().toLowerCase();
+
+function accountLockedError(resetAt: number) {
+  const minutes = Math.max(1, Math.ceil((resetAt - Date.now()) / 60_000));
+  return new AppError(
+    429,
+    `Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${minutes} min.`,
+    { bloqueadoAte: new Date(resetAt).toISOString() }
+  );
+}
+
+async function registerLoginFailure(email: string) {
+  const key = loginKey(email);
+  const falhas = await attemptStore.hit(`login-fail:${key}`, LOGIN_FAILURE_WINDOW_MS);
+  if (falhas.count < LOGIN_MAX_FAILURES) {
+    return new AppError(401, 'Credenciais inválidas.');
+  }
+
+  await attemptStore.clear(`login-fail:${key}`);
+  const bloqueio = await attemptStore.hit(`login-lock:${key}`, LOGIN_LOCK_MS);
+  return accountLockedError(bloqueio.resetAt);
+}
 
 const DEMO_PASSWORD_SCAN_LIMIT = 200;
 
@@ -150,12 +180,17 @@ export const authService = {
   },
 
   async login(email: string, senha: string) {
+    const bloqueio = await attemptStore.peek(`login-lock:${loginKey(email)}`);
+    if (bloqueio) {
+      throw accountLockedError(bloqueio.resetAt);
+    }
+
     const usuario = await prisma.usuario.findUnique({
       where: { email },
     });
 
     if (!usuario) {
-      throw new AppError(401, 'Credenciais inválidas.');
+      throw await registerLoginFailure(email);
     }
 
     if (usuario.status !== 'Ativo') {
@@ -171,8 +206,10 @@ export const authService = {
     );
 
     if (!isValidPassword) {
-      throw new AppError(401, 'Credenciais inválidas.');
+      throw await registerLoginFailure(email);
     }
+
+    await attemptStore.clear(`login-fail:${loginKey(email)}`);
 
     // Com 2FA a senha só abre um desafio; os tokens saem depois do código confirmado
     if (usuario.doisfatores) {
@@ -529,6 +566,10 @@ export const authService = {
 
     // Quem recuperou a senha pode estar tirando o acesso de alguém que a descobriu
     await this.revokeAllRefreshTokens(usuario.id);
+
+    // Quem provou ser o dono pelo e-mail não precisa esperar o fim do bloqueio
+    await attemptStore.clear(`login-fail:${loginKey(email)}`);
+    await attemptStore.clear(`login-lock:${loginKey(email)}`);
 
     resetCodes.delete(email);
   },
