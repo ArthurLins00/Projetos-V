@@ -37,10 +37,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         env:
           # Opcionais; ver o cabeçalho de .github/scripts/ci-failure-issue.js
           CI_FAILURE_ASSIGNEES: ${{ vars.CI_FAILURE_ASSIGNEES }}

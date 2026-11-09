@@ -33,15 +33,15 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
       - name: Baixa o relatório de segurança desta execução
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: relatorio-seguranca
           path: artifact
