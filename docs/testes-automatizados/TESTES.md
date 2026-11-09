@@ -103,8 +103,7 @@ O APK de debug fica em cache, com chave pelo `package-lock.json`, `package.json`
 ele não embute o JavaScript (que vem do Metro), então o build do Gradle só roda quando muda uma dependência nativa
 ou a configuração do Expo.
 Antes dos fluxos, o script `.github/scripts/run-maestro.sh` esconde os diálogos de "app não respondendo" do
-emulador (o launcher entrava em ANR e cobria o app), faz um aquecimento e reinicia o emulador se o Maestro não
-enxergar o app. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
+emulador (o launcher entrava em ANR e cobria o app) e instala o APK. Não há aquecimento nem reinício do emulador. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
 a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](tas.md)).
 
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
@@ -975,5 +974,6 @@ Os testes revelaram defeitos que foram corrigidos no código:
 - **Maestro:** os fluxos precisam do app de debug instalado e de um emulador ou aparelho conectado;
   por isso eles ficam fora do `npm test`. No CI, 2 fluxos rodam como smoke em todo PR e todos os fluxos de
   `mobile/e2e/` rodam na regressão diária (`regressao.yml`). O emulador do CI às vezes falha sem relação com o
-  app (houve falhas em 15/10 e 16/10); por isso o script faz um aquecimento e reinicia o emulador antes dos
-  fluxos. Os fluxos não têm nova tentativa automática (`docs/testes-automatizados/tas.md`, seção 5.4).
+  app (houve falhas em 15/10, 16/10 e 09/11, causadas pelo launcher em ANR cobrindo a tela); por isso o script
+  esconde os diálogos de "app não respondendo" e o emulador roda com 4 núcleos e 4 GB de RAM. Os fluxos rodam
+  uma vez só, sem aquecimento, reinício do emulador nem nova tentativa (`docs/testes-automatizados/tas.md`, seção 5.4).

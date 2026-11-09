@@ -192,7 +192,6 @@ jobs:
             maestro-report.xml
             maestro-debug
             logcat.txt
-            logcat-warmup-1.txt
             backend.log
             metro.log
           retention-days: 7

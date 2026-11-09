@@ -7,7 +7,6 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 
 - tapOn:
     id: "new-demand-button"
-    retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:
       id: "form-title"
