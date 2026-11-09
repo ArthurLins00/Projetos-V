@@ -174,6 +174,22 @@ periódica e remoção de testes seguem a política de manutenção em [`docs/te
   reais (Android ou iPhone) a foto funciona normalmente.
 - **Fotos** ficam salvas no disco do servidor (`backend/uploads/`), sem armazenamento em nuvem.
 
+## Google Drive do projeto
+
+Os arquivos das disciplinas que ficam fora do repositório estão na pasta compartilhada
+[**PROJETO 5 - CESAR SCHOOL**](https://drive.google.com/drive/folders/1ruVWIh-5do4PJhHOyn6VlWD9lQpdOxHB)
+no Google Drive, organizada em uma subpasta por disciplina:
+
+| Subpasta no Drive | Documentação correspondente no repositório |
+|---|---|
+| Artefatos | — (artefatos gerais do projeto) |
+| Desenvolvimento mobile | [`docs/desenvolvimento-mobile/`](docs/desenvolvimento-mobile/README.md) |
+| IA aplicada | [`docs/ia-aplicada/`](docs/ia-aplicada/README.md) |
+| Negócios para a internet | [`docs/negocios-na-internet/`](docs/negocios-na-internet/README.md) |
+| Projetos 5 | [`docs/projeto-5/`](docs/projeto-5/README.md) |
+| Segurança da informação | [`docs/seguranca-da-informacao/`](docs/seguranca-da-informacao/README.md) |
+| Testes automatizados | [`docs/testes-automatizados/`](docs/testes-automatizados/README.md) |
+
 ## Documentação complementar
 
 - [`docs/README.md`](docs/README.md): **índice da documentação por disciplina** (tecnologias, justificativas e alternativas descartadas)
