@@ -4,6 +4,14 @@
     "slug": "mobile",
     "scheme": "projetosv",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8610ecb4-1b2f-495c-a3f3-3339b8c3d7b7",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "platforms": [
       "android",
       "ios"

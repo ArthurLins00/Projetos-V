@@ -57,7 +57,11 @@ export const TECNOLOGIAS = [
     id: 'notificacoes', nome: 'expo-notifications + Expo Push API', categoria: 'Aplicativo mobile',
     fontes: [{ d: 'mob', secao: '3.9' }], pacotes: { mobile: ['expo-notifications'] }, caminhos: ['backend/src/services/notificationService.ts'],
   },
-  { id: 'eas', nome: 'EAS Build', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.10' }], caminhos: ['mobile/eas.json'] },
+  {
+    id: 'eas', nome: 'EAS Build e EAS Update (OTA)', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.10' }],
+    pacotes: { mobile: ['expo-updates'] },
+    caminhos: ['mobile/eas.json', '.github/workflows/mobile-release.yml', '.github/workflows/mobile-update.yml'],
+  },
 
   // ---------- Backend e API ----------
   {
