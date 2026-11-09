@@ -73,9 +73,37 @@ demanda registrada por um cidadão se perca e que o atendimento dos órgãos vol
   depois da data da cópia antes de liberar o sistema.
 - Os logs de consentimento são preservados no backup, pois servem de prova legal.
 
+### 3.5 Implementação no ambiente atual (Docker Compose)
+
+Enquanto o Fiscalize roda num único servidor com Docker Compose (o da demonstração, descrito em
+[`docs/deploy/`](../deploy/README.md)), a política acima é aplicada por dois scripts versionados:
+
+| Script | O que faz |
+|---|---|
+| [`scripts/backup.sh`](../../scripts/backup.sh) | `pg_dump --clean` do banco e `tar` do volume de fotos; com `BACKUP_PASSPHRASE`, cifra os dois com **AES-256** (gpg, modo simétrico); grava as somas **SHA-256**; recusa um dump sem a tabela `usuario`; apaga cópias com mais de `BACKUP_KEEP_DAYS` dias (padrão 7) |
+| [`scripts/restore.sh`](../../scripts/restore.sh) | Confere as somas SHA-256 antes de tudo, decifra, restaura o banco numa **única transação** (se algo falhar, o banco fica como estava), substitui as fotos e limpa o cache do Redis; pede confirmação, a menos que receba `--yes` |
+
+```bash
+BACKUP_PASSPHRASE='...' scripts/backup.sh ~/backups            # na raiz do repositório
+BACKUP_PASSPHRASE='...' scripts/restore.sh latest ~/backups     # ou o carimbo, ex.: 20261109T060000Z
+```
+
+No servidor, o backup roda todo dia às 03h pelo `cron` (passo a passo em
+[`docs/deploy/README.md` › Backup diário](../deploy/README.md#62-backup-diário-do-banco-e-das-fotos)). A
+senha das cópias fica fora do servidor, com os responsáveis, e as cópias devem ser levadas para fora dele
+(por exemplo, para o Google Drive da equipe) para cumprir a regra 3-2-1.
+
 ## 4. Testes de restauração
 
 Backup que nunca foi restaurado não é backup. Por isso:
+
+- **A cada mudança no backend e na regressão diária (implementado):** o workflow
+  [`docker.yml`](../../.github/workflows/docker.yml) sobe a stack completa, roda os E2E (que criam usuários,
+  chamados e fotos), faz um backup cifrado com `scripts/backup.sh`, **apaga o schema do banco e as fotos**,
+  confere que uma cópia adulterada é recusada pela soma SHA-256, restaura com `scripts/restore.sh` e compara
+  as contagens de usuários, chamados, fotos, eventos e arquivos com as de antes, além de testar o health
+  check, um login e o download de uma foto. O tempo da restauração aparece no sumário da execução, e o
+  histórico de execuções do workflow é o registro dos testes.
 
 - **Mensalmente:** restaurar o snapshot mais recente num ambiente isolado de homologação, rodar as
   migrações do Prisma e a suíte de testes de API/E2E contra ele, e conferir contagens de usuários,

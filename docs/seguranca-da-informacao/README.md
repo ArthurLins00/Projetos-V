@@ -318,6 +318,7 @@ login (atrito para o cidadão e serviço externo no app mobile); bloqueio perman
 | Bloqueio da conta por 15 min após 5 senhas erradas seguidas (também para e-mail inexistente) | ✅ Implementado | `authService.ts` (`login`) |
 | Cabeçalhos de segurança com `helmet` (HSTS, `nosniff`, `X-Frame-Options`, CSP) | ✅ Implementado | `security.ts`, `app.ts` |
 | HTTPS/TLS 1.2+ na frente da API | ✅ Implementado no deploy | Caddy com Let's Encrypt em [`docs/deploy/`](../deploy/README.md) |
+| Backup cifrado (AES-256) do banco e das fotos, com SHA-256 e rotação; restauração testada a cada execução do workflow Docker | ✅ Implementado | [`scripts/backup.sh`](../../scripts/backup.sh), [`scripts/restore.sh`](../../scripts/restore.sh), [`docker.yml`](../../.github/workflows/docker.yml) |
 | TOTP obrigatório para Gestor e Admin | 🟡 Especificado | Atividade 1 (hoje: e-mail, opcional) |
 | Senha com 8+ caracteres e 4 classes | 🟡 Especificado | Atividade 1 (o backend exige hoje 6+ caracteres) |
 | Troca periódica de senha (Gestor 90 dias, Admin 60) | 🟡 Especificado | Atividade 1 |
