@@ -17,6 +17,9 @@ updates:
       # Os tipos do Node acompanham a versão que roda o projeto (Node 22, a mesma do CI e do Docker)
       - dependency-name: '@types/node'
         update-types: [version-update:semver-major]
+      # O jest-mock-extended 4 só aceita TypeScript até a 6 (peer dependency); o TS 7 quebra o npm ci
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
     groups:
       backend-minor-patch:
         update-types: [minor, patch]
