@@ -24,7 +24,7 @@
 
 | Unidade | Entrega | Onde está |
 |---|---|---|
-| U1 | Plano de Testes, casos modelados, backlog priorizado e registro dos prompts com revisão crítica | [`Template_Plano_de_Testes_e_Backlog.md`](Template_Plano_de_Testes_e_Backlog.md), [`ia/`](ia) |
+| U1 | Plano de Testes, casos modelados, backlog priorizado e registro dos prompts com revisão crítica | [`Template_Plano_de_Testes_e_Backlog.md`](Template_Plano_de_Testes_e_Backlog.md), [`ia/`](ia); primeira versão do plano em [`plano_de_testes_e_backlog_de_automacao.md`](plano_de_testes_e_backlog_de_automacao.md) e comparação de ferramentas em [`Tabela_de_Comparacao_de_Ferramentas.pdf`](Tabela_de_Comparacao_de_Ferramentas.pdf) (cópias do Google Drive) |
 | U1 | Testes de unidade e de API executando localmente de forma reprodutível | [`backend/src/tests`](../../backend/src/tests), `npm run test:unit`, `npm run test:api` |
 | U2 | Pipeline de testes por commit/PR (*Continuous Testing*) com Quality Gate | [`ci.yml`](../../.github/workflows/ci.yml), [`push.yml`](../../.github/workflows/push.yml), [`regressao.yml`](../../.github/workflows/regressao.yml), [TESTES.md › 2.1](TESTES.md#21-pipeline-no-github-actions) |
 | U2 | Suíte E2E dos fluxos principais sobre o app integrado ao backend real | [`e2e/`](../../e2e) (Playwright), [`mobile/e2e`](../../mobile/e2e) (Maestro) |
