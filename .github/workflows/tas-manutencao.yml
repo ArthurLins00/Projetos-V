@@ -35,10 +35,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             await require('./.github/scripts/tas/policy.js').syncLabels({ github, context, core });
@@ -49,14 +49,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Verifica a TAS
         # Avisos e erros entram no sumário; aqui o job não falha, quem cobra é a issue
         run: node .github/scripts/tas/check-tas.mjs --json tas-check.json || true
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const policy = require('./.github/scripts/tas/policy.js');
@@ -70,8 +70,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Verifica a TAS
@@ -80,7 +80,7 @@ jobs:
         run: >
           npx --yes jscpd@4.0.5 backend/src/tests e2e ai-agent/tests
           --min-lines 8 --reporters json --output jscpd --silent || true
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const policy = require('./.github/scripts/tas/policy.js');
