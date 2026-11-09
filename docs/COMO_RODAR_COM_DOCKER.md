@@ -283,3 +283,6 @@ Este compose é para **desenvolvimento e demonstração**. Em produção (ver
 `NODE_ENV=production` com `ALLOWED_ORIGINS`, `JWT_SECRET` e senhas fortes vindas de um cofre de segredos,
 banco gerenciado com backup e réplica em vez do container `postgres`, HTTPS na frente da API, fotos em
 armazenamento de objetos, `SEED_ON_START=false` e sem publicar as portas do banco e do Redis.
+
+Para colocar este mesmo compose no ar em um servidor, com HTTPS e portas fechadas, para a demonstração da
+faculdade, veja [`deploy/`](deploy/README.md).

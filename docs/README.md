@@ -21,6 +21,7 @@ alternativas foram descartadas**.
 |---|---|
 | [`../README.md`](../README.md) | Visão geral do produto e como rodar tudo |
 | [`COMO_RODAR_COM_DOCKER.md`](COMO_RODAR_COM_DOCKER.md) | Instalar o Docker e subir PostgreSQL, Redis, backend e agente de IA em containers |
+| [`deploy/`](deploy/README.md) | Colocar o Fiscalize no ar para a demonstração: servidor gratuito, domínio, HTTPS, APK Android e TestFlight |
 | [`../backend/COMO_RODAR_O_BACK.md`](../backend/COMO_RODAR_O_BACK.md) | Configurar e rodar o backend sem Docker |
 | [`testes-automatizados/TESTES.md`](testes-automatizados/TESTES.md) | Estratégia, execução e catálogo completo dos testes |
 | [`../backend/README.md`](../backend/README.md) | Perfis, permissões, rotas e variáveis de ambiente da API |
