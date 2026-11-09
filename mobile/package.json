@@ -40,5 +40,9 @@
     "build:apk": "npx eas-cli build --platform android --profile preview",
     "update:preview": "npx eas-cli update --channel preview --environment preview"
   },
+  "overrides": {
+    "glob": "^14.0.4",
+    "minimatch": "^11.0.5"
+  },
   "private": true
 }
