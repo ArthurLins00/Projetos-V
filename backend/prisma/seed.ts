@@ -1,6 +1,6 @@
 import { prisma } from '../src/config/prisma';
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { tipo_orgao, prioridade } from '@prisma/client';
 
 const CATEGORIAS = [
@@ -387,7 +387,7 @@ async function seed() {
 
     if (!adminExistente) {
       const senhaHash = await bcrypt.hash(adminPassword, 10)
-      const adminId = uuidv4()
+      const adminId = randomUUID()
 
       const usuarioAdmin = await prisma.usuario.create({
         data: {
