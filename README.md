@@ -186,7 +186,7 @@ no Google Drive, organizada em uma subpasta por disciplina:
 | Desenvolvimento mobile | [`docs/desenvolvimento-mobile/`](docs/desenvolvimento-mobile/README.md) |
 | IA aplicada | [`docs/ia-aplicada/`](docs/ia-aplicada/README.md) |
 | Negócios para a internet | [`docs/negocios-na-internet/`](docs/negocios-na-internet/README.md) |
-| Projetos 5 | [`docs/projeto-5/`](docs/projeto-5/README.md) |
+| Projetos 5 - acompanhamento | [`docs/projeto-5/`](docs/projeto-5/README.md) |
 | Segurança da informação | [`docs/seguranca-da-informacao/`](docs/seguranca-da-informacao/README.md) |
 | Testes automatizados | [`docs/testes-automatizados/`](docs/testes-automatizados/README.md) |
 
