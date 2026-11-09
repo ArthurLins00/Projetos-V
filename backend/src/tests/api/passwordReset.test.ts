@@ -42,11 +42,11 @@ describe('Recuperação de senha (API)', () => {
 
     const reset = await request(app)
       .post('/auth/reset-password')
-      .send({ email: usuario.email, codigo: codigoEnviado(), novaSenha: 'senhaNova123' });
+      .send({ email: usuario.email, codigo: codigoEnviado(), novaSenha: 'SenhaNova@123' });
 
     expect(reset.status).toBe(200);
     const novoHash = prisma.usuario.update.mock.calls[0][0].data.senha as string;
-    expect(bcrypt.compareSync('senhaNova123', novoHash)).toBe(true);
+    expect(bcrypt.compareSync('SenhaNova@123', novoHash)).toBe(true);
   });
 
   it('[TC-49] responde 200 sem enviar e-mail quando o usuário não existe', async () => {
@@ -65,17 +65,17 @@ describe('Recuperação de senha (API)', () => {
 
     const invalido = await request(app)
       .post('/auth/reset-password')
-      .send({ email: usuario.email, codigo: errado, novaSenha: 'senhaNova123' });
+      .send({ email: usuario.email, codigo: errado, novaSenha: 'SenhaNova@123' });
     expect(invalido.status).toBe(400);
 
     const ok = await request(app)
       .post('/auth/reset-password')
-      .send({ email: usuario.email, codigo, novaSenha: 'senhaNova123' });
+      .send({ email: usuario.email, codigo, novaSenha: 'SenhaNova@123' });
     expect(ok.status).toBe(200);
 
     const reuso = await request(app)
       .post('/auth/reset-password')
-      .send({ email: usuario.email, codigo, novaSenha: 'outraSenha123' });
+      .send({ email: usuario.email, codigo, novaSenha: 'OutraSenha@123' });
     expect(reuso.status).toBe(400);
   });
 
@@ -85,12 +85,12 @@ describe('Recuperação de senha (API)', () => {
     const errado = codigo === '000000' ? '111111' : '000000';
 
     for (let i = 0; i < 5; i++) {
-      await request(app).post('/auth/reset-password').send({ email: usuario.email, codigo: errado, novaSenha: 'senhaNova123' });
+      await request(app).post('/auth/reset-password').send({ email: usuario.email, codigo: errado, novaSenha: 'SenhaNova@123' });
     }
 
     const response = await request(app)
       .post('/auth/reset-password')
-      .send({ email: usuario.email, codigo, novaSenha: 'senhaNova123' });
+      .send({ email: usuario.email, codigo, novaSenha: 'SenhaNova@123' });
     expect(response.status).toBe(400);
     expect(prisma.usuario.update).not.toHaveBeenCalled();
   });

@@ -10,13 +10,13 @@ const { app } = require('../../app');
 
 describe('Cadastro com DEMO_MODE: senha já usada por outra conta (API)', () => {
   const ROUTE = '/auth/register';
-  const novo = { nome: 'Nova Pessoa', email: 'nova@example.com', senha: 'senhaRepetida1' };
+  const novo = { nome: 'Nova Pessoa', email: 'nova@example.com', senha: 'SenhaRepetida@1' };
 
   beforeEach(() => {
     prisma.usuario.findUnique.mockResolvedValue(null);
     prisma.usuario.findMany.mockResolvedValue([
       { email: 'outra@example.com', senha: bcrypt.hashSync('outraSenha1', 4) },
-      { email: 'dono@example.com', senha: bcrypt.hashSync('senhaRepetida1', 4) },
+      { email: 'dono@example.com', senha: bcrypt.hashSync('SenhaRepetida@1', 4) },
     ] as any);
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma));
     prisma.usuario.create.mockResolvedValue({ id: 'uuid-novo', ...novo, perfil: 'Cidadao' } as any);
@@ -31,7 +31,7 @@ describe('Cadastro com DEMO_MODE: senha já usada por outra conta (API)', () => 
     const response = await request(app).post(ROUTE).send(novo);
 
     expect(response.status).toBe(409);
-    expect(response.body.details).toEqual({ senhaEmUso: { email: 'dono@example.com', senha: 'senhaRepetida1' } });
+    expect(response.body.details).toEqual({ senhaEmUso: { email: 'dono@example.com', senha: 'SenhaRepetida@1' } });
     expect(prisma.usuario.create).not.toHaveBeenCalled();
   });
 
@@ -43,7 +43,7 @@ describe('Cadastro com DEMO_MODE: senha já usada por outra conta (API)', () => 
   });
 
   it('[TC-40] cria o usuário direto quando a senha não se repete', async () => {
-    const response = await request(app).post(ROUTE).send({ ...novo, senha: 'senhaInedita9' });
+    const response = await request(app).post(ROUTE).send({ ...novo, senha: 'SenhaInedita@9' });
 
     expect(response.status).toBe(201);
   });

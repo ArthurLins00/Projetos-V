@@ -313,6 +313,7 @@ describe('Ciclo de vida dos usuários e auditoria (/admin)', () => {
   it.each([
     ['campos faltando', { name: 'X' }, 400],
     ['perfil Admin', { name: 'X', email: 'x@t.com', password: 'Senha@123', role: 'Admin' }, 400],
+    ['senha fora da política (sem símbolo)', { name: 'X', email: 'x@t.com', password: 'Senha1234', role: 'Gestor' }, 400],
   ])('[TC-66] recusa criação com %s', async (_caso, payload, status) => {
     mockUsuarios();
 

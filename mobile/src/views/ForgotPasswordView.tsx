@@ -45,7 +45,7 @@ export function ForgotPasswordView() {
             testID="forgot-password"
             label="Nova senha"
             icon="lock-closed-outline"
-            placeholder="Mínimo de 6 caracteres"
+            placeholder="Mín. 8, com A-Z, a-z, 0-9 e símbolo"
             value={vm.password}
             onChangeText={vm.setPassword}
             secureTextEntry

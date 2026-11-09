@@ -5,6 +5,7 @@ import { notificationService } from '../services/notificationService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { isProduction } from '../config/env';
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../utils/passwordPolicy';
 
 function setTokenCookie(res: Response, token: string) {
   const { exp } = jwt.decode(token) as { exp: number };
@@ -52,8 +53,8 @@ export const authController = {
         throw new AppError(400, 'E-mail inválido');
       }
       
-      if (senha.length < 6) {
-        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      if (!meetsPasswordPolicy(senha)) {
+        throw new AppError(400, PASSWORD_POLICY_MESSAGE);
       }
       
       const usuario = await authService.register(nome, email, senha, ignorarSenhaRepetida === true);
@@ -199,8 +200,8 @@ export const authController = {
         throw new AppError(400, 'Código inválido ou expirado.');
       }
 
-      if (typeof novaSenha !== 'string' || novaSenha.length < 6) {
-        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      if (!meetsPasswordPolicy(novaSenha)) {
+        throw new AppError(400, PASSWORD_POLICY_MESSAGE);
       }
 
       await authService.resetPassword(String(email).trim(), codigo.trim(), novaSenha);
@@ -389,8 +390,8 @@ export const authController = {
         throw new AppError(400, 'E-mail inválido');
       }
 
-      if (novaSenha !== undefined && (typeof novaSenha !== 'string' || novaSenha.length < 6)) {
-        throw new AppError(400, 'Senha deve ter no mínimo 6 caracteres');
+      if (novaSenha !== undefined && !meetsPasswordPolicy(novaSenha)) {
+        throw new AppError(400, PASSWORD_POLICY_MESSAGE);
       }
 
       const usuario = await authService.updateProfile(usuarioId, {

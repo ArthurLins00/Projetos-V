@@ -228,31 +228,37 @@ Problemas comuns:
 - Faça login com o admin e confirme que a senha padrão não está em uso.
 - Mantenha o SSH só com chave (padrão na Oracle) e não publique o `.env` em lugar nenhum.
 
-### 6.2 Backup diário do banco
+### 6.2 Backup diário do banco e das fotos
 
-Crie a pasta e agende um `pg_dump` diário às 3h, guardando os últimos 7 dias:
+O [`scripts/backup.sh`](../../scripts/backup.sh) copia o banco e as fotos, cifra com AES-256 quando recebe
+`BACKUP_PASSPHRASE`, grava as somas SHA-256 e apaga as cópias com mais de 7 dias. Política completa na
+[Atividade 5 de Segurança](../seguranca-da-informacao/05_Backup_e_Continuidade_de_Operacao.md#35-implementação-no-ambiente-atual-docker-compose).
+
+Guarde a senha das cópias num arquivo legível só pelo seu usuário (e também fora do servidor: sem ela, a
+cópia não abre) e agende o backup às 3h:
 
 ```bash
 mkdir -p ~/backups
+openssl rand -base64 32 > ~/.fiscalize-backup-pass && chmod 600 ~/.fiscalize-backup-pass
 crontab -e
 ```
 
 Acrescente a linha (ajuste o caminho se clonou em outro lugar):
 
 ```cron
-0 3 * * * cd ~/Projetos-V && docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' | gzip > ~/backups/fiscalize-$(date +\%F).sql.gz && find ~/backups -name 'fiscalize-*.sql.gz' -mtime +7 -delete
+0 3 * * * cd ~/Projetos-V && BACKUP_PASSPHRASE="$(cat ~/.fiscalize-backup-pass)" scripts/backup.sh ~/backups >> ~/backups/backup.log 2>&1
 ```
 
-As fotos ficam no volume `uploads`. Para copiá-las junto (opcional):
+Teste uma vez à mão (`BACKUP_PASSPHRASE="$(cat ~/.fiscalize-backup-pass)" scripts/backup.sh ~/backups`) e
+confira os arquivos `fiscalize-<data>-db.sql.gz.gpg`, `fiscalize-<data>-uploads.tar.gz.gpg` e
+`fiscalize-<data>.sha256`. Copie-os de tempos em tempos para fora do servidor (por exemplo, o Google Drive da
+equipe).
+
+Restaurar a cópia mais recente (substitui o banco e as fotos atuais; pede confirmação):
 
 ```bash
-docker run --rm -v fiscalize_uploads:/dados -v ~/backups:/destino alpine tar czf /destino/uploads-$(date +%F).tar.gz -C /dados .
-```
-
-Restaurar o banco a partir de um backup:
-
-```bash
-gunzip -c ~/backups/fiscalize-AAAA-MM-DD.sql.gz | docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" "$POSTGRES_DB"'
+cd ~/Projetos-V
+BACKUP_PASSPHRASE="$(cat ~/.fiscalize-backup-pass)" scripts/restore.sh latest ~/backups
 ```
 
 ### 6.3 Atualizar para uma versão nova

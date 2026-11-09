@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
 
 type PasswordOwner = { email: string; senha: string };
 
@@ -23,6 +24,9 @@ export function useRegisterViewModel() {
   const register = async (ignorarSenhaRepetida = false) => {
     if (!name || !email || !password) {
       return Alert.alert('Erro', 'Preencha todos os campos.');
+    }
+    if (!meetsPasswordPolicy(password)) {
+      return Alert.alert('Senha fraca', PASSWORD_POLICY_MESSAGE);
     }
     try {
       setLoading(true);

@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
 
 type Step = 'email' | 'reset';
 
@@ -38,8 +39,8 @@ export function useForgotPasswordViewModel() {
     if (!/^\d{6}$/.test(code.trim())) {
       return Alert.alert('Erro', 'O código deve ter 6 dígitos.');
     }
-    if (password.length < 6) {
-      return Alert.alert('Erro', 'A senha deve ter no mínimo 6 caracteres.');
+    if (!meetsPasswordPolicy(password)) {
+      return Alert.alert('Senha fraca', PASSWORD_POLICY_MESSAGE);
     }
     if (password !== confirmPassword) {
       return Alert.alert('Erro', 'As senhas não coincidem.');

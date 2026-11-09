@@ -3,7 +3,9 @@ name: Docker
 # Valida o ambiente do Docker (compose.yaml e Dockerfiles) do jeito que o guia docs/COMO_RODAR_COM_DOCKER.md manda usar:
 # constrói as imagens, sobe PostgreSQL, Redis e backend, confere o /health, o seed (login dos usuários de teste) e
 # roda os E2E do Playwright contra os containers. O agente de IA é construído e iniciado com uma chave falsa só
-# para confirmar que o serviço sobe. Roda quando algo que entra nas imagens muda, na regressão diária e sob demanda.
+# para confirmar que o serviço sobe. Por fim, testa a restauração (Atividade 5 de Segurança): faz o backup com
+# scripts/backup.sh, simula a perda do banco e das fotos, restaura com scripts/restore.sh e confere que os dados
+# voltaram. Roda quando algo que entra nas imagens muda, na regressão diária e sob demanda.
 on:
   pull_request:
     branches: [main, dev]
@@ -14,6 +16,7 @@ on:
       - ai-agent/**
       - e2e/**
       - playwright.config.ts
+      - scripts/**
       - .github/workflows/docker.yml
   push:
     branches: [main, dev]
@@ -24,6 +27,7 @@ on:
       - ai-agent/**
       - e2e/**
       - playwright.config.ts
+      - scripts/**
       - .github/workflows/docker.yml
   workflow_call:
   workflow_dispatch:
@@ -103,6 +107,77 @@ jobs:
         run: |
           npm ci
           npm run test:e2e
+
+      # Teste de restauração: os E2E acima deixaram usuários, chamados e fotos no banco e no volume
+      - name: Backup, perda simulada e restauração
+        env:
+          BACKUP_PASSPHRASE: senha-do-teste-de-restauracao
+          BACKUP_DIR: ${{ runner.temp }}/backups
+        run: |
+          sql() {
+            docker compose exec -T postgres sh -c 'psql -tA -F"|" -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+          }
+          snapshot() {
+            sql <<'SQL' | tr -d '[:space:]'
+          SELECT (SELECT count(*) FROM usuario), (SELECT count(*) FROM chamado),
+                 (SELECT count(*) FROM chamado_foto), (SELECT count(*) FROM timeline_event);
+          SQL
+            echo -n "|"
+            docker compose exec -T backend sh -c 'find /app/uploads -type f | wc -l' | tr -d '[:space:]'
+          }
+
+          antes=$(snapshot)
+          echo "Antes do backup (usuários|chamados|fotos|eventos|arquivos): $antes"
+          [ "$(echo "$antes" | cut -d'|' -f3)" -gt 0 ] || { echo "::error::Os E2E não deixaram fotos para testar a restauração"; exit 1; }
+
+          inicio=$(date +%s)
+          bash scripts/backup.sh
+          ls -l "$BACKUP_DIR"
+          ls "$BACKUP_DIR"/*.gpg > /dev/null
+
+          echo "Simulando a perda: apaga o schema do banco e as fotos"
+          echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' | sql > /dev/null
+          docker compose exec -T backend sh -c 'find /app/uploads -mindepth 1 -delete'
+          if curl -fsS -X POST "$E2E_API_URL/auth/login" -H 'Content-Type: application/json' \
+               -d '{"email":"cidadao@fiscalize.gov.br","senha":"Cidadao@123456"}' > /dev/null; then
+            echo "::error::O login ainda funciona depois de apagar o banco; a perda não foi simulada"; exit 1
+          fi
+
+          # Uma cópia adulterada tem que ser recusada antes de tocar no banco
+          cp -r "$BACKUP_DIR" "$RUNNER_TEMP/adulterada"
+          echo x >> "$(ls "$RUNNER_TEMP"/adulterada/*-db.sql.gz.gpg)"
+          if bash scripts/restore.sh --yes latest "$RUNNER_TEMP/adulterada"; then
+            echo "::error::A restauração aceitou uma cópia com soma SHA-256 errada"; exit 1
+          fi
+
+          bash scripts/restore.sh --yes latest
+          duracao=$(( $(date +%s) - inicio ))
+
+          depois=$(snapshot)
+          echo "Depois da restauração: $depois"
+          [ "$antes" = "$depois" ] || { echo "::error::Os dados restaurados não batem com os de antes ($antes → $depois)"; exit 1; }
+
+          curl -fsS "$E2E_API_URL/health" | jq -e '.status == "ok"' > /dev/null
+          curl -fsS -X POST "$E2E_API_URL/auth/login" -H 'Content-Type: application/json' \
+            -d '{"email":"cidadao@fiscalize.gov.br","senha":"Cidadao@123456"}' | jq -e '.token | length > 0' > /dev/null
+          foto=$(echo 'SELECT url FROM chamado_foto LIMIT 1;' | sql | tr -d '[:space:]')
+          curl -fsS -o /dev/null "$E2E_API_URL$foto"
+
+          IFS='|' read -r usuarios chamados fotos eventos arquivos <<< "$depois"
+          {
+            echo "### 💾 Teste de restauração"
+            echo
+            echo "| | Antes | Depois da restauração |"
+            echo "|---|---|---|"
+            echo "| Usuários | $(echo "$antes" | cut -d'|' -f1) | $usuarios |"
+            echo "| Chamados | $(echo "$antes" | cut -d'|' -f2) | $chamados |"
+            echo "| Fotos no banco | $(echo "$antes" | cut -d'|' -f3) | $fotos |"
+            echo "| Eventos da linha do tempo | $(echo "$antes" | cut -d'|' -f4) | $eventos |"
+            echo "| Arquivos de foto | $(echo "$antes" | cut -d'|' -f5) | $arquivos |"
+            echo
+            echo "Backup cifrado (AES-256) → banco e fotos apagados → cópia adulterada recusada → restauração em **${duracao} s**;"
+            echo "health check, login e download de foto funcionando depois. Meta de RTO da Atividade 5: 30 min para falha do banco."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sumário
         if: ${{ !cancelled() }}

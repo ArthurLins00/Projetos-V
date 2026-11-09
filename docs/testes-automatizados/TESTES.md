@@ -3,8 +3,8 @@
 Este documento descreve a estratégia, o ambiente, os comandos e o catálogo completo dos testes
 automatizados do projeto (backend, app mobile e agente de IA).
 
-**Situação em 09/11/2026:** 431 testes automatizados: 133 unitários e
-239 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
+**Situação em 09/11/2026:** 438 testes automatizados: 133 unitários e
+246 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
 branches), além de 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado) e 3 fluxos de tela (Maestro)
 no emulador do CI, conforme a última execução da pipeline. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
 rodam ao vivo contra o Gemini só na regressão diária.
@@ -22,7 +22,7 @@ e completos no topo.
               ┌─┴──────────────────────────┴─┐
               │ E2E da API (Playwright) 36   │  backend + banco reais
             ┌─┴──────────────────────────────┴─┐
-            │ API (Jest + Supertest) 239       │  rotas HTTP, banco mockado
+            │ API (Jest + Supertest) 246       │  rotas HTTP, banco mockado
           ┌─┴──────────────────────────────────┴─┐
           │ Unitários (Jest) 133                 │  regras de negócio isoladas
           └──────────────────────────────────────┘
@@ -392,7 +392,7 @@ Chamam as funções diretamente, com o Prisma mockado. As fotos são gravadas nu
 | U-93 | Janela expirada na memória | Contagem recomeça |
 | U-94 | `TRUST_PROXY` vazio, `false`, número, `true` ou lista | Desligado, desligado, número de proxies, `true` ou a lista |
 
-### 3.2 API — `backend/src/tests/api` (239)
+### 3.2 API — `backend/src/tests/api` (246)
 
 Fazem requisições HTTP reais ao app Express (Supertest), passando por todos os middlewares, com o Prisma mockado.
 
@@ -517,8 +517,8 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 
 | ID | Caso | Esperado |
 |---|---|---|
-| A-56 | Campo ausente, e-mail sem `@` ou sem domínio, senha com 5 caracteres | 400 e nada é gravado |
-| A-57 | Senha com 6 e 7 caracteres | 201 |
+| A-56 | Campo ausente, e-mail sem `@` ou sem domínio; senha com 7 ou 73 caracteres; senha sem maiúscula, sem minúscula, sem número ou sem símbolo | 400 com a mensagem da política e nada é gravado |
+| A-57 | Senha forte com 8, 9 e 72 caracteres | 201 |
 
 **`demands.test.ts`: região e remoção de foto (complemento)**
 
@@ -677,7 +677,7 @@ A tabela `refresh_token` é simulada em memória para que a rotação seja verif
 | A-153 | Usuário inexistente | 404 |
 | A-154 | Admin se desativando | 403 "não pode se desativar" |
 | A-155 | Criar gestor | Ativo, senha criptografada e registro de gestor |
-| A-156 | Criar com campos faltando ou perfil Admin | 400 |
+| A-156 | Criar com campos faltando, perfil Admin ou senha fora da política | 400 |
 | A-157 | E-mail já cadastrado | 409 |
 | A-158 | Mudar perfil: inválido, igual, o próprio, inexistente | 400, 409, 403, 404 |
 | A-159 | `GET /admin/audit-logs` | Filtro por ação e admin, com paginação |
