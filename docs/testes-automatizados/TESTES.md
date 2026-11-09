@@ -99,8 +99,12 @@ No GitHub Actions, o workflow **E2E Mobile (Maestro)** (`.github/workflows/mobil
 na regressão diária (veja a seção 2.1) e também pode ser disparado pela aba Actions. Ele
 compila o app de debug, sobe o backend com seed, o Metro e um emulador Android, e publica o relatório JUnit e as
 capturas como artefato `maestro-report`. Não roda no push nem nos PRs, porque leva dezenas de minutos.
-Antes dos fluxos, o script `.github/scripts/run-maestro.sh` faz um aquecimento e reinicia o emulador se o Maestro
-não enxergar o app. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
+O APK de debug fica em cache, com chave pelo `package-lock.json`, `package.json`, `app.json` e `assets/` do app:
+ele não embute o JavaScript (que vem do Metro), então o build do Gradle só roda quando muda uma dependência nativa
+ou a configuração do Expo.
+Antes dos fluxos, o script `.github/scripts/run-maestro.sh` esconde os diálogos de "app não respondendo" do
+emulador (o launcher entrava em ANR e cobria o app), faz um aquecimento e reinicia o emulador se o Maestro não
+enxergar o app. Os fluxos rodam uma vez só, sem nova tentativa automática (como o Playwright, `retries: 0`):
 a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](tas.md)).
 
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos

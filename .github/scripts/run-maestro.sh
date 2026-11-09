@@ -4,6 +4,15 @@ set -euo pipefail
 # Guarda o logcat para o artefato mesmo quando um passo falha
 trap 'adb logcat -d > logcat.txt 2>/dev/null || true' EXIT
 
+# O emulador do CI às vezes deixa um app do sistema (o launcher) em ANR, e o diálogo "isn't responding" fica por
+# cima do app: o login está desenhado atrás, mas o Maestro só enxerga o diálogo. Esconder esses diálogos não
+# esconde falha do Fiscalize: se o app travar ou fechar, os elementos que os fluxos procuram somem do mesmo jeito.
+prepara_emulador() {
+  adb shell settings put global hide_error_dialogs 1 || true
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null || true
+}
+
+prepara_emulador
 adb install -r mobile/android/app/build/outputs/apk/debug/app-debug.apk
 
 warmup() {
@@ -22,6 +31,7 @@ if ! warmup 1; then
     sleep 2
   done
   adb shell input keyevent 82 || true
+  prepara_emulador
   warmup 2
 fi
 
