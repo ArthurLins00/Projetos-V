@@ -196,8 +196,16 @@ export function useDemandFormViewModel(demandId?: string) {
   };
 
   const submit = async () => {
-    if (!title.trim() || !description.trim() || !categoryId || !locationText.trim() || !coords) {
-      return Alert.alert('Erro', 'Preencha todos os campos e capture o GPS.');
+    // Diz exatamente o que falta, em vez de uma mensagem genérica que obriga o usuário a procurar o campo
+    const missing = [
+      !title.trim() && 'título',
+      !categoryId && 'categoria',
+      !locationText.trim() && 'endereço',
+      !description.trim() && 'descrição',
+      !coords && 'localização pelo GPS',
+    ].filter(Boolean);
+    if (missing.length || !categoryId || !coords) {
+      return Alert.alert('Erro', `Falta preencher: ${missing.join(', ')}.`);
     }
     if (!stateUf || !city?.trim() || !zone) {
       return Alert.alert('Erro', 'Informe o estado, a cidade e se o local é de zona urbana ou rural.');

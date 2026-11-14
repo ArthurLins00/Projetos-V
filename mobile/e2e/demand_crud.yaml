@@ -3,7 +3,7 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 ---
 - evalScript: ${output.titulo = 'Maestro poste ' + Date.now()}
 
-- runFlow: ../subflows/login.yaml
+- runFlow: subflows/login.yaml
 
 - tapOn:
     id: "new-demand-button"
@@ -16,10 +16,17 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - tapOn:
     id: "form-title"
 - inputText: ${output.titulo}
+- hideKeyboard
 - tapOn: "Iluminação Pública"
 - tapOn:
     id: "form-address"
 - inputText: "Rua das Flores, 123"
+# Com o teclado aberto a descrição fica escondida atrás dele: fecha e rola até o campo antes de tocar
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "form-description"
+    centerElement: true
 - tapOn:
     id: "form-description"
 - inputText: "Poste apagado ha uma semana"
@@ -35,7 +42,12 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - inputText: "Pernambuco"
 - tapOn:
     id: "form-state-option-PE"
-# A lista de cidades vem do IBGE; se a requisição falhar o form mostra um campo de texto
+# A lista de cidades vem do IBGE; se a requisição falhar ou passar de 8 s o form mostra um campo de texto.
+# Espera o carregamento terminar antes de escolher o caminho, senão o fluxo abre o seletor ainda vazio.
+- extendedWaitUntil:
+    notVisible:
+      id: "form-city-loading"
+    timeout: 15000
 - scrollUntilVisible:
     element:
       id: "form-city(-text)?"
@@ -92,10 +104,12 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
       id: "form-photo"
 - tapOn:
     id: "form-photo"
+# O disparo fica desabilitado até a câmera avisar que está pronta; tocar antes disso é ignorado pelo app
 - extendedWaitUntil:
     visible:
       id: "camera-shutter"
-    timeout: 10000
+      enabled: true
+    timeout: 15000
 - tapOn:
     id: "camera-shutter"
 - extendedWaitUntil:
@@ -137,6 +151,10 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - assertVisible: "Iluminação Pública"
 - assertVisible: "Aberto"
 
+# A foto ocupa o topo do detalhe e empurra os botões para baixo da dobra
+- scrollUntilVisible:
+    element:
+      id: "detail-edit"
 - tapOn:
     id: "detail-edit"
 - extendedWaitUntil:
@@ -158,8 +176,10 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
     visible: "Demanda atualizada com sucesso!"
     timeout: 20000
 - tapOn: "OK"
+# O toque deixa o cursor onde caiu e o eraseText só apaga para trás: o que sobra depois do cursor fica no fim do
+# título. O passo confere que a edição foi salva e aparece no detalhe, não o texto exato
 - extendedWaitUntil:
-    visible: "${output.titulo} editado"
+    visible: "${output.titulo} editado.*"
     timeout: 10000
 
 - scrollUntilVisible:

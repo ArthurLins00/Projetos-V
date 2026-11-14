@@ -6,7 +6,7 @@ automatizados do projeto (backend, app mobile e agente de IA).
 **Situação em 09/11/2026:** 444 testes automatizados: 138 unitários e
 247 de API (executados nesta data, todos passando, com cobertura do backend de 93% das linhas e 83% dos
 branches), além de 36 E2E (Playwright) e 23 do agente de IA (cliente roteirizado) e 3 fluxos de tela (Maestro)
-no emulador do CI, conforme a última execução da pipeline. Outros 2 fluxos Maestro estão em `mobile/e2e/pending/` (veja a seção 2) e 10 testes do agente
+no emulador do CI, conforme a última execução da pipeline. Os 5 fluxos Maestro voltaram a rodar (M-02 e M-05 saíram da quarentena em 14/11/2026, veja a seção 2) e 10 testes do agente
 rodam ao vivo contra o Gemini só na regressão diária.
 
 ---
@@ -109,8 +109,8 @@ a primeira falha reprova o job e abre a issue ([política da TAS, seção 5.4](t
 Os fluxos de `mobile/e2e/subflows/` (login) são chamados pelos outros e não rodam sozinhos
 (configurado em `mobile/e2e/config.yaml`).
 
-Os fluxos em `mobile/e2e/pending/` (`register.yaml` e `demand_crud.yaml`) estão falhando no emulador do CI e
-ficam fora do CI e da regressão até serem corrigidos. Para rodar um deles: `maestro test mobile/e2e/pending/<fluxo>.yaml`.
+Os fluxos `register.yaml` (M-02) e `demand_crud.yaml` (M-05) saíram de `mobile/e2e/pending/` em 14/11/2026, depois de
+corrigidos (histórico na seção 9 de [`tas.md`](tas.md)), e rodam na regressão diária.
 
 ### 2.1 Pipeline no GitHub Actions
 
@@ -149,7 +149,7 @@ principal. O restante dos E2E do Playwright roda no push em `main`/`dev`, e os f
 | Sessão mantida ao reabrir o app (M-03) | `mobile/e2e/session_persistence.yaml` | Sem a sessão salva o cidadão precisaria entrar a cada abertura |
 
 Para rodar só o smoke do Playwright localmente: `npm run test:e2e -- --grep @smoke`. O `register.yaml` (M-02) e o
-`demand_crud.yaml` (M-05) estão em `mobile/e2e/pending/`, fora do CI até serem corrigidos.
+`demand_crud.yaml` (M-05) rodam na regressão diária desde 14/11/2026.
 
 **Agendamento:** o cron do GitHub é em UTC (`0 6 * * *` = 03h em Brasília) e é *best-effort*: em horários de alta
 demanda pode atrasar ou não rodar. Por isso a regressão também pode ser disparada pela aba Actions → *Regressão
@@ -837,10 +837,10 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 | ID | Fluxo | Passos | Onde roda |
 |---|---|---|---|
 | M-01 | `login_invalid_password.yaml` | Senha errada → alerta "Falha no Login" / "Credenciais inválidas." → continua na tela de login | PR (smoke) e regressão |
-| M-02 | `pending/register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação | Pendente: roteiro assistido |
+| M-02 | `register.yaml` | Cadastro pela tela → alerta de sucesso → login com a conta nova → lista vazia com a saudação | Regressão |
 | M-03 | `session_persistence.yaml` | Login → fechar e reabrir o app → continua logado | PR (smoke) e regressão |
 | M-04 | `logout.yaml` | Login → Perfil → "Sair da conta" → confirmar → tela de login → reabrir o app → continua deslogado | Regressão |
-| M-05 | `pending/demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista | Pendente: roteiro assistido |
+| M-05 | `demand_crud.yaml` | Nova demanda (categoria, estado/cidade/zona, GPS simulado, foto pela câmera) → salvar → pesquisar na lista → detalhe → editar título → excluir com confirmação → some da lista | Regressão |
 
 Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os termos de uso quando a tela aparece.
 
