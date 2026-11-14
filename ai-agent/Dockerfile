@@ -9,6 +9,9 @@ RUN npm ci
 
 COPY . .
 
+# Sem root: o agente só lê o próprio código
+USER node
+
 # Dentro do container o serviço escuta em todas as interfaces; o compose não publica a porta no host,
 # então ele só é alcançável pela rede interna (pelo backend)
 ENV AI_AGENT_HOST=0.0.0.0 \
