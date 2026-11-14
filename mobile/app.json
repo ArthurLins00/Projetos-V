@@ -70,15 +70,7 @@
           "locationWhenInUsePermission": "O Fiscalize usa sua localização para registrar onde a ocorrência aconteceu."
         }
       ],
-      "expo-font",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "usesCleartextTraffic": true
-          }
-        }
-      ]
+      "expo-font"
     ],
     "extra": {
       "router": {

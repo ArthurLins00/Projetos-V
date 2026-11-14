@@ -173,8 +173,9 @@ npm run build:apk
 ```
 
 Ao terminar, o EAS mostra o link e o QR code para baixar o APK; os builds ficam listados em
-`npx eas-cli build:list`. O `usesCleartextTraffic` (plugin `expo-build-properties`) libera HTTP sem TLS
-no Android para o APK falar com o backend local; em produção use uma URL HTTPS e remova essa opção.
+`npx eas-cli build:list`. O `usesCleartextTraffic` (plugin `expo-build-properties`, em [`app.config.js`](app.config.js))
+libera HTTP sem TLS no Android para o APK falar com o backend local; ele desliga sozinho no perfil `production`
+e quando a `EXPO_PUBLIC_API_URL` é HTTPS.
 Push remoto também passa a funcionar no APK (no Expo Go do Android não funciona desde o SDK 53).
 
 #### Pelo GitHub Actions (workflow *Build do APK*)

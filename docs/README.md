@@ -9,7 +9,7 @@ alternativas foram descartadas**.
 |---|---|---|---|
 | 1 | Desenvolvimento Mobile | [`desenvolvimento-mobile/`](desenvolvimento-mobile/README.md) | React Native + Expo, MVVM, Expo Router, câmera e GPS, push, EAS; backend Express + Prisma + PostgreSQL |
 | 2 | Segurança da Informação | [`seguranca-da-informacao/`](seguranca-da-informacao/README.md) | Atividades 1 a 6, modelo de autenticação, **explicação das cifras** (bcrypt, HMAC-SHA-256, SHA-256, TLS/AES-GCM, Keystore/Keychain), implementado × especificado |
-| 3 | Negócios na Internet | [`negocios-na-internet/`](negocios-na-internet/README.md) | Modelo SaaS B2G, canvas, plano de sustentabilidade, KPIs e aspectos legais |
+| 3 | Negócios na Internet | [`negocios-na-internet/`](negocios-na-internet/README.md) | Modelo SaaS B2G, canvas, personas, stakeholders e jornada, plano de sustentabilidade, KPIs e aspectos legais |
 | 4 | Engenharia e Ciência de Dados e Big Data | [`engenharia-de-dados/`](engenharia-de-dados/README.md) | ETL das demandas, consolidação agendada, cache Redis, painel de indicadores |
 | 5 | Testes Automatizados | [`testes-automatizados/`](testes-automatizados/README.md) | Plano de testes, pirâmide (Jest, Supertest, Playwright, Maestro), CI/CD, métricas, política da TAS |
 | 6 | Projeto 5 | [`projeto-5/`](projeto-5/README.md) | Equipe, integração entre disciplinas, calendário, processo com forks, PRs e Quality Gate |

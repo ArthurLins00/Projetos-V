@@ -70,7 +70,7 @@ const CORRECOES = {
   'SEC-05': 'Compare códigos de 2FA, de recuperação e o x-agent-secret com crypto.timingSafeEqual sobre buffers do mesmo tamanho, nunca com ===.',
   'SEC-06': "Troque Math.random() por crypto.randomInt / crypto.randomBytes (de 'node:crypto') nos pontos indicados; no sufixo do protocolo, randomInt(36 ** 4).toString(36).",
   'SEC-07': 'Guarde tokens e dados de sessão com SecureStore.setItemAsync (expo-secure-store); o AsyncStorage só pode ser usado em mobile/src/services/offlineCache.ts, para dados de leitura.',
-  'SEC-08': 'Antes de publicar o app, aponte EXPO_PUBLIC_API_URL para uma URL HTTPS e remova "usesCleartextTraffic": true do plugin expo-build-properties em mobile/app.json.',
+  'SEC-08': 'Tire "usesCleartextTraffic": true do mobile/app.json e libere HTTP só fora do perfil production em mobile/app.config.js; no build production, EXPO_PUBLIC_API_URL precisa ser HTTPS.',
   'SEC-09': 'Volte a usar a lista ALLOWED_ORIGINS (getAllowedOrigins) em backend/src/config/cors.ts; nunca origin "*" ou true com credenciais.',
   'SEC-10': 'Mantenha em backend/src/config/env.ts o erro que impede DEMO_MODE=true junto com NODE_ENV=production.',
   'SEC-11': 'Valide as fotos com detectImageExtension (assinatura de bytes) antes de gravar e mantenha o limite de express.json (15 MB só nas rotas de foto).',
@@ -169,14 +169,23 @@ export function checkControls() {
       : 'O app usa AsyncStorage fora do cache offline, ou o cache offline toca em tokens. AsyncStorage grava em texto puro: tokens e dados de sessão devem ir para o SecureStore.',
   });
 
+  // HTTP sem TLS só é aceitável fora do build de produção: app.json não pode ligar para todos os builds, e o
+  // app.config.js precisa desligar no perfil production (EAS_BUILD_PROFILE) e quando a URL da API é HTTPS
   const cleartext = grep('mobile/app.json', /"usesCleartextTraffic"\s*:\s*true/);
+  const appConfig = read('mobile/app.config.js');
+  const cleartextSoForaDaProducao =
+    /usesCleartextTraffic\s*:\s*!\s*SO_HTTPS/.test(appConfig) && /EAS_BUILD_PROFILE\s*===\s*'production'/.test(appConfig);
+  const cleartextSempre = grep('mobile/app.config.js', /usesCleartextTraffic\s*:\s*true/);
+  const httpsOk = !cleartext.length && !cleartextSempre.length;
   add({
     id: 'SEC-08', area: 'Aplicativo', titulo: 'App aceita só conexões HTTPS', asvs: 'MASVS NETWORK-1',
-    status: cleartext.length ? 'aviso' : 'ok',
-    evidencias: ev(cleartext),
-    explicacao: cleartext.length
-      ? 'O APK aceita HTTP sem TLS (usesCleartextTraffic) para falar com o backend local nas demonstrações. Antes de publicar, use uma URL HTTPS e remova essa opção.'
-      : 'O app só aceita conexões HTTPS.',
+    status: httpsOk ? 'ok' : 'aviso',
+    evidencias: ev(httpsOk ? grep('mobile/app.config.js', /usesCleartextTraffic/) : [...cleartext, ...cleartextSempre]),
+    explicacao: httpsOk
+      ? cleartextSoForaDaProducao
+        ? 'O build production, e qualquer build com EXPO_PUBLIC_API_URL em HTTPS, aceita só HTTPS. HTTP sem TLS fica liberado apenas nos builds que falam com o backend local (desenvolvimento e demonstração).'
+        : 'O app só aceita conexões HTTPS.'
+      : 'O APK aceita HTTP sem TLS (usesCleartextTraffic) em todos os builds. Libere só fora do perfil production, como em mobile/app.config.js.',
   });
 
   // ---------- API ----------
