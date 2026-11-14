@@ -45,8 +45,12 @@ export const TECNOLOGIAS = [
     caminhos: ['backend/tsconfig.json', 'mobile/tsconfig.json', 'ai-agent/tsconfig.json'],
   },
   { id: 'expo-router', nome: 'Expo Router', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.3' }], pacotes: { mobile: ['expo-router'] } },
-  { id: 'context-api', nome: 'Context API + hooks', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.4' }], caminhos: ['mobile/src/contexts', 'mobile/src/viewmodels'] },
+  { id: 'zustand', nome: 'Zustand + Context API', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.4' }], pacotes: { mobile: ['zustand'] }, caminhos: ['mobile/src/stores', 'mobile/src/contexts', 'mobile/src/viewmodels'] },
   { id: 'expo-secure-store', nome: 'expo-secure-store', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.5' }, { d: 'seg', secao: '3.6' }], pacotes: { mobile: ['expo-secure-store'] } },
+  {
+    id: 'offline', nome: 'AsyncStorage + NetInfo (modo offline)', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.5.1' }],
+    pacotes: { mobile: ['@react-native-async-storage/async-storage', '@react-native-community/netinfo'] },
+  },
   { id: 'axios', nome: 'axios', categoria: 'Aplicativo mobile', fontes: [{ d: 'mob', secao: '3.6' }], pacotes: { mobile: ['axios'], backend: ['axios'] } },
   {
     id: 'recursos-dispositivo', nome: 'expo-location, expo-camera e expo-image-picker', categoria: 'Aplicativo mobile',
