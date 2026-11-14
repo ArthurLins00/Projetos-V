@@ -35,7 +35,12 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - inputText: "Pernambuco"
 - tapOn:
     id: "form-state-option-PE"
-# A lista de cidades vem do IBGE; se a requisição falhar o form mostra um campo de texto
+# A lista de cidades vem do IBGE; se a requisição falhar ou passar de 8 s o form mostra um campo de texto.
+# Espera o carregamento terminar antes de escolher o caminho, senão o fluxo abre o seletor ainda vazio.
+- extendedWaitUntil:
+    notVisible:
+      id: "form-city-loading"
+    timeout: 15000
 - scrollUntilVisible:
     element:
       id: "form-city(-text)?"

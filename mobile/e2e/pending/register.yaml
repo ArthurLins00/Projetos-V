@@ -38,11 +38,37 @@ name: "[TC-63] M-02 Cadastro pela tela e login com a conta nova"
     timeout: 10000
 - tapOn: "OK"
 
+# Login direto na tela: o env do cabeçalho do subflows/login.yaml prevalece sobre o passado pelo runFlow,
+# e o fluxo entrava com o cidadão do seed em vez da conta recém-criada
+- extendedWaitUntil:
+    visible:
+      id: "login-email"
+    timeout: 10000
+- tapOn:
+    id: "login-email"
+- eraseText: 60
+- inputText: ${output.email}
+- tapOn:
+    id: "login-password"
+- inputText: "SenhaMaestro@123"
+- hideKeyboard
+- tapOn:
+    id: "login-submit"
+- extendedWaitUntil:
+    visible:
+      id: "terms-accept"
+    timeout: 10000
+    optional: true
 - runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: ${output.email}
-      PASSWORD: "SenhaMaestro@123"
+    when:
+      visible:
+        id: "terms-accept"
+    commands:
+      - tapOn:
+          id: "terms-accept"
+- extendedWaitUntil:
+    visible: "Minhas Demandas"
+    timeout: 15000
 # A saudação tem numberOfLines={1} e pode aparecer truncada no header
 - assertVisible: "Olá, Maestro.*"
 - assertVisible: "Nenhuma demanda registrada ainda."
