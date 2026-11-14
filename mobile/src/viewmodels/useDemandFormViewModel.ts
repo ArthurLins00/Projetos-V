@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
-import { useDemands } from '../contexts/DemandContext';
+import { useDemands } from '../stores/demandStore';
 import { categoryService } from '../services/categoryService';
 import { cityService } from '../services/cityService';
 import { getApiErrorMessage, getPhotoUri } from '../services/api';

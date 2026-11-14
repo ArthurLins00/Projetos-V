@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { useDemands } from '../contexts/DemandContext';
+import { useDemands } from '../stores/demandStore';
 import { notificationsService } from '../services/notificationsService';
 import { getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useDemandFilters } from './useDemandFilters';
+import { useIsOnline } from '../stores/connectivityStore';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -13,7 +14,8 @@ const SEARCH_DEBOUNCE_MS = 400;
 export function useDemandListViewModel() {
   const router = useRouter();
   const { user } = useAuth();
-  const { demands, page, totalPages, loadDemands } = useDemands();
+  const { demands, page, totalPages, fromCache, cachedAt, loadDemands } = useDemands();
+  const isOnline = useIsOnline();
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -70,6 +72,16 @@ export function useDemandListViewModel() {
     }, [fetchPage])
   );
 
+  // Voltou a internet: troca a lista do cache pela do servidor sem o usuário precisar puxar a tela
+  const wasOnline = useRef(isOnline);
+  useEffect(() => {
+    if (isOnline && !wasOnline.current) {
+      refreshUnreadCount();
+      fetchPage(1);
+    }
+    wasOnline.current = isOnline;
+  }, [isOnline, fetchPage, refreshUnreadCount]);
+
   const refresh = () => {
     setRefreshing(true);
     fetchPage(1);
@@ -106,6 +118,9 @@ export function useDemandListViewModel() {
     refreshing,
     loadingMore,
     error,
+    fromCache,
+    cachedAt,
+    isOnline,
     refresh,
     loadMore,
     openDemand,
