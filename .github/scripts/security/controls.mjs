@@ -218,12 +218,19 @@ export function checkControls() {
       : 'Todo acesso ao banco passa pelo Prisma com consultas parametrizadas; não há SQL montado por concatenação.',
   });
 
-  const minPassword = [...read('backend/src/controllers/authController.ts').matchAll(/(?:senha|novaSenha)\.length\s*<\s*(\d+)/g)].map((m) => Number(m[1]));
+  // A regra pode estar inline no controller (senha.length < N) ou na política central (utils/passwordPolicy.ts)
+  const authController = read('backend/src/controllers/authController.ts');
+  const minPassword = [...authController.matchAll(/(?:senha|novaSenha)\.length\s*<\s*(\d+)/g)].map((m) => Number(m[1]));
+  const policyMin = read('backend/src/utils/passwordPolicy.ts').match(/PASSWORD_MIN_LENGTH\s*=\s*(\d+)/);
+  if (policyMin && /meetsPasswordPolicy\(/.test(authController)) minPassword.push(Number(policyMin[1]));
   const weakest = minPassword.length ? Math.min(...minPassword) : null;
   add({
     id: 'SEC-13', area: 'API', titulo: 'Senha com no mínimo 8 caracteres', asvs: 'ASVS V2.1',
     status: weakest !== null && weakest >= 8 ? 'ok' : 'aviso',
-    evidencias: ev(grep('backend/src/controllers/authController.ts', /(?:senha|novaSenha)\.length\s*</)),
+    evidencias: ev([
+      ...grep('backend/src/controllers/authController.ts', /(?:senha|novaSenha)\.length\s*<|meetsPasswordPolicy\(/),
+      ...grep('backend/src/utils/passwordPolicy.ts', /PASSWORD_MIN_LENGTH\s*=/),
+    ]),
     explicacao: weakest !== null && weakest >= 8
       ? `O backend exige senhas com pelo menos ${weakest} caracteres.`
       : `A Atividade 1 especifica 8+ caracteres com 4 classes; o backend aceita hoje a partir de ${weakest ?? '?'} caracteres.`,
