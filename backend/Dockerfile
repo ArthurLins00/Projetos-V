@@ -16,7 +16,12 @@ COPY prisma.config.ts ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run build \
+  && mkdir -p uploads \
+  && chown -R node:node /app/uploads
+
+# Sem root: um invasor que explore a API não ganha o container inteiro. Só uploads/ precisa de escrita
+USER node
 
 ENV PORT=3000
 EXPOSE 3000
