@@ -21,6 +21,12 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - tapOn:
     id: "form-address"
 - inputText: "Rua das Flores, 123"
+# Com o teclado aberto a descrição fica escondida atrás dele: fecha e rola até o campo antes de tocar
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "form-description"
+    centerElement: true
 - tapOn:
     id: "form-description"
 - inputText: "Poste apagado ha uma semana"
