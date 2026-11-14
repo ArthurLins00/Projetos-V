@@ -97,10 +97,12 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
       id: "form-photo"
 - tapOn:
     id: "form-photo"
+# O disparo fica desabilitado até a câmera avisar que está pronta; tocar antes disso é ignorado pelo app
 - extendedWaitUntil:
     visible:
       id: "camera-shutter"
-    timeout: 10000
+      enabled: true
+    timeout: 15000
 - tapOn:
     id: "camera-shutter"
 - extendedWaitUntil:
