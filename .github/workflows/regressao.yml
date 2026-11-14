@@ -20,14 +20,17 @@ jobs:
     with:
       e2e: full
       build: true
-    secrets: inherit
+    secrets:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
 
   ai-agent:
     name: Agente de IA
     uses: ./.github/workflows/ai-agent.yml
     with:
       live: true
-    secrets: inherit
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
   mobile:
     name: Mobile
@@ -36,7 +39,9 @@ jobs:
   maestro:
     name: E2E Mobile (Maestro)
     uses: ./.github/workflows/mobile-e2e.yml
-    secrets: inherit
+    secrets:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
 
   # Vulnerabilidade nova aparece no dia em que é publicada, mesmo sem mudança no código
   dependencias:
