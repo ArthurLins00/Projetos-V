@@ -151,6 +151,10 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - assertVisible: "Iluminação Pública"
 - assertVisible: "Aberto"
 
+# A foto ocupa o topo do detalhe e empurra os botões para baixo da dobra
+- scrollUntilVisible:
+    element:
+      id: "detail-edit"
 - tapOn:
     id: "detail-edit"
 - extendedWaitUntil:
