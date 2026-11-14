@@ -217,8 +217,9 @@ chamadas ao Gemini, Expo Push, Nominatim e IBGE (todas HTTPS) e conexão da apli
 PostgreSQL gerenciado.
 
 **Ressalva do ambiente acadêmico.** No desenvolvimento a API roda em `http://IP:3000`, e o APK de
-teste habilita `usesCleartextTraffic` só para falar com esse backend local. Em produção a URL é
-HTTPS e essa opção deve ser removida ([`mobile/README.md`](../../mobile/README.md#build-empacotado-eas)).
+teste habilita `usesCleartextTraffic` só para falar com esse backend local. A opção é calculada em
+[`mobile/app.config.js`](../../mobile/app.config.js): fica desligada no perfil `production` e em qualquer build
+cuja `EXPO_PUBLIC_API_URL` seja HTTPS, e o controle SEC-08 reprova se voltar a ser ligada para todos os builds.
 
 **Descartados:** TLS 1.0/1.1 e suítes com CBC, RC4 ou 3DES (obsoletos, com ataques conhecidos
 como BEAST, POODLE e Sweet32).
