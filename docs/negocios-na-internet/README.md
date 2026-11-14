@@ -18,14 +18,14 @@ paga pelo painel de gestão, roteamento, métricas, integrações e suporte. Reg
 | Unidade | Entrega | Data | Onde está |
 |---|---|---|---|
 | U1 | 1 · Canvas Preliminar | 1/9 | [`Canvas_Preliminar.pdf`](Canvas_Preliminar.pdf); versão resumida e atualizada no [Canvas resumido](Sustentabilidade_KPIs_e_Aspectos_Legais.md#canvas-resumido) |
-| U1 | 2 · Personas, Mapa de Stakeholders e Jornada do usuário | 15/9 | não versionada no repositório; atores e dores em [Para quem o serviço gera valor](Sustentabilidade_KPIs_e_Aspectos_Legais.md#para-quem-o-serviço-gera-valor) |
+| U1 | 2 · Personas, Mapa de Stakeholders e Jornada do usuário | 15/9 | [`Personas_Stakeholders_e_Jornada.md`](Personas_Stakeholders_e_Jornada.md): 5 personas, matriz poder × interesse, jornada do cidadão e do gestor |
 | U2 | 3 · Business Model Canvas definitivo | 3/11 | [`Canvas_Fiscalize_Final.pdf`](Canvas_Fiscalize_Final.pdf); base do [Canvas resumido](Sustentabilidade_KPIs_e_Aspectos_Legais.md#canvas-resumido) |
 | U2 | 4 · Plano de Sustentabilidade com KPIs e aspectos legais | 17/11 | [`Sustentabilidade_KPIs_e_Aspectos_Legais.md`](Sustentabilidade_KPIs_e_Aspectos_Legais.md) |
 
 > Os canvas das entregas 1 e 3 são cópias dos PDFs da pasta *Negócios para a internet* do
 > [Google Drive do projeto](https://drive.google.com/drive/folders/1ruVWIh-5do4PJhHOyn6VlWD9lQpdOxHB).
-> Os arquivos visuais da entrega 2 (personas, mapa de stakeholders e jornada) ainda não estão versionados;
-> para versioná-los, adicione os PDFs ou imagens nesta pasta e atualize a tabela acima.
+> A entrega 2 está em Markdown nesta pasta; se a versão visual entregue no Classroom for para o Drive,
+> adicione o PDF aqui e cite-o na tabela acima.
 
 ### O que o plano de sustentabilidade cobre
 
