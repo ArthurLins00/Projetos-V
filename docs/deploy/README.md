@@ -290,10 +290,10 @@ Se a variável já existir com outro valor (o IP do computador de alguém), atua
 
 ### 7.2 Desligar o HTTP sem TLS
 
-Com a API em HTTPS, o `usesCleartextTraffic: true` do plugin `expo-build-properties` em
-[`mobile/app.json`](../../mobile/app.json) deixa de ser necessário. Ele foi ligado para o APK falar com o
-backend local por HTTP. Para a demonstração, mude para `false` (ou remova o bloco `android` do plugin)
-antes de gerar o build.
+Não há nada a mudar à mão: [`mobile/app.config.js`](../../mobile/app.config.js) só liga o `usesCleartextTraffic`
+(HTTP sem TLS, usado para falar com o backend local) quando o build não é `production` **e** a
+`EXPO_PUBLIC_API_URL` não começa com `https://`. Com a URL HTTPS cadastrada no ambiente do EAS, o APK de
+demonstração já sai aceitando só HTTPS.
 
 ### 7.3 Push no Android (Firebase)
 
@@ -399,7 +399,7 @@ seja, com SMTP configurado).
 **Android**
 
 - [ ] `EXPO_PUBLIC_API_URL` com a URL HTTPS no ambiente `preview` do EAS
-- [ ] `usesCleartextTraffic` desligado
+- [ ] `usesCleartextTraffic` desligado (automático com a URL HTTPS; confira com `npx expo config --type public`)
 - [ ] `google-services.json` no app e chave FCM V1 enviada ao EAS
 - [ ] APK gerado e testado em um celular real (login, chamado com foto e GPS, push)
 
