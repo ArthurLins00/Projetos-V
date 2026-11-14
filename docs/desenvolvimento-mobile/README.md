@@ -20,7 +20,8 @@ Gestores e administradores usam o mesmo app para atender a fila de chamados.
 |---|---|---|
 | U1 | App inicial: navegação, login, registro de demanda com foto e GPS, listagem e acompanhamento, consumindo um backend inicial; build em dispositivo/emulador | [`mobile/app`](../../mobile/app), [`mobile/src`](../../mobile/src), [`backend/src`](../../backend/src) |
 | U2 | Signup, login e logout com o backend e `sessionToken` (access + refresh token) | [`AuthContext.tsx`](../../mobile/src/contexts/AuthContext.tsx), [`api.ts`](../../mobile/src/services/api.ts), [`authService.ts`](../../backend/src/services/authService.ts) |
-| U2 | Estado com hooks (`useState`, `useEffect`, `useContext`) | [`AuthContext.tsx`](../../mobile/src/contexts/AuthContext.tsx), [`DemandContext.tsx`](../../mobile/src/contexts/DemandContext.tsx), [`src/viewmodels`](../../mobile/src/viewmodels) |
+| U2 | Estado com hooks (`useState`, `useEffect`, `useContext`) e estado global com Zustand | [`AuthContext.tsx`](../../mobile/src/contexts/AuthContext.tsx), [`src/stores`](../../mobile/src/stores), [`src/viewmodels`](../../mobile/src/viewmodels) |
+| U2 | Modo offline básico: cache das demandas consultadas (AsyncStorage) e aviso de sem conexão | [`offlineCache.ts`](../../mobile/src/services/offlineCache.ts), [`demandStore.ts`](../../mobile/src/stores/demandStore.ts), [`OfflineBanner.tsx`](../../mobile/src/components/OfflineBanner.tsx) |
 | U2 | Notificações (push, e-mail e na tela) | [`usePushNotifications.ts`](../../mobile/src/hooks/usePushNotifications.ts), [`notificationService.ts`](../../backend/src/services/notificationService.ts) |
 | U2 | Build empacotado (APK/IPA via EAS) e atualizações OTA | [`eas.json`](../../mobile/eas.json), [`mobile-release.yml`](../../.github/workflows/mobile-release.yml), [`mobile-update.yml`](../../.github/workflows/mobile-update.yml), [`mobile/README.md` › Build empacotado](../../mobile/README.md#build-empacotado-eas) |
 
@@ -116,23 +117,41 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 - **Descartado:** **React Navigation** configurado à mão. O Expo Router é construído sobre ele, mas
   elimina a árvore de navegadores manual e a lógica de redirecionamento espalhada pelas telas.
 
-### 3.4 Context API + hooks (estado global)
+### 3.4 Zustand + Context API (estado global)
 
-- **Como:** `AuthContext` (sessão, login, logout, refresh) e `DemandContext` (lista e CRUD de
-  demandas), com `useState`/`useEffect`; cada tela tem um ViewModel em forma de hook.
-- **Por quê:** o estado global do app é pequeno (sessão e uma lista), e a disciplina pede
-  explicitamente `useState`, `useEffect` e `useContext`. Sem dependência extra.
-- **Descartados:** **Redux Toolkit** (muito código de cerimônia para dois estados globais) e
-  **Zustand** (citado no plano da disciplina; seria a escolha se o estado global crescesse, mas hoje
-  não acrescenta nada ao Context).
+- **Como:** a sessão continua no `AuthContext` (login, logout, refresh, com `useState`/`useEffect`/`useContext`).
+  As demandas (lista paginada, detalhe e CRUD) ficam na store [`demandStore.ts`](../../mobile/src/stores/demandStore.ts)
+  e o estado da conexão na [`connectivityStore.ts`](../../mobile/src/stores/connectivityStore.ts), ambas com
+  **Zustand**. O hook `useDemands()` manteve o formato do antigo `DemandContext`, então as ViewModels não mudaram.
+- **Por quê:** com o modo offline, o estado das demandas passou a ser usado fora da árvore de componentes (o
+  `AuthContext` limpa a lista no logout; a recarga ao reconectar depende da conexão). Uma store Zustand é acessível
+  de qualquer lugar (`getState()`), não precisa de *provider* e só re-renderiza quem usa o pedaço que mudou.
+  Zustand também está no plano da disciplina.
+- **Descartado:** **Redux Toolkit** (muito código de cerimônia para duas stores pequenas).
 
 ### 3.5 expo-secure-store
 
 - **Como:** guarda o access token, o refresh token e os dados do usuário; o app restaura a sessão ao abrir.
 - **Por quê:** grava no **Android Keystore** e no **iOS Keychain**, cifrados pelo sistema operacional
   (ver [Segurança › Criptografia](../seguranca-da-informacao/README.md#36-armazenamento-no-aparelho-android-keystore-e-ios-keychain)).
-- **Descartado:** **AsyncStorage**, que grava em texto puro no armazenamento do app; aceitável para
-  cache, nunca para tokens.
+- **Descartado para a sessão:** **AsyncStorage**, que grava em texto puro no armazenamento do app;
+  aceitável para cache, nunca para tokens. Ele é usado só no cache offline (3.5.1).
+
+### 3.5.1 Modo offline (AsyncStorage + NetInfo)
+
+- **Como:** [`offlineCache.ts`](../../mobile/src/services/offlineCache.ts) é o único módulo que usa
+  **AsyncStorage**. Toda lista e todo detalhe de demanda carregados com sucesso são salvos com a data, numa
+  chave do usuário logado. Sem resposta do servidor, a [`demandStore`](../../mobile/src/stores/demandStore.ts)
+  devolve a última versão salva; a tela mostra de quando são os dados, a faixa *Sem conexão* aparece no rodapé
+  ([`OfflineBanner.tsx`](../../mobile/src/components/OfflineBanner.tsx)) e, quando a internet volta
+  (**@react-native-community/netinfo**), a lista recarrega sozinha. Sem conexão, o detalhe é só leitura.
+- **Sessão offline:** o login fica no SecureStore (3.5), então o app abre logado mesmo sem internet.
+- **Privacidade:** o cache tem só dados que o usuário já viu e é apagado inteiro no logout e na expiração da
+  sessão. O controle automático SEC-07 reprova AsyncStorage fora desse módulo ou tokens dentro dele.
+- **Fora do escopo:** criar ou editar demanda sem conexão (fila de envio com `client_uuid`); o backend não
+  tem criação idempotente nem sincronização incremental.
+- **Descartados:** **SQLite/WatermelonDB** (banco local e sincronização completos, mais do que um cache de
+  leitura precisa) e **redux-persist** (exigiria Redux).
 
 ### 3.6 axios
 
@@ -227,8 +246,8 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 | Item | Situação | Motivo |
 |---|---|---|
 | **GlueStack UI / NativeWind** | Não adotado | O app tem um design system próprio pequeno ([`src/components/ui`](../../mobile/src/components/ui) e [`src/theme`](../../mobile/src/theme), com tema claro/escuro). Migrar todas as telas no fim do semestre trazia risco de regressão nos `testID` usados pelo Maestro sem ganho funcional. |
-| **Modo offline (AsyncStorage)** | Não adotado (diferencial opcional) | O fluxo depende de dados do servidor (status e roteamento); o cache local ficou fora do escopo. |
-| **Zustand** | Não adotado | Ver 3.4. |
+| **Modo offline (AsyncStorage)** | Adotado em versão básica (só leitura) | Cache das demandas consultadas; envio offline fica fora do escopo. Ver 3.5.1. |
+| **Zustand** | Adotado | Stores de demandas e de conexão. Ver 3.4. |
 
 ## 5. Como rodar
 

@@ -234,7 +234,10 @@ como BEAST, POODLE e Sweet32).
   *Secure Enclave* e atreladas ao aparelho.
 
 **Descartado: AsyncStorage**, que grava em texto puro; em aparelho com *root* ou num backup, os
-tokens seriam lidos diretamente.
+tokens seriam lidos diretamente. Ele aparece só no cache do modo offline
+([`offlineCache.ts`](../../mobile/src/services/offlineCache.ts)), com dados de leitura das demandas que o
+próprio usuário já viu, separados por usuário e apagados no logout e na expiração da sessão. O controle
+automático SEC-07 reprova AsyncStorage em qualquer outro arquivo do app e qualquer referência a tokens no cache.
 
 ### 3.7 Dados em repouso no servidor (produção)
 

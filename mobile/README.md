@@ -66,14 +66,26 @@ O mesmo ViewModel atende a criação e a edição: sem `demandId`, cria; com `de
   telas do app nem são montadas; ao fazer login ou logout, o roteador troca de grupo sozinho.
 - **Rotas por perfil** em [`app/(app)/_layout.tsx`](app/(app)/_layout.tsx): criar e editar demanda só para o
   Cidadão; gerenciar chamados e usuários só para Gestor e Admin. Sem permissão, volta para a tela inicial.
-- **Estado global:** [`AuthContext.tsx`](src/contexts/AuthContext.tsx) para a sessão e
-  [`DemandContext.tsx`](src/contexts/DemandContext.tsx) para a lista e o CRUD de demandas, compartilhado pelas
-  telas de lista, detalhe e formulário. O `DemandProvider` envolve só o grupo `(app)`, então sair descarta a lista.
+- **Estado global:** [`AuthContext.tsx`](src/contexts/AuthContext.tsx) para a sessão e duas stores
+  **Zustand** em [`src/stores`](src/stores): [`demandStore.ts`](src/stores/demandStore.ts) com a lista e o CRUD
+  de demandas, compartilhada pelas telas de lista, detalhe e formulário (hook `useDemands()`), e
+  [`connectivityStore.ts`](src/stores/connectivityStore.ts) com o estado da conexão. Sair limpa a store e o cache.
 - **Persistência da sessão:** [`AuthContext.tsx`](src/contexts/AuthContext.tsx) guarda o token e o
   usuário no **SecureStore** e os restaura ao abrir o app com `useState` e `useEffect`. Fechar e reabrir
   o app mantém o login.
 - Todas as requisições levam o token no header `Authorization: Bearer <token>`
   ([`api.ts`](src/services/api.ts)).
+
+## Modo offline
+
+- **Cache local:** [`offlineCache.ts`](src/services/offlineCache.ts) guarda no **AsyncStorage** cada lista e cada
+  demanda aberta, por usuário. Sem conexão, a lista e o detalhe mostram a última versão salva, com o aviso
+  *Sem conexão: lista salva hoje às 14:32*; o detalhe fica só leitura.
+- **Aviso e reconexão:** a faixa `offline-banner` aparece no rodapé quando o NetInfo indica que não há internet, e
+  a lista recarrega sozinha quando a conexão volta.
+- **Sessão:** continua no SecureStore; o app abre logado sem internet. O cache é apagado no logout.
+- **Testar no emulador:** abra a lista e um detalhe com o backend no ar, ative o modo avião e reabra as telas.
+- **Limite:** criar, editar e remover dependem do servidor; sem conexão, aparece *Você está sem conexão com a internet*.
 
 ## Integração com o backend
 
@@ -244,7 +256,8 @@ Os componentes têm `testID` (seletores estáveis) e `accessibilityRole`:
 | Gestão | `metrics-panel`, `metric-total`, `metric-resolvidas`, `metric-tempo-medio`, `ticket-search`, `ticket-filter-<filtro>`, `ticket-region-filters-{categoria,uf,cidade,zona,limpar}`, `ticket-list` |
 | Formulário | `form-title`, `form-category-<id>`, `form-address`, `form-description`, `form-photo`, `form-gps`, `form-submit` |
 | Câmera | `camera-shutter` |
-| Detalhe | `detail-title`, `detail-edit`, `detail-delete` |
+| Detalhe | `detail-title`, `detail-edit`, `detail-delete`, `demand-detail-cache-notice` |
+| Offline | `offline-banner`, `demand-list-cache-notice`, `demand-list-error-notice` |
 
 Dicas para escrever fluxos novos estão em [`docs/testes-automatizados/TESTES.md`](../docs/testes-automatizados/TESTES.md).
 
@@ -261,10 +274,13 @@ mobile/
 ├── src/
 │   ├── views/                  telas (View)
 │   ├── viewmodels/             hooks de cada tela (ViewModel)
-│   ├── services/               api (axios + token + URL do backend), auth, demandas, categorias
-│   ├── models/                 tipos e regras (Demand, Category, User)
-│   ├── components/             CameraCapture, DemandCard
-│   └── contexts/               AuthContext (sessão persistente), DemandContext (demandas)
+│   ├── services/               api (axios + token + URL do backend), auth, demandas, categorias, cache offline
+│   ├── stores/                 estado global com Zustand (demandas, conexão)
+│   ├── models/                 tipos e regras (Demand, Category, User, Region, validações)
+│   ├── components/             CameraCapture, DemandCard, OfflineBanner e o design system em ui/
+│   ├── hooks/                  usePushNotifications
+│   ├── theme/                  tema claro/escuro
+│   └── contexts/               AuthContext (sessão persistente no SecureStore)
 ├── e2e/                        fluxos Maestro
 ├── assets/                     ícones e splash
 └── app.json                    configuração do Expo (plataformas, permissões, identificadores)
