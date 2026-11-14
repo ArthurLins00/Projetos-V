@@ -254,6 +254,7 @@ O Playwright usa `http://localhost:3000` e reaproveita o backend que já está n
 | `Cannot connect to the Docker daemon` / `error during connect` | Docker Desktop fechado ou ainda iniciando | Abra o Docker Desktop e espere *Engine running* |
 | `WSL 2 installation is incomplete` | WSL desatualizado | `wsl --update` no PowerShell como administrador e reinicie o Docker Desktop |
 | Backend reinicia em loop com `P1000: Authentication failed` | O volume `pgdata` foi criado com outra senha | `docker compose down -v` e suba de novo (apaga os dados) ou volte a senha antiga no `.env` |
+| Upload de foto falha com `EACCES: permission denied` em `/app/uploads` | O volume `uploads` foi criado antes de a API rodar sem root (usuário `node`) e pertence ao root | `docker compose run --rm -u root backend chown -R node:node /app/uploads` (mantém as fotos) ou `docker volume rm` do volume, se as fotos não importarem |
 | `/health` responde `"redis":"unavailable"` | Redis ainda subindo ou parado | `docker compose up -d redis`; a API funciona sem ele, só sem cache |
 | Mudei o código e nada mudou | A imagem é construída uma vez | `docker compose up -d --build` |
 | O app no celular não conecta | Firewall, rede Wi-Fi diferente ou URL errada | Seção 5 |

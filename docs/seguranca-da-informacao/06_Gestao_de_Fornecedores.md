@@ -129,6 +129,10 @@ O melhor controle sobre um fornecedor é não lhe entregar o que ele não precis
 - `npm audit` e Dependabot apontam vulnerabilidades conhecidas; falhas **críticas ou altas** são
   corrigidas em até **7 dias**.
 - Toda atualização de dependência passa pela suíte completa de testes antes do *merge*.
+- O Dependabot espera **3 dias** (`cooldown`) antes de propor uma versão recém-publicada: versões comprometidas costumam ser retiradas do registro nesse intervalo. Correções de segurança não esperam.
+- As *actions* do GitHub ficam **fixadas pelo SHA do commit** (`actions/checkout@<sha> # v7`), não pela tag, que o dono pode mover; o Dependabot atualiza o SHA e o comentário. Ferramentas baixadas no CI (ex.: Maestro) usam versão fixa e conferência do SHA-256 publicado, nunca `curl | sh`.
+- Workflows reutilizados recebem só os *secrets* que declaram (`secrets: inherit` não é usado), e os containers do backend e do agente rodam sem root (usuário `node`).
+- A análise estática (Semgrep) roda em todo PR e todo dia e cobre também os workflows, o Dependabot e os Dockerfiles.
 
 ## 9. Monitoramento contínuo
 
