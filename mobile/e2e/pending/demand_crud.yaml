@@ -16,6 +16,7 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 - tapOn:
     id: "form-title"
 - inputText: ${output.titulo}
+- hideKeyboard
 - tapOn: "Iluminação Pública"
 - tapOn:
     id: "form-address"
