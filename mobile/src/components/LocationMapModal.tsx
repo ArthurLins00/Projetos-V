@@ -3,7 +3,7 @@ import { Modal, View, Text, Pressable, Linking, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ResolvedAddress } from '../services/geocodingService';
+import { ResolvedAddress } from '../models/Region';
 import { Button } from './ui';
 import { makeStyles, radius, useTheme } from '../theme';
 

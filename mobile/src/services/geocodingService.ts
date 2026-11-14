@@ -1,11 +1,5 @@
 import * as Location from 'expo-location';
-
-export interface ResolvedAddress {
-  street: string;
-  area: string | null;
-}
-
-type Coords = { latitude: number; longitude: number };
+import { Coords, ResolvedAddress } from '../models/Region';
 
 const cache = new Map<string, ResolvedAddress | null>();
 

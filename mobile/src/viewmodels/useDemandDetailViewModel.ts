@@ -3,7 +3,8 @@ import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useDemands } from '../stores/demandStore';
 import { getApiErrorMessage } from '../services/api';
-import { geocodingService, ResolvedAddress } from '../services/geocodingService';
+import { geocodingService } from '../services/geocodingService';
+import { ResolvedAddress } from '../models/Region';
 import { Demand, isDemandEditable } from '../models/Demand';
 
 export function useDemandDetailViewModel(demandId: string) {

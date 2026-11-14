@@ -10,9 +10,7 @@ import { cityService } from '../services/cityService';
 import { getApiErrorMessage, getPhotoUri } from '../services/api';
 import { Category } from '../models/Category';
 import { DemandPayload, MAX_DEMAND_PHOTOS } from '../models/Demand';
-import { BRAZIL_STATES, findStateUf, normalizeText, Zone } from '../models/Region';
-
-type Coords = { latitude: number; longitude: number };
+import { BRAZIL_STATES, Coords, findStateUf, normalizeText, Zone } from '../models/Region';
 
 export interface FormPhoto {
   key: string;
