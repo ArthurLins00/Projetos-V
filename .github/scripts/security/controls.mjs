@@ -69,7 +69,7 @@ const CORRECOES = {
   'SEC-04': 'Grave no banco apenas hashRefreshToken(token) (SHA-256), nunca o refresh token em texto, e busque o registro pelo hash.',
   'SEC-05': 'Compare códigos de 2FA, de recuperação e o x-agent-secret com crypto.timingSafeEqual sobre buffers do mesmo tamanho, nunca com ===.',
   'SEC-06': "Troque Math.random() por crypto.randomInt / crypto.randomBytes (de 'node:crypto') nos pontos indicados; no sufixo do protocolo, randomInt(36 ** 4).toString(36).",
-  'SEC-07': 'Guarde tokens e dados de sessão com SecureStore.setItemAsync (expo-secure-store) e remova o AsyncStorage desses dados.',
+  'SEC-07': 'Guarde tokens e dados de sessão com SecureStore.setItemAsync (expo-secure-store); o AsyncStorage só pode ser usado em mobile/src/services/offlineCache.ts, para dados de leitura.',
   'SEC-08': 'Antes de publicar o app, aponte EXPO_PUBLIC_API_URL para uma URL HTTPS e remova "usesCleartextTraffic": true do plugin expo-build-properties em mobile/app.json.',
   'SEC-09': 'Volte a usar a lista ALLOWED_ORIGINS (getAllowedOrigins) em backend/src/config/cors.ts; nunca origin "*" ou true com credenciais.',
   'SEC-10': 'Mantenha em backend/src/config/env.ts o erro que impede DEMO_MODE=true junto com NODE_ENV=production.',
@@ -154,15 +154,19 @@ export function checkControls() {
   });
 
   // ---------- Aplicativo ----------
+  // AsyncStorage (texto puro) só é aceito no cache offline, que guarda dados de leitura e nunca tokens
+  const OFFLINE_CACHE = 'mobile/src/services/offlineCache.ts';
   const secureStore = grep('mobile/src', /SecureStore\.setItemAsync\(/);
-  const asyncStorage = grep(['mobile/src', 'mobile/app'], /AsyncStorage/);
+  const asyncStorage = grep(['mobile/src', 'mobile/app'], /AsyncStorage/).filter((h) => h.file !== OFFLINE_CACHE);
+  const tokensInCache = grep(OFFLINE_CACHE, /TOKEN_KEY|refreshToken|SecureStore\.getItemAsync|user_data/);
+  const storageOk = secureStore.length && !asyncStorage.length && !tokensInCache.length;
   add({
     id: 'SEC-07', area: 'Aplicativo', titulo: 'Tokens no armazenamento seguro do aparelho', asvs: 'MASVS STORAGE-1',
-    status: secureStore.length && !asyncStorage.length ? 'ok' : asyncStorage.length ? 'falha' : 'aviso',
-    evidencias: ev(asyncStorage.length ? asyncStorage : secureStore),
-    explicacao: secureStore.length && !asyncStorage.length
-      ? 'O app guarda os tokens no SecureStore (Android Keystore / iOS Keychain), cifrados pelo sistema operacional.'
-      : 'O app usa AsyncStorage, que grava em texto puro. Tokens e dados de sessão devem ir para o SecureStore.',
+    status: storageOk ? 'ok' : asyncStorage.length || tokensInCache.length ? 'falha' : 'aviso',
+    evidencias: ev(asyncStorage.length || tokensInCache.length ? [...asyncStorage, ...tokensInCache] : secureStore),
+    explicacao: storageOk
+      ? 'O app guarda os tokens no SecureStore (Android Keystore / iOS Keychain), cifrados pelo sistema operacional. O AsyncStorage aparece só no cache offline (offlineCache.ts), com dados de leitura das demandas, separados por usuário e apagados no logout.'
+      : 'O app usa AsyncStorage fora do cache offline, ou o cache offline toca em tokens. AsyncStorage grava em texto puro: tokens e dados de sessão devem ir para o SecureStore.',
   });
 
   const cleartext = grep('mobile/app.json', /"usesCleartextTraffic"\s*:\s*true/);
@@ -218,12 +222,19 @@ export function checkControls() {
       : 'Todo acesso ao banco passa pelo Prisma com consultas parametrizadas; não há SQL montado por concatenação.',
   });
 
-  const minPassword = [...read('backend/src/controllers/authController.ts').matchAll(/(?:senha|novaSenha)\.length\s*<\s*(\d+)/g)].map((m) => Number(m[1]));
+  // A regra pode estar inline no controller (senha.length < N) ou na política central (utils/passwordPolicy.ts)
+  const authController = read('backend/src/controllers/authController.ts');
+  const minPassword = [...authController.matchAll(/(?:senha|novaSenha)\.length\s*<\s*(\d+)/g)].map((m) => Number(m[1]));
+  const policyMin = read('backend/src/utils/passwordPolicy.ts').match(/PASSWORD_MIN_LENGTH\s*=\s*(\d+)/);
+  if (policyMin && /meetsPasswordPolicy\(/.test(authController)) minPassword.push(Number(policyMin[1]));
   const weakest = minPassword.length ? Math.min(...minPassword) : null;
   add({
     id: 'SEC-13', area: 'API', titulo: 'Senha com no mínimo 8 caracteres', asvs: 'ASVS V2.1',
     status: weakest !== null && weakest >= 8 ? 'ok' : 'aviso',
-    evidencias: ev(grep('backend/src/controllers/authController.ts', /(?:senha|novaSenha)\.length\s*</)),
+    evidencias: ev([
+      ...grep('backend/src/controllers/authController.ts', /(?:senha|novaSenha)\.length\s*<|meetsPasswordPolicy\(/),
+      ...grep('backend/src/utils/passwordPolicy.ts', /PASSWORD_MIN_LENGTH\s*=/),
+    ]),
     explicacao: weakest !== null && weakest >= 8
       ? `O backend exige senhas com pelo menos ${weakest} caracteres.`
       : `A Atividade 1 especifica 8+ caracteres com 4 classes; o backend aceita hoje a partir de ${weakest ?? '?'} caracteres.`,

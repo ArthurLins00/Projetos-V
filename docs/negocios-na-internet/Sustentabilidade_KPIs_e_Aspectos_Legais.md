@@ -176,10 +176,12 @@ operação digital.
 | Pilar | Situação atual | Próximos passos para sustentar |
 |---|---|---|
 | **Qualidade** | Testes unitários, de API, E2E (Playwright) e de tela (Maestro); Quality Gate no GitHub Actions bloqueia merge com falha; regressão diária | Manter cobertura mínima como critério de pronto |
-| **Arquitetura** | App MVVM em React Native/Expo; API Express + Prisma + PostgreSQL; Redis opcional para cache de métricas | Separar ambientes (desenvolvimento, homologação, produção) |
+| **Arquitetura** | App MVVM em React Native/Expo com estado global em Zustand; API Express + Prisma + PostgreSQL; Redis opcional para cache de métricas | Separar ambientes (desenvolvimento, homologação, produção) |
+| **Evolução do app** | Atualizações OTA (EAS Update, `expo-updates`) pelos canais `preview` e `production`: correções chegam ao aparelho sem nova publicação na loja | Publicar primeiro no canal `preview`, validar e promover para `production` |
+| **Uso com conexão ruim** | Modo offline básico: demandas consultadas ficam no aparelho e a sessão é preservada; a lista atualiza ao reconectar | Fila de envio offline com criação idempotente (`client_uuid`) para áreas rurais |
 | **Armazenamento** | Fotos no disco do servidor (`backend/uploads/`) | Migrar para armazenamento de objetos em nuvem com backup e CDN |
-| **Segurança** | JWT com refresh token e revogação; perfis hierárquicos (Cidadão, Gestor, Admin) | Rate limiting, varredura de dependências, testes de intrusão anuais, criptografia de dados em repouso |
-| **Disponibilidade** | Health check (`/health`) | Monitoramento, alertas, backups diários com teste de restauração, plano de recuperação de desastre |
+| **Segurança** | JWT com refresh token e revogação; perfis hierárquicos (Cidadão, Gestor, Admin); rate limiting e bloqueio de login; cabeçalhos de segurança; política de senha forte; varredura diária de dependências, segredos e código | Testes de intrusão anuais, criptografia de dados em repouso, HTTPS obrigatório no app publicado |
+| **Disponibilidade** | Health check (`/health`); scripts de backup com teste automático de restauração | Monitoramento, alertas, backups diários em local externo, plano de recuperação de desastre |
 | **Métricas** | Job agendado consolida métricas em `metrics_snapshot` | Painel de BI por município e exportação de dados abertos |
 | **IA** | Gemini com function calling, controle de cota e nova tentativa em `429` | Abstração do provedor de IA para evitar dependência de um único fornecedor |
 | **Dependência de fornecedores** | Expo, Google, provedores de nuvem | Uso de tecnologias abertas (PostgreSQL, Node.js) e contratos com portabilidade de dados |
@@ -252,6 +254,7 @@ cumpriu o prazo e o município tem evidência disso. Meta: **≥ 80%** após a f
 | **Disponibilidade da API** | Tempo no ar ÷ tempo total do mês | ≥ 99,5% |
 | **Latência (p95)** | Percentil 95 do tempo de resposta das rotas principais | ≤ 800 ms |
 | **Sessões sem falha (crash-free)** | Sessões sem travamento ÷ total de sessões no app | ≥ 99% |
+| **Adoção de atualizações OTA** | Aparelhos na atualização mais recente do canal `production` ÷ aparelhos ativos, 7 dias após publicar | ≥ 90% |
 | **Taxa de sucesso dos testes no pipeline** | Execuções verdes do Quality Gate ÷ total | ≥ 95% |
 | **Tempo médio de recuperação (MTTR)** | Média do tempo entre o início e o fim de um incidente | ≤ 2 h |
 | **Precisão da triagem por IA** | Classificações (categoria/órgão) aceitas pelo gestor sem correção ÷ total | ≥ 90% |
@@ -321,6 +324,7 @@ O Fiscalize trata dados pessoais de cidadãos (nome, e-mail, localização e fot
 | **Papéis** | O **órgão público contratante é o controlador** dos dados das ocorrências do seu município; o **Fiscalize é operador** (trata dados em nome do órgão). Para a conta do cidadão no app, avaliar controladoria conjunta, definida em contrato |
 | **Bases legais** | Execução de políticas públicas pela administração (art. 7º, III, e art. 23); execução de contrato/termos de uso para a conta do cidadão (art. 7º, V); consentimento para usos opcionais, como notificações de marketing (art. 7º, I) |
 | **Dados tratados** | Nome, e-mail, senha (armazenada com hash), localização da ocorrência, fotos, token de push e histórico de chamados |
+| **Dados no aparelho** | Tokens e dados da conta cifrados pelo sistema (Keystore/Keychain); o cache offline guarda só as demandas que o próprio usuário consultou e é apagado no logout |
 | **Minimização** | Somente os dados necessários; a busca de chamados similares devolve **apenas protocolo, distância e status**, sem dados pessoais |
 | **Fotos e localização** | Orientar o cidadão a não fotografar pessoas ou placas de veículos; avaliar desfoque automático de rostos e placas antes de publicar qualquer imagem |
 | **Termos de uso e política de privacidade** | Aceite versionado já registrado no banco (`termosversao`, `termosaceitoem`); nova versão exige novo aceite |

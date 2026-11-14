@@ -6,4 +6,5 @@ export { EmptyState } from './EmptyState';
 export { Avatar, getInitials } from './Avatar';
 export { SelectField } from './SelectField';
 export { ScrollableRow } from './ScrollableRow';
+export { Notice } from './Notice';
 export type { SelectOption } from './SelectField';

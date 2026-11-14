@@ -7,9 +7,9 @@ import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
 import { UpdateProfilePayload, UserProfile } from '../models/User';
 import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
+import { INVALID_EMAIL_MESSAGE, isValidEmail } from '../models/Validation';
 import { ThemePreference, useTheme } from '../theme';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function useProfileViewModel() {
   const router = useRouter();
@@ -59,7 +59,7 @@ export function useProfileViewModel() {
 
   const saveInfo = async () => {
     if (!nome.trim()) return Alert.alert('Erro', 'Informe seu nome.');
-    if (!EMAIL_REGEX.test(email.trim())) return Alert.alert('Erro', 'Informe um e-mail válido.');
+    if (!isValidEmail(email)) return Alert.alert('Erro', INVALID_EMAIL_MESSAGE);
     if (emailChanged && !emailPassword) return Alert.alert('Erro', 'Informe sua senha atual para alterar o e-mail.');
 
     try {

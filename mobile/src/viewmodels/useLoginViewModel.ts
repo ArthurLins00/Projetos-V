@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getApiErrorMessage } from '../services/api';
+import { INVALID_EMAIL_MESSAGE, isBlank, isValidEmail } from '../models/Validation';
 
 export function useLoginViewModel() {
   const router = useRouter();
@@ -12,8 +13,11 @@ export function useLoginViewModel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const login = async (loginEmail = email, loginPassword = password) => {
-    if (!loginEmail || !loginPassword) {
+    if (isBlank(loginEmail) || !loginPassword) {
       return Alert.alert('Erro', 'Preencha todos os campos.');
+    }
+    if (!isValidEmail(loginEmail)) {
+      return Alert.alert('Erro', INVALID_EMAIL_MESSAGE);
     }
     try {
       setIsSubmitting(true);

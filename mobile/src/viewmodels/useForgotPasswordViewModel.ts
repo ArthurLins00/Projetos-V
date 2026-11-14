@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
+import { INVALID_EMAIL_MESSAGE, isBlank, isValidEmail } from '../models/Validation';
 import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
 
 type Step = 'email' | 'reset';
@@ -17,8 +18,11 @@ export function useForgotPasswordViewModel() {
   const [loading, setLoading] = useState(false);
 
   const requestCode = async () => {
-    if (!email.trim()) {
+    if (isBlank(email)) {
       return Alert.alert('Erro', 'Informe seu e-mail.');
+    }
+    if (!isValidEmail(email)) {
+      return Alert.alert('Erro', INVALID_EMAIL_MESSAGE);
     }
     try {
       setLoading(true);
