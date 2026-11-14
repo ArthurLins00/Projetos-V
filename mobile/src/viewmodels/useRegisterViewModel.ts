@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { authService } from '../services/authService';
 import { getApiErrorMessage } from '../services/api';
 import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from '../models/PasswordPolicy';
+import { INVALID_EMAIL_MESSAGE, isBlank, isValidEmail } from '../models/Validation';
 
 type PasswordOwner = { email: string; senha: string };
 
@@ -22,15 +23,18 @@ export function useRegisterViewModel() {
   };
 
   const register = async (ignorarSenhaRepetida = false) => {
-    if (!name || !email || !password) {
+    if (isBlank(name) || isBlank(email) || !password) {
       return Alert.alert('Erro', 'Preencha todos os campos.');
+    }
+    if (!isValidEmail(email)) {
+      return Alert.alert('Erro', INVALID_EMAIL_MESSAGE);
     }
     if (!meetsPasswordPolicy(password)) {
       return Alert.alert('Senha fraca', PASSWORD_POLICY_MESSAGE);
     }
     try {
       setLoading(true);
-      await authService.register(name, email.trim(), password, ignorarSenhaRepetida);
+      await authService.register(name.trim(), email.trim(), password, ignorarSenhaRepetida);
       setPasswordOwner(null);
       Alert.alert('Sucesso', 'Conta criada! Você já pode fazer login.');
       router.back();

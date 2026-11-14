@@ -1,5 +1,13 @@
 export type Zone = 'Urbana' | 'Rural';
 
+export type Coords = { latitude: number; longitude: number };
+
+// Endereço legível de um par de coordenadas (geocodificação reversa)
+export interface ResolvedAddress {
+  street: string;
+  area: string | null;
+}
+
 export const ZONES: { value: Zone; label: string }[] = [
   { value: 'Urbana', label: 'Zona urbana' },
   { value: 'Rural', label: 'Zona rural' },

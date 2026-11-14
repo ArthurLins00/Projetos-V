@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useDemands } from '../contexts/DemandContext';
+import { useDemands } from '../stores/demandStore';
 import { getApiErrorMessage } from '../services/api';
-import { geocodingService, ResolvedAddress } from '../services/geocodingService';
+import { geocodingService } from '../services/geocodingService';
+import { ResolvedAddress } from '../models/Region';
 import { Demand, isDemandEditable } from '../models/Demand';
 
 export function useDemandDetailViewModel(demandId: string) {
@@ -13,6 +14,7 @@ export function useDemandDetailViewModel(demandId: string) {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [gpsAddress, setGpsAddress] = useState<ResolvedAddress | null>(null);
   const [resolvingAddress, setResolvingAddress] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
@@ -44,6 +46,7 @@ export function useDemandDetailViewModel(demandId: string) {
         .then((data) => {
           if (!active) return;
           setDemand(data);
+          setCachedAt(data.cachedAt ?? null);
           setError(null);
         })
         .catch((err) => {
@@ -87,6 +90,7 @@ export function useDemandDetailViewModel(demandId: string) {
     loading,
     deleting,
     error,
+    cachedAt,
     canEdit,
     edit,
     confirmRemove,

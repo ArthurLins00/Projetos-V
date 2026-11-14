@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useDemandDetailViewModel } from '../viewmodels/useDemandDetailViewModel';
 import { getPhotoUri } from '../services/api';
 import { PhotoCarousel } from '../components/PhotoCarousel';
-import { Button, EmptyState, StatusBadge } from '../components/ui';
+import { Button, EmptyState, Notice, StatusBadge } from '../components/ui';
+import { formatSnapshotTime } from '../models/Management';
 import { LocationMapModal } from '../components/LocationMapModal';
 import { formatRegion } from '../models/Region';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
@@ -56,6 +57,14 @@ export function DemandDetailView({ demandId }: Props) {
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+      {vm.cachedAt && (
+        <Notice
+          testID="demand-detail-cache-notice"
+          icon="cloud-offline-outline"
+          message={`Sem conexão: dados salvos ${formatSnapshotTime(vm.cachedAt) ?? 'anteriormente'}. Editar e remover voltam quando a internet voltar.`}
+          style={styles.notice}
+        />
+      )}
       {photoUris.length > 0 && <PhotoCarousel uris={photoUris} />}
 
       <View style={styles.card}>
@@ -124,7 +133,8 @@ export function DemandDetailView({ demandId }: Props) {
         </View>
       )}
 
-      {vm.canEdit ? (
+      {/* Do cache a tela é só leitura: editar e remover dependem do servidor (o aviso do topo explica) */}
+      {vm.cachedAt ? null : vm.canEdit ? (
         <View style={styles.actions}>
           <Button testID="detail-edit" icon="create-outline" title="Editar" onPress={vm.edit} style={styles.action} />
           <Button testID="detail-delete" variant="danger" icon="trash-outline" title="Excluir" onPress={vm.confirmRemove} loading={vm.deleting} style={styles.action} />
@@ -151,6 +161,7 @@ const useStyles = makeStyles((colors) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   container: { padding: 16, paddingBottom: 40 },
+  notice: { marginBottom: 12 },
   card: { backgroundColor: colors.surface, padding: 18, borderRadius: radius.lg, marginBottom: 14, ...shadow(1) },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   protocol: { fontSize: 12, fontWeight: '600', color: colors.textSubtle, fontVariant: ['tabular-nums'] },

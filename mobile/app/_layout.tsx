@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { ThemeProvider, useTheme } from '../src/theme';
+import { startConnectivityWatch } from '../src/stores/connectivityStore';
 
 function InitialLayout() {
   const { user, isLoading } = useAuth();
@@ -33,6 +35,9 @@ function InitialLayout() {
 }
 
 export default function RootLayout() {
+  // Estado da conexão para o modo offline (aviso na tela e recarga ao reconectar)
+  useEffect(() => startConnectivityWatch(), []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

@@ -6,8 +6,9 @@ import { useDemandListViewModel } from '../viewmodels/useDemandListViewModel';
 import { DemandCard } from '../components/DemandCard';
 import { EmergencyNotice } from '../components/EmergencyNotice';
 import { DemandFilterBar } from '../components/DemandFilterBar';
-import { Avatar, Chip, EmptyState, ScrollableRow } from '../components/ui';
+import { Avatar, Chip, EmptyState, Notice, ScrollableRow } from '../components/ui';
 import { STATUS_FILTERS } from '../models/Demand';
+import { formatSnapshotTime } from '../models/Management';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 export function DemandListView() {
@@ -118,7 +119,22 @@ export function DemandListView() {
           refreshControl={<RefreshControl refreshing={vm.refreshing} onRefresh={vm.refresh} tintColor={colors.primary} colors={[colors.primary]} />}
           onEndReached={vm.loadMore}
           onEndReachedThreshold={0.3}
-          ListHeaderComponent={<EmergencyNotice compact style={styles.notice} />}
+          ListHeaderComponent={
+            <>
+              <EmergencyNotice compact style={styles.notice} />
+              {vm.fromCache ? (
+                <Notice
+                  testID="demand-list-cache-notice"
+                  icon="cloud-offline-outline"
+                  message={`Sem conexão: lista salva ${formatSnapshotTime(vm.cachedAt) ?? 'anteriormente'}. Ela atualiza sozinha quando a internet voltar.`}
+                  style={styles.notice}
+                />
+              ) : vm.error && vm.demands.length > 0 ? (
+                // Falha ao atualizar uma lista que já está na tela: mantém os itens e avisa
+                <Notice testID="demand-list-error-notice" icon="alert-circle-outline" tone="danger" message={vm.error} style={styles.notice} />
+              ) : null}
+            </>
+          }
           ListEmptyComponent={
             <EmptyState
               icon={vm.error ? 'cloud-offline-outline' : filtering ? 'search-outline' : 'document-text-outline'}

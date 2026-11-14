@@ -3,6 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
 import { REFRESH_TOKEN_KEY, TOKEN_KEY, setSessionHandlers } from '../services/api';
 import { pushService } from '../services/pushService';
+import { offlineCache } from '../services/offlineCache';
+import { useDemandStore } from '../stores/demandStore';
 import { LoginResponse, TwoFactorChallenge, User } from '../models/User';
 
 interface AuthContextData {
@@ -27,6 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     await SecureStore.deleteItemAsync('user_data');
+    // Sem sessão não há dono para o cache offline nem para a lista em memória
+    await offlineCache.clear();
+    useDemandStore.getState().reset();
     setToken(null);
     setUser(null);
   };
@@ -48,8 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
         const storedUser = await SecureStore.getItemAsync('user_data');
         if (storedToken && storedUser) {
+          const parsed: User = JSON.parse(storedUser);
+          offlineCache.setOwner(String(parsed.id));
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(parsed);
           // O perfil pode ter sido alterado por um admin desde o último login
           authService.me().then(updateUser).catch(() => undefined);
         }
@@ -67,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
     await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
 
+    offlineCache.setOwner(String(userData.id));
     setToken(userToken);
     setUser(userData);
   };

@@ -2,6 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import { useConnectivityStore } from '../stores/connectivityStore';
 
 const API_PORT = 3000;
 
@@ -114,6 +115,12 @@ export function getPhotoUri(photoUrl?: string | null): string | null {
 
 export function getApiErrorMessage(error: any, fallback: string): string {
   if (error?.isAxiosError && !error.response) {
+    if (!useConnectivityStore.getState().isOnline) {
+      return 'Você está sem conexão com a internet. Conecte-se e tente de novo.';
+    }
+    if (error.code === 'ECONNABORTED') {
+      return 'O servidor demorou para responder. Tente de novo em instantes.';
+    }
     return `Não foi possível conectar ao servidor (${API_URL}). Verifique se o backend está rodando e se o celular está na mesma rede Wi-Fi do computador.`;
   }
   return error?.response?.data?.error || fallback;

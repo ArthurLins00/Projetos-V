@@ -3,14 +3,8 @@ import { categoryService } from '../services/categoryService';
 import { cityService } from '../services/cityService';
 import { Category } from '../models/Category';
 import { BRAZIL_STATES, ZONES, Zone } from '../models/Region';
+import { DemandFilterParams } from '../models/Demand';
 import { SelectOption } from '../components/ui';
-
-export interface DemandFilterParams {
-  categoria?: number;
-  uf?: string;
-  cidade?: string;
-  zona?: Zone;
-}
 
 /** Filtros de categoria e região compartilhados pelas listas do cidadão e do gestor. */
 export function useDemandFilters(onChange?: () => void) {

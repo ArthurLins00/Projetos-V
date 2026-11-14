@@ -646,7 +646,7 @@ Verificação
 | ID do caso | HU | Status anterior | Motivo da remoção |
 | :---- | :---- | :---- | :---- |
 | `TC-31` | `HU-07` | `Bloqueado (sem client_uuid)` | Criação idempotente com `client_uuid` não foi implementada; o app não tem modo offline com reenvio de chamados. |
-| `TC-32` | `HU-07` | `Bloqueado (sem /demands/changes)` | A sincronização incremental (`/demands/changes`) depende do modo offline, que não faz parte do produto entregue. |
+| `TC-32` | `HU-07` | `Bloqueado (sem /demands/changes)` | A sincronização incremental (`/demands/changes`) não faz parte do produto entregue: o modo offline do app é só leitura (cache local das demandas consultadas). |
 | `TC-19` | `HU-04` | `Bloqueado (sem /demands/nearby)` | A busca por proximidade (`/demands/nearby`) não faz parte dos fluxos do cidadão nem do gestor. |
 | `TC-29` | `HU-06` | `Bloqueado (sem ETag)` | Cache condicional com ETag é otimização de rede; não protege nenhum fluxo principal no prazo do projeto. |
 | `TC-15` | `HU-03` | `Bloqueado (sem bucket)` | As fotos ficam no armazenamento local do backend; o bucket com URL assinada está fora do escopo (seção 1). |

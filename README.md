@@ -47,7 +47,9 @@ cidadão acompanha o andamento pelo app até a resolução.
 | Listagem com FlatList | [`DemandListView.tsx`](mobile/src/views/DemandListView.tsx) |
 | Navegação com Expo Router | [`mobile/app`](mobile/app) (grupos `(auth)` e `(app)`, rotas protegidas) |
 | Persistência de estado com `useState` e `useEffect` | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx) |
-| Estado global com `useContext` (sessão e demandas) | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx), [`DemandContext.tsx`](mobile/src/contexts/DemandContext.tsx) |
+| Estado global: sessão com `useContext`, demandas e conexão com **Zustand** | [`AuthContext.tsx`](mobile/src/contexts/AuthContext.tsx), [`demandStore.ts`](mobile/src/stores/demandStore.ts), [`connectivityStore.ts`](mobile/src/stores/connectivityStore.ts) |
+| Modo offline básico (cache das demandas consultadas com AsyncStorage) | [`offlineCache.ts`](mobile/src/services/offlineCache.ts), [`OfflineBanner.tsx`](mobile/src/components/OfflineBanner.tsx) |
+| Atualizações OTA com `expo-updates` (EAS Update) | [`app.json`](mobile/app.json) (`updates`, `runtimeVersion`), [`eas.json`](mobile/eas.json) (canais), [`mobile-update.yml`](.github/workflows/mobile-update.yml) |
 | Issues automáticas para falhas do CI | [`ci-failure-issues.yml`](.github/workflows/ci-failure-issues.yml) |
 | Métricas de qualidade e relatórios técnico e de negócio (HTML) | [`Metricas_de_Qualidade.md`](docs/testes-automatizados/Metricas_de_Qualidade.md), [`quality-report.yml`](.github/workflows/quality-report.yml) |
 | Rotas privadas e por perfil (Cidadão × Gestor/Admin) | [`app/_layout.tsx`](mobile/app/_layout.tsx), [`app/(app)/_layout.tsx`](mobile/app/(app)/_layout.tsx) |

@@ -48,6 +48,9 @@ export interface DemandPayload {
   zone?: Zone;
 }
 
+// Filtros de categoria e região, compartilhados pelas listas do cidadão e do gestor
+export type DemandFilterParams = Pick<DemandListParams, 'categoria' | 'uf' | 'cidade' | 'zona'>;
+
 export interface DemandListParams {
   busca?: string;
   status?: string;
