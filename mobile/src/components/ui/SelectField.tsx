@@ -94,7 +94,11 @@ export function SelectField({
         <Text style={[styles.value, !text && styles.placeholder]} numberOfLines={1}>
           {text ?? placeholder}
         </Text>
-        {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="chevron-down" size={18} color={colors.textSubtle} />}
+        {loading ? (
+          <ActivityIndicator testID={testID ? `${testID}-loading` : undefined} size="small" color={colors.primary} />
+        ) : (
+          <Ionicons name="chevron-down" size={18} color={colors.textSubtle} />
+        )}
       </Pressable>}
 
       <Modal visible={open} animationType="slide" onRequestClose={close}>
