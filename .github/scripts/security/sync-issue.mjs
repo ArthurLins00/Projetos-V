@@ -74,8 +74,18 @@ const body =
     : `${markdown.slice(0, room - 200)}\n\n…\n\n> Lista cortada pelo limite de tamanho da issue: a lista completa está no artefato \`relatorio-seguranca\`.\n\n${itemsMarker}`;
 const runLink = report.execucao ? `[execução](${report.execucao})` : 'execução local';
 
-const open = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'open', '--label', LABEL, '--limit', '50', '--json', 'number,body,title,assignees'))
-  .filter((i) => i.body?.includes(MARKER));
+// Forks costumam ter as issues desligadas: aí o relatório fica só no artefato, sem quebrar o workflow
+let listed;
+try {
+  listed = gh('issue', 'list', '--repo', REPO, '--state', 'open', '--label', LABEL, '--limit', '50', '--json', 'number,body,title,assignees');
+} catch (error) {
+  if (/disabled issues/i.test(String(error?.stderr ?? error?.message))) {
+    console.log(`::warning::O repositório ${REPO} está com as issues desligadas; o relatório fica só no artefato relatorio-seguranca.`);
+    process.exit(0);
+  }
+  throw error;
+}
+const open = JSON.parse(listed).filter((i) => i.body?.includes(MARKER));
 const existing = open[0];
 
 if (!report.total) {
