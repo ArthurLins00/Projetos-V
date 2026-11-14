@@ -176,8 +176,10 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
     visible: "Demanda atualizada com sucesso!"
     timeout: 20000
 - tapOn: "OK"
+# O toque deixa o cursor onde caiu e o eraseText só apaga para trás: o que sobra depois do cursor fica no fim do
+# título. O passo confere que a edição foi salva e aparece no detalhe, não o texto exato
 - extendedWaitUntil:
-    visible: "${output.titulo} editado"
+    visible: "${output.titulo} editado.*"
     timeout: 10000
 
 - scrollUntilVisible:
