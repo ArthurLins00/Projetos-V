@@ -3902,6 +3902,18 @@
     },
     {
       "suite": "e2e-telas",
+      "arquivo": "mobile/e2e/demand_crud.yaml",
+      "grupo": null,
+      "titulo": "M-05 Ciclo completo de uma demanda pelas telas",
+      "casos": [
+        "TC-46"
+      ],
+      "hus": [
+        "HU-04"
+      ]
+    },
+    {
+      "suite": "e2e-telas",
       "arquivo": "mobile/e2e/login_invalid_password.yaml",
       "grupo": null,
       "titulo": "M-01 Login com senha errada mostra o alerta e fica na tela de login",
@@ -3926,20 +3938,7 @@
     },
     {
       "suite": "e2e-telas",
-      "arquivo": "mobile/e2e/pending/demand_crud.yaml",
-      "grupo": null,
-      "titulo": "M-05 Ciclo completo de uma demanda pelas telas",
-      "casos": [
-        "TC-46"
-      ],
-      "hus": [
-        "HU-04"
-      ],
-      "desligado": true
-    },
-    {
-      "suite": "e2e-telas",
-      "arquivo": "mobile/e2e/pending/register.yaml",
+      "arquivo": "mobile/e2e/register.yaml",
       "grupo": null,
       "titulo": "M-02 Cadastro pela tela e login com a conta nova",
       "casos": [
@@ -3947,8 +3946,7 @@
       ],
       "hus": [
         "HU-01"
-      ],
-      "desligado": true
+      ]
     },
     {
       "suite": "e2e-telas",

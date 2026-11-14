@@ -3,7 +3,7 @@ name: "[TC-46] M-05 Ciclo completo de uma demanda pelas telas"
 ---
 - evalScript: ${output.titulo = 'Maestro poste ' + Date.now()}
 
-- runFlow: ../subflows/login.yaml
+- runFlow: subflows/login.yaml
 
 - tapOn:
     id: "new-demand-button"
