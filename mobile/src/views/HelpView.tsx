@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import { FAQ_SECTIONS, FaqItem } from '../models/Faq';
 import { EmergencyNotice } from '../components/EmergencyNotice';
 import { TermsContent } from '../components/TermsContent';
-import { CountBadge } from '../components/ui';
+import { Callout, CountBadge } from '../components/ui';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 function Question({ item, testID }: { item: FaqItem; testID: string }) {
@@ -57,6 +57,13 @@ export function HelpView() {
           ))}
         </View>
       ))}
+
+      <View style={styles.notice}>
+        <Callout testID="help-more" title="Ainda com dúvidas?" icon="sparkles">
+          Pergunte ao Assistente Fiscalize (ícone de estrelas na tela inicial) ou registre uma demanda descrevendo o
+          problema: a equipe responsável responde pelo próprio app.
+        </Callout>
+      </View>
 
       <Text style={styles.sectionLabel}>Em caso de emergência</Text>
       <EmergencyNotice style={styles.notice} />
