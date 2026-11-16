@@ -4,6 +4,12 @@
   "private": true,
   "description": "Fiscalize — orquestração da suíte de testes (backend + E2E)",
   "scripts": {
+    "dev:local": "node scripts/dev-local.mjs",
+    "dev:local:api": "node scripts/dev-local.mjs --no-mobile",
+    "setup:local": "node scripts/dev-local.mjs --setup-only",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:ai": "npm run dev:local --prefix ai-agent",
+    "dev:mobile": "npm run dev:local --prefix mobile",
     "test": "npm run test:all",
     "test:unit": "npm run test:unit --prefix backend",
     "test:api": "npm run test:api --prefix backend",

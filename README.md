@@ -84,6 +84,11 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 > Instalação do Docker, variáveis, agente de IA e solução de problemas em
 > [`docs/COMO_RODAR_COM_DOCKER.md`](docs/COMO_RODAR_COM_DOCKER.md).
 
+> **Tudo com um comando (sem containers para a API):** na raiz, `npm run dev:local` cria os `.env` que
+> faltarem a partir dos modelos, instala as dependências, usa o PostgreSQL da porta 5432 (ou sobe o do
+> `compose.yaml` no Docker), aplica migrações e seed e inicia o backend, o agente de IA (só com
+> `GEMINI_API_KEY` em `ai-agent/.env`) e o Metro do app. Veja [Modo local](#modo-local).
+
 ### Pré-requisitos
 
 - **Node.js 22**
@@ -132,6 +137,28 @@ npx expo start
 
 O app descobre sozinho o endereço do backend (mesmo IP do computador que roda o Expo, porta 3000).
 Para usar outro servidor, defina `EXPO_PUBLIC_API_URL` em `mobile/.env`.
+
+### Modo local
+
+Scripts da raiz para testar backend, agente de IA e app na sua máquina:
+
+| Script | O que faz |
+|---|---|
+| `npm run dev:local` | Prepara o ambiente e sobe backend (porta 3000), agente de IA (porta 3333) e Metro do app |
+| `npm run dev:local:api` | Igual, sem o Metro (só backend + agente) |
+| `npm run setup:local` | Só prepara: `.env`, dependências, banco, migrações e seed |
+| `npm run dev:backend` | Só o backend (`backend`: `npm run dev`) |
+| `npm run dev:ai` | Só o agente de IA, recarregando ao salvar (`ai-agent`: `npm run dev:local`) |
+| `npm run dev:mobile` | Só o Metro, com cache limpo (`mobile`: `npm run dev:local`) |
+
+Opções do `dev:local` (depois de `--`, ex.: `npm run dev:local -- --no-ai`): `--no-docker`, `--no-mobile`,
+`--no-ai`, `--no-seed`, `--setup-only`.
+
+- O banco é o da `DATABASE_URL` do `backend/.env`. Se nada responder na porta, o script sobe o PostgreSQL
+  (e o Redis) do `compose.yaml`; sem Docker, segue sem Redis, que é opcional.
+- Se o backend ou o agente já estiverem rodando em outro terminal, o script reaproveita o que está no ar.
+- O agente só sobe com `GEMINI_API_KEY` em `ai-agent/.env`; sem ela, o resto funciona e o chat fica indisponível.
+- Os arquivos `.env` existentes nunca são sobrescritos.
 
 ### Usuários de teste (criados pelo seed)
 

@@ -1,6 +1,7 @@
 export { Button } from './Button';
 export { TextField } from './TextField';
 export { Chip } from './Chip';
+export { Callout } from './Callout';
 export { CountBadge } from './CountBadge';
 export { StatusBadge } from './StatusBadge';
 export { EmptyState } from './EmptyState';

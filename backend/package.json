@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
+    "dev:local": "prisma migrate deploy && npm run seed && ts-node-dev src/server.ts",
     "dev:demo": "cross-env DEMO_MODE=true ts-node-dev src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
