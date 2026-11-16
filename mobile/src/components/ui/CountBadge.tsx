@@ -1,3 +1,6 @@
+/** @jsxImportSource nativewind */
+// O pragma acima liga o NativeWind só neste arquivo (ver babel.config.js). Não use Pressable com
+// `style` em função aqui: o runtime do NativeWind descarta esse estilo.
 import React from 'react';
 import { Text, View } from 'react-native';
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
