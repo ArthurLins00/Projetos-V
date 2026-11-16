@@ -87,7 +87,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 > **Tudo com um comando (sem containers para a API):** na raiz, `npm run dev:local` cria os `.env` que
 > faltarem a partir dos modelos, instala as dependências, usa o PostgreSQL da porta 5432 (ou sobe o do
 > `compose.yaml` no Docker), aplica migrações e seed e inicia o backend, o agente de IA (só com
-> `GEMINI_API_KEY` em `ai-agent/.env`) e o Metro do app. Veja [Modo local](#modo-local-npm-run-devlocal).
+> `GEMINI_API_KEY` em `ai-agent/.env`) e o Metro do app. Veja [Modo local](#modo-local).
 
 ### Pré-requisitos
 
@@ -138,7 +138,7 @@ npx expo start
 O app descobre sozinho o endereço do backend (mesmo IP do computador que roda o Expo, porta 3000).
 Para usar outro servidor, defina `EXPO_PUBLIC_API_URL` em `mobile/.env`.
 
-### Modo local (`npm run dev:local`)
+### Modo local
 
 Scripts da raiz para testar backend, agente de IA e app na sua máquina:
 
