@@ -24,7 +24,7 @@ services:
       backend:
         condition: service_healthy
     environment:
-      DOMINIO: ${DOMINIO:?Defina DOMINIO no .env da raiz (ex.: fiscalize.seudominio.com.br)}
+      DOMINIO: "${DOMINIO:?Defina DOMINIO no .env da raiz, por exemplo fiscalize.seudominio.com.br}"
     ports:
       - "80:80"
       - "443:443"
