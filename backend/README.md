@@ -45,6 +45,9 @@ npm run seed
 npm run dev
 ```
 
+Ou, num comando só, `npm run dev:local` (migrações + seed + servidor). Na raiz do repositório,
+`npm run dev:local` prepara tudo e sobe também o agente de IA e o app ([README › Modo local](../README.md#modo-local)).
+
 Passo a passo mais detalhado, com solução de problemas: [`COMO_RODAR_O_BACK.md`](COMO_RODAR_O_BACK.md).
 
 ### Usuários criados pelo seed
@@ -296,6 +299,7 @@ linhas e 83% dos branches (meta MQ-02: 85% e 80%); para medir: `npx jest --cover
 | Script | Descrição |
 |---|---|
 | `npm run dev` | Servidor em desenvolvimento, com recarga automática |
+| `npm run dev:local` | Aplica as migrações, roda o seed e sobe o servidor em desenvolvimento |
 | `npm run dev:demo` | Igual ao `dev`, mas com `DEMO_MODE=true` |
 | `npm run build` | Gera o Prisma Client e compila o TypeScript para `dist/` |
 | `npm start` | Executa a versão compilada |

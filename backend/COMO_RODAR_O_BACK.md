@@ -4,6 +4,10 @@ Guia único de configuração do backend sem Docker para a API. Para subir **tud
 (PostgreSQL, Redis, backend e agente de IA) com um comando, use o
 [guia do Docker](../docs/COMO_RODAR_COM_DOCKER.md).
 
+> **Atalho:** na raiz do repositório, `npm run dev:local` faz os passos 2 a 6 sozinho (cria o `.env` se
+> faltar, usa o PostgreSQL da porta 5432 ou sobe o do Docker, aplica migrações e seed) e ainda sobe o
+> agente de IA e o app. Só a API: `npm run dev:local:api`. Detalhes em [README › Modo local](../README.md#modo-local).
+
 ## 1. Requisitos
 
 - **Node.js 22** (mesma versão do CI) com npm.
@@ -96,6 +100,7 @@ Comandos úteis:
 
 | Comando | O que faz |
 |---|---|
+| `npm run dev:local` | Aplica as migrações, roda o seed e sobe o servidor (passos 5 e 6 de uma vez) |
 | `npm run dev:demo` | Sobe em modo de demonstração (código do 2FA na resposta do login) |
 | `npm run etl` | Roda o pipeline ETL de métricas uma vez |
 | `npx prisma studio` | Abre uma interface web para ver e editar os dados |

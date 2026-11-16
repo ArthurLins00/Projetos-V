@@ -123,6 +123,9 @@ npm install
 npx expo start
 ```
 
+> **Atalho:** na raiz do repositório, `npm run dev:local` sobe backend, agente de IA e o Metro juntos;
+> `npm run dev:mobile` sobe só o Metro com cache limpo. Detalhes em [README › Modo local](../README.md#modo-local).
+
 **No celular (Expo Go):** escaneie o QR code. O celular precisa estar na mesma rede Wi-Fi do computador,
 e o firewall do Windows precisa liberar o Node.js nas portas 8081 (Metro) e 3000 (backend).
 
@@ -147,6 +150,7 @@ Android Studio, com solução de problemas, está em [`COMO_RODAR_ANDROID_STUDIO
 | Script | Descrição |
 |---|---|
 | `npm start` | Inicia o Metro (Expo) |
+| `npm run dev:local` | Inicia o Metro com o cache limpo (`expo start --clear`); use depois de mudar o `babel.config.js` ou o `.env` |
 | `npm run android` | Build de desenvolvimento e execução no Android (`expo run:android`) |
 | `npm run ios` | Build de desenvolvimento e execução no iOS (requer macOS) |
 | `npm run prebuild` | Gera a pasta nativa `android/` (necessário após mudar o `app.json` ou instalar lib nativa) |

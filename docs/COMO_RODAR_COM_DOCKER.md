@@ -215,7 +215,9 @@ Depois de mudar o `.env`, recrie os containers: `docker compose up -d`.
 | Subir só banco e Redis (backend rodando com `npm run dev`) | `docker compose up -d postgres redis` |
 
 **Modo híbrido (recomendado para quem está programando o backend):** suba só `postgres` e `redis` no
-Docker e rode a API na máquina com `npm run dev`, que recarrega a cada alteração. No `backend/.env`:
+Docker e rode a API na máquina com `npm run dev`, que recarrega a cada alteração. O `npm run dev:local` da
+raiz faz isso sozinho: sobe pelo Docker só o banco e o Redis que ainda não estiverem rodando, aplica
+migrações e seed e inicia backend, agente e app ([README › Modo local](../README.md#modo-local)). No `backend/.env`:
 
 ```env
 DATABASE_URL="postgresql://fiscalize:fiscalize@localhost:5432/fiscalize?schema=public"
