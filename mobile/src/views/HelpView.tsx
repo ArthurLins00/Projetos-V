@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 import { FAQ_SECTIONS, FaqItem } from '../models/Faq';
 import { EmergencyNotice } from '../components/EmergencyNotice';
 import { TermsContent } from '../components/TermsContent';
+import { CountBadge } from '../components/ui';
 import { makeStyles, radius, shadow, useTheme } from '../theme';
 
 function Question({ item, testID }: { item: FaqItem; testID: string }) {
@@ -48,7 +49,8 @@ export function HelpView() {
         <View key={section.title} style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name={section.icon} size={18} color={colors.primary} />
-            <Text style={styles.cardTitle}>{section.title}</Text>
+            <Text style={[styles.cardTitle, styles.flexText]}>{section.title}</Text>
+            <CountBadge value={section.items.length} />
           </View>
           {section.items.map((item, itemIndex) => (
             <Question key={item.question} item={item} testID={`faq-${sectionIndex}-${itemIndex}`} />

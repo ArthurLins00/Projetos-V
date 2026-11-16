@@ -245,7 +245,7 @@ Resumo; a justificativa de cada uma vem logo abaixo.
 
 | Item | Situação | Motivo |
 |---|---|---|
-| **GlueStack UI / NativeWind** | Não adotado | O app tem um design system próprio pequeno ([`src/components/ui`](../../mobile/src/components/ui) e [`src/theme`](../../mobile/src/theme), com tema claro/escuro). Migrar todas as telas no fim do semestre trazia risco de regressão nos `testID` usados pelo Maestro sem ganho funcional. |
+| **GlueStack UI / NativeWind** | Adoção parcial | NativeWind e GlueStack UI estão configurados (`babel.config.js`, `metro.config.js`, `tailwind.config.js`) e usados no selo [`CountBadge`](../../mobile/src/components/ui/CountBadge.tsx), exibido na tela de ajuda. O restante do app segue no design system próprio ([`src/components/ui`](../../mobile/src/components/ui) e [`src/theme`](../../mobile/src/theme), com tema claro/escuro): migrar todas as telas no fim do semestre trazia risco de regressão nos `testID` usados pelo Maestro sem ganho funcional. A biblioteca nativa nova (Reanimated) exigiu subir a versão para 1.1.0, o que pede um APK novo. |
 | **Modo offline (AsyncStorage)** | Adotado em versão básica (só leitura) | Cache das demandas consultadas; envio offline fica fora do escopo. Ver 3.5.1. |
 | **Zustand** | Adotado | Stores de demandas e de conexão. Ver 3.4. |
 
