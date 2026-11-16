@@ -1,3 +1,4 @@
+import '../global.css';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
