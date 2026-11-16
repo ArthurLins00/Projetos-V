@@ -73,6 +73,9 @@ npm run seed
 npm run dev
 ```
 
+Ou, na raiz do repositório, `npm run dev:local:api`: faz a mesma preparação e sobe backend e agente de IA
+([README › Modo local](../README.md#modo-local)).
+
 O `backend/.env` precisa ter pelo menos `DATABASE_URL` e `JWT_SECRET`.
 O servidor sobe em `http://localhost:3000` (teste em `http://localhost:3000/health`).
 

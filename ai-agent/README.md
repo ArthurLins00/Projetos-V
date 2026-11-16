@@ -90,6 +90,7 @@ GEMINI_RPM=15
 | `npm start -- --acompanhamento` | Chat de **consulta de status** como cidadão (dados mockados) | Sim |
 | `npm start -- --acompanhamento --admin` | O mesmo, como **admin** (vê os chamados de todos) | Sim |
 | `npm run serve` | Sobe o agente como serviço HTTP para o **app** (ver [Integração](#integração-com-o-app-fiscalize)) | Sim |
+| `npm run dev:local` | Igual ao `serve`, recarregando a cada alteração (`tsx watch`) | Sim |
 | `npm run typecheck` | Checagem de tipos do TypeScript | Não |
 
 Dentro do chat (`npm start`): `/casos` mostra os prompts de teste, `/ferramentas` lista as
@@ -201,6 +202,10 @@ admin. A sessão de conversa é vinculada ao ID do usuário no backend, então n
 conversa de outra pessoa.
 
 ### Como rodar integrado
+
+> **Atalho:** na raiz do repositório, `npm run dev:local` sobe backend, agente (quando há `GEMINI_API_KEY`
+> no `ai-agent/.env`) e app de uma vez; `npm run dev:ai` sobe só o agente. Detalhes em
+> [README › Modo local](../README.md#modo-local). O passo a passo manual continua abaixo.
 
 1. **Backend** (`backend/`): suba normalmente (`npm run dev`, porta 3000). Por padrão ele procura
    o agente em `http://127.0.0.1:3333`; para mudar, defina `AI_AGENT_URL` no `backend/.env`.
