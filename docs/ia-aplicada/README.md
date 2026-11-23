@@ -130,6 +130,24 @@ App (balão 💬) ──POST /ai/chat + JWT──▶ Backend ──POST /chat + 
 - **Descartado:** **Jest** no agente: o projeto é ESM puro, e o `node:test` dispensa configuração de
   transformação.
 
+### 3.7 Dados em JSON, funções de acesso e log de uso dos dados
+
+- **Como:** categorias, órgãos, regras e chamados ficam em arquivos JSON versionados em
+  [`ai-agent/dados/`](../../ai-agent/dados). As ferramentas só os leem pelas funções de
+  [`acesso.ts`](../../ai-agent/src/data/acesso.ts), e cada chamada acrescenta uma linha JSON a
+  `ai-agent/logs/uso-dados.jsonl` com data e hora, função, ferramenta que chamou, canal, identificadores
+  consultados, quantidade de registros e sucesso ou erro. `npm run resumo` resume o log (chamadas, erros,
+  registros mais e nunca consultados).
+- **Por quê:** mostra como o agente usa os dados sem depender do texto gerado pelo modelo, e revela dados
+  nunca usados (regras sem cobertura, chamados finalizados) e erros de chamada (ex.: categoria inativa).
+- **Descartados:**
+  - **Ferramentas externas de observabilidade (Langfuse, OpenTelemetry, painéis):** a entrega pede um registro
+    simples, e um arquivo `.jsonl` se lê com qualquer editor e não exige servidor à parte.
+  - **Banco de dados para o agente:** a base é pequena e estável; JSON versionado permite revisar mudanças
+    em PR e repetir a "experiência de alterar um dado" sem infraestrutura.
+- **Detalhes:** dicionário de dados, funções de acesso, as três chamadas reproduzíveis e as respostas sobre
+  o uso dos dados em [`ai-agent/README.md`](../../ai-agent/README.md#2-dicionário-de-dados).
+
 ---
 
 ## 4. Privacidade e uso responsável

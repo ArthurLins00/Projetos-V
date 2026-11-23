@@ -25,10 +25,10 @@
     "agente-ia": {
       "nome": "Agente de IA (node --test)",
       "pasta": "ai-agent/tests",
-      "testes": 33
+      "testes": 36
     }
   },
-  "total": 378,
+  "total": 381,
   "testes": [
     {
       "suite": "unit",
@@ -4192,6 +4192,36 @@
     },
     {
       "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "funções de acesso aos dados e log de uso",
+      "titulo": "categoria sem chamados devolve lista vazia e registra 0 registros com sucesso",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "funções de acesso aos dados e log de uso",
+      "titulo": "identificador inexistente gera erro claro e linha de erro no log",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/ferramentas.test.ts",
+      "grupo": "funções de acesso aos dados e log de uso",
+      "titulo": "acrescenta linhas sem apagar as anteriores e nunca grava o relato nem as coordenadas",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
       "arquivo": "ai-agent/tests/live/gemini.test.ts",
       "grupo": "Gemini ao vivo",
       "titulo": "${CT01.id}: chama as 2 ferramentas e responde com CELPE / Crítica / protocolos",
@@ -4747,7 +4777,7 @@
     "TC-56": {
       "hu": null,
       "titulo": "Agente de IA",
-      "testes": 33,
+      "testes": 36,
       "suites": [
         "agente-ia"
       ]

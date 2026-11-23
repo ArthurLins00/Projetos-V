@@ -609,7 +609,7 @@ Status: `Automatizado` (teste já no repositório) · `Parcial` (existe teste, m
 | 39 | `TC-44` | `HU-04` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-21, A-27, A-48; órgão inativo nunca recebe o chamado)` |
 | 40 | `TC-49` | `—` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-85 a A-89, E-32, U-42)` |
 | 41 | `TC-54` | `HU-09` | `Integração` | `3` | `2` | `2` | `(3×2)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (A-67 a A-73)` |
-| 42 | `TC-56` | `—` | `Componente` | `3` | `3` | `3` | `(3×3)÷3 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (ai-agent/tests, seção 3.5 do TESTES.md: 23 testes com cliente roteirizado em todo push e PR; 10 testes ao vivo contra o Gemini na regressão diária)` |
+| 42 | `TC-56` | `—` | `Componente` | `3` | `3` | `3` | `(3×3)÷3 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (ai-agent/tests, seção 3.5 do TESTES.md: 26 testes com cliente roteirizado em todo push e PR; 10 testes ao vivo contra o Gemini na regressão diária)` |
 | 43 | `TC-25` | `HU-06` | `Integração` | `2` | `2` | `3` | `(2×3)÷2 = 3,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-20, A-16; paginação por página e limite, já que o cursor está fora do escopo)` |
 | 44 | `TC-20` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-50, E-31; registro do token Expo Push e recusa de formato inválido)` |
 | 45 | `TC-21` | `HU-05` | `Integração` | `2` | `2` | `2` | `(2×2)÷2 = 2,0` | `Victor Simas Azevedo de Almeida` | `Automatizado (U-47 com duplo do Expo Push; E-17b e E-19 pela rota real do gestor)` |

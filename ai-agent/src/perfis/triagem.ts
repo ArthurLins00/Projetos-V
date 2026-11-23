@@ -77,7 +77,7 @@ export const PERFIL_TRIAGEM: AgentProfile = {
     },
   ],
   handlers: {
-    classificar_e_rotear_ocorrencia: (args) => classificarERotearOcorrencia(args as unknown as ClassificarArgs),
-    buscar_chamados_similares: (args) => buscarChamadosSimilares(args as unknown as BuscarArgs),
+    classificar_e_rotear_ocorrencia: (args, ctx) => classificarERotearOcorrencia(args as unknown as ClassificarArgs, ctx.canal),
+    buscar_chamados_similares: (args, ctx) => buscarChamadosSimilares(args as unknown as BuscarArgs, ctx.canal),
   },
 };

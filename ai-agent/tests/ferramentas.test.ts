@@ -4,7 +4,10 @@ import { classificarERotearOcorrencia } from '../src/tools/classificarERotearOco
 import { buscarChamadosSimilares } from '../src/tools/buscarChamadosSimilares';
 import { executarFerramenta } from '../src/tools';
 import { PERFIL_TRIAGEM } from '../src/perfis/triagem';
+import { readFileSync } from 'node:fs';
 import { PONTOS } from '../src/data/mockData';
+import { buscarCategoriaAtiva, listarChamadosAbertosPorCategoria } from '../src/data/acesso';
+import { caminhoLog } from '../src/data/logUso';
 
 const { latitude, longitude } = PONTOS.boaViagem;
 
@@ -49,5 +52,43 @@ describe('executarFerramenta', () => {
     assert.deepEqual(await executarFerramenta(PERFIL_TRIAGEM, 'inexistente', {}), { error: 'Ferramenta desconhecida: inexistente' });
     const r = await executarFerramenta(PERFIL_TRIAGEM, 'buscar_chamados_similares', { categoria_id: 99, latitude, longitude });
     assert.ok('error' in r);
+  });
+});
+
+describe('funções de acesso aos dados e log de uso', () => {
+  const origem = { ferramenta: 'teste', canal: 'node:test' };
+  const ultimaLinha = () => {
+    const linhas = readFileSync(caminhoLog(), 'utf8').trim().split('\n');
+    return JSON.parse(linhas[linhas.length - 1]);
+  };
+
+  it('[TC-56] categoria sem chamados devolve lista vazia e registra 0 registros com sucesso', () => {
+    assert.deepEqual(listarChamadosAbertosPorCategoria(6, origem), []);
+    const linha = ultimaLinha();
+    assert.equal(linha.funcao, 'listarChamadosAbertosPorCategoria');
+    assert.equal(linha.chamador, 'teste');
+    assert.equal(linha.canal, 'node:test');
+    assert.deepEqual(linha.parametros, { categoria_id: 6 });
+    assert.equal(linha.registros_retornados, 0);
+    assert.equal(linha.sucesso, true);
+    assert.ok(!Number.isNaN(Date.parse(linha.data_hora)));
+  });
+
+  it('[TC-56] identificador inexistente gera erro claro e linha de erro no log', () => {
+    assert.throws(() => buscarCategoriaAtiva(99, origem), /Categoria inexistente: 99/);
+    const linha = ultimaLinha();
+    assert.equal(linha.sucesso, false);
+    assert.match(linha.erro, /inexistente/);
+    assert.equal(linha.registros_retornados, 0);
+  });
+
+  it('[TC-56] acrescenta linhas sem apagar as anteriores e nunca grava o relato nem as coordenadas', () => {
+    const antes = readFileSync(caminhoLog(), 'utf8').trim().split('\n').length;
+    classificarERotearOcorrencia({ descricao: 'Fiação exposta perto da escola municipal', latitude, longitude });
+    const depois = readFileSync(caminhoLog(), 'utf8').trim().split('\n');
+    assert.equal(depois.length, antes + 3, 'regra, categoria e órgão');
+    const novas = depois.slice(antes).join('\n');
+    assert.doesNotMatch(novas, /escola|fiacao|Fiação|-8\.1197|-34\.8986/i);
+    assert.deepEqual(depois.slice(antes).map((l) => JSON.parse(l).funcao), ['encontrarRegraPorTexto', 'buscarCategoriaAtiva', 'buscarOrgao']);
   });
 });

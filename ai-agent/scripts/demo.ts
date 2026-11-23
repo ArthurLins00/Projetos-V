@@ -7,7 +7,7 @@ import { ciano, formatarChamadaFerramenta, negrito, verde } from '../src/cli/for
 const client = new GeminiClient(requireApiKey(), GEMINI_MODEL, GEMINI_RPM);
 
 for (const caso of CASOS_DE_TESTE) {
-  const agent = new FiscalizeAgent(client, { onToolCall: (c) => console.log(formatarChamadaFerramenta(c)) });
+  const agent = new FiscalizeAgent(client, { contexto: { canal: 'npm run demo' }, onToolCall: (c) => console.log(formatarChamadaFerramenta(c)) });
   console.log(negrito(`\n═══ ${caso.id} — ${caso.titulo} ═══`));
   console.log(`${ciano('Você ›')} ${caso.prompt}`);
   const resposta = await agent.send(caso.prompt);

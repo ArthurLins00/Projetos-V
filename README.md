@@ -33,6 +33,13 @@ cidadão acompanha o andamento pelo app até a resolução.
   distribuição por categoria.
 - **Notificações** por push (Expo Notifications), e-mail e na tela a cada mudança de status do chamado.
 - **Build empacotado** pelo EAS (APK de distribuição interna); passo a passo em [`mobile/README.md`](mobile/README.md#build-empacotado-eas).
+  O APK mais recente está nas [Releases do GitHub](https://github.com/ArthurLins00/Projetos-V/releases/latest).
+
+## Vídeo demonstrativo
+
+Screencast do sistema completo integrado (cadastro/login → registro de demanda com foto e GPS →
+acompanhamento e filtros → atualização de status pelo gestor → notificação ao cidadão):
+**_link do vídeo a definir_**.
 
 ## Requisitos do projeto
 
@@ -70,7 +77,7 @@ app/ (Expo Router)          rotas: só apontam para a View de cada tela
 ├── backend/          API REST (Express + Prisma), seed do banco e testes unitários/API
 ├── mobile/           App React Native (Expo) e fluxos E2E do Maestro (mobile/e2e)
 ├── e2e/              Testes E2E com Playwright (jornadas completas contra a API real)
-├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B) — ver ai-agent/README.md
+├── ai-agent/         Agente conversacional com Gemini + Function Calling (AV2, Trilha B): dados em JSON, funções de acesso e log de uso — ver ai-agent/README.md
 ├── docs/             Documentação por disciplina do PI (mobile, segurança, negócios, dados, testes, projeto, IA) — ver docs/README.md
 └── package.json      Scripts que rodam toda a suíte de testes
 ```
@@ -159,6 +166,34 @@ Opções do `dev:local` (depois de `--`, ex.: `npm run dev:local -- --no-ai`): `
 - Se o backend ou o agente já estiverem rodando em outro terminal, o script reaproveita o que está no ar.
 - O agente só sobe com `GEMINI_API_KEY` em `ai-agent/.env`; sem ela, o resto funciona e o chat fica indisponível.
 - Os arquivos `.env` existentes nunca são sobrescritos.
+
+### Variáveis de ambiente
+
+Cada parte tem um arquivo `.env.example` com os valores padrão; copie para `.env` na mesma pasta
+(`npm run dev:local` faz isso sozinho). Nenhum `.env` com valores reais vai para o repositório.
+
+| Arquivo | Variável | Para que serve |
+|---|---|---|
+| `backend/.env` | `DATABASE_URL` | **Obrigatória.** Conexão com o PostgreSQL (`postgresql://usuario:senha@host:5432/banco?schema=public`) |
+| | `JWT_SECRET` | **Obrigatória.** Chave que assina os tokens de login; use um valor longo e aleatório |
+| | `PORT`, `NODE_ENV` | Porta da API (padrão 3000) e ambiente (`development` / `production`) |
+| | `REDIS_URL` | Opcional. Cache e limites de tentativa; sem ele, a API usa memória |
+| | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Opcional. Envio de e-mails; sem `SMTP_HOST`, os códigos de 2FA e de recuperação aparecem no log do backend |
+| | `AI_AGENT_URL`, `AI_AGENT_SECRET` | Opcional. Endereço do agente de IA (padrão `http://127.0.0.1:3333`) e segredo compartilhado com ele |
+| | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Opcional. Conta de admin criada pelo seed |
+| `ai-agent/.env` | `GEMINI_API_KEY` | Chave da API do Gemini (só para o chat; o resto do sistema funciona sem ela) |
+| | `GEMINI_MODEL`, `GEMINI_RPM` | Modelo usado e limite de requisições por minuto |
+| | `FISCALIZE_API_URL`, `AI_AGENT_PORT`, `AI_AGENT_HOST`, `AI_AGENT_SECRET` | Modo servidor: backend consultado, porta e host do agente, segredo compartilhado |
+| `mobile/.env` | `EXPO_PUBLIC_API_URL` | Opcional. Endereço do backend; sem ela, o app usa o IP do computador que roda o Metro |
+| `.env` (raiz) | `POSTGRES_*`, `*_PORT`, `JWT_SECRET`, `SEED_*`, `GEMINI_*`… | Usado pelo `docker compose` ([guia](docs/COMO_RODAR_COM_DOCKER.md)) |
+
+A lista completa das variáveis do backend está em [`backend/README.md`](backend/README.md).
+
+### Banco de dados
+
+PostgreSQL com o esquema em [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma). `npx prisma migrate deploy`
+cria as tabelas pelas migrações de [`backend/prisma/migrations`](backend/prisma/migrations) e `npm run seed`
+([`seed.ts`](backend/prisma/seed.ts)) cadastra categorias, órgãos, regras de competência e os usuários de teste abaixo.
 
 ### Usuários de teste (criados pelo seed)
 

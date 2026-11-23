@@ -102,7 +102,7 @@ export const PERFIL_ACOMPANHAMENTO: AgentProfile = {
   handlers: {
     consultar_status_chamados: (args, ctx) => {
       if (!ctx.chamados) throw new Error('Fonte de chamados não configurada.');
-      return consultarStatusChamados(args as ConsultarArgs, ctx.chamados);
+      return consultarStatusChamados(args as ConsultarArgs, ctx.chamados, new Date(), ctx.canal);
     },
   },
 };

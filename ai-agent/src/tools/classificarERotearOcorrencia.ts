@@ -1,5 +1,8 @@
-import { CATEGORIAS, ORGAOS, REGRAS, REGRA_PADRAO, type Prioridade } from '../data/mockData';
+import { buscarCategoriaAtiva, buscarOrgao, encontrarRegraPorTexto } from '../data/acesso';
+import type { Prioridade } from '../data/mockData';
 import { normalizar, validarCoordenadas } from './utils';
+
+const FERRAMENTA = 'classificar_e_rotear_ocorrencia';
 
 export interface ClassificarArgs {
   descricao: string;
@@ -21,30 +24,17 @@ export interface ClassificacaoResultado {
   observacao?: string;
 }
 
-export function classificarERotearOcorrencia(args: ClassificarArgs): ClassificacaoResultado {
+export function classificarERotearOcorrencia(args: ClassificarArgs, canal?: string): ClassificacaoResultado {
   const descricao = String(args.descricao ?? '').trim();
   if (descricao.length < 5) {
     throw new Error('A descrição da ocorrência é obrigatória (mínimo de 5 caracteres).');
   }
   const { latitude, longitude } = validarCoordenadas(args.latitude, args.longitude);
 
-  const texto = normalizar(descricao);
-  const ativas = new Set(CATEGORIAS.filter((c) => c.ativa).map((c) => c.id));
-
-  let regra = REGRA_PADRAO;
-  let termos: string[] = [];
-  for (const candidata of REGRAS) {
-    if (!ativas.has(candidata.categoriaId)) continue;
-    const encontrados = candidata.palavrasChave.filter((p) => texto.includes(p));
-    if (encontrados.length > 0) {
-      regra = candidata;
-      termos = encontrados;
-      break;
-    }
-  }
-
-  const categoria = CATEGORIAS.find((c) => c.id === regra.categoriaId)!;
-  const orgao = ORGAOS[regra.orgao];
+  const origem = { ferramenta: FERRAMENTA, canal };
+  const { regra, termos } = encontrarRegraPorTexto(normalizar(descricao), origem);
+  const categoria = buscarCategoriaAtiva(regra.categoriaId, origem);
+  const orgao = buscarOrgao(regra.orgao, origem);
 
   return {
     categoria_id: categoria.id,
@@ -57,7 +47,7 @@ export function classificarERotearOcorrencia(args: ClassificarArgs): Classificac
     emergencia: Boolean(regra.emergencia),
     termos_identificados: termos,
     localizacao: { latitude, longitude },
-    ...(regra === REGRA_PADRAO && {
+    ...(regra.padrao && {
       observacao: 'Nenhuma palavra-chave reconhecida; encaminhado para triagem manual (Outros Problemas).',
     }),
   };

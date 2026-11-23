@@ -42,3 +42,6 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Log de uso dos dados do agente de IA (gerado por npm run chamadas / demo / start)
+ai-agent/logs/
