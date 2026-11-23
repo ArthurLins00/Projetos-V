@@ -5,6 +5,10 @@ uma demonstração na faculdade com **até 5 pessoas testando** ao mesmo tempo. 
 e o mínimo de mudança no projeto: o mesmo `compose.yaml` usado no desenvolvimento roda no servidor, com
 três ajustes de produção.
 
+> **Instância no ar:** <https://fiscalize.topsix.com.br> (saúde em
+> [`/health`](https://fiscalize.topsix.com.br/health), Swagger em [`/docs`](https://fiscalize.topsix.com.br/docs)).
+> Nos exemplos abaixo, `fiscalize.seudominio.com.br` é esse endereço.
+
 Não é um ambiente para escala nem para dados reais: um único servidor, sem redundância. Para a arquitetura
 de produção "de verdade" (banco gerenciado, armazenamento de objetos, cofre de segredos), veja
 [`../seguranca-da-informacao/05_Backup_e_Continuidade_de_Operacao.md`](../seguranca-da-informacao/05_Backup_e_Continuidade_de_Operacao.md).

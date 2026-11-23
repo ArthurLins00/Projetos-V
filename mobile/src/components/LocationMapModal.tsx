@@ -16,7 +16,7 @@ interface Props {
 }
 
 // Os tiles do OpenStreetMap só são servidos com Referer; sem uma origem, a WebView não envia o cabeçalho
-const MAP_BASE_URL = 'https://fiscalize.projetosv.com.br/';
+const MAP_BASE_URL = 'https://fiscalize.topsix.com.br/';
 
 function mapHtml(latitude: number, longitude: number, dark: boolean) {
   return `<!doctype html>

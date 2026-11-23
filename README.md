@@ -35,6 +35,19 @@ cidadão acompanha o andamento pelo app até a resolução.
 - **Build empacotado** pelo EAS (APK de distribuição interna); passo a passo em [`mobile/README.md`](mobile/README.md#build-empacotado-eas).
   O APK mais recente está nas [Releases do GitHub](https://github.com/ArthurLins00/Projetos-V/releases/latest).
 
+## Backend em produção
+
+A API está no ar, com HTTPS (certificado Let's Encrypt emitido pelo Caddy), em
+**<https://fiscalize.topsix.com.br>**. O APK das [Releases](https://github.com/ArthurLins00/Projetos-V/releases/latest)
+já aponta para esse endereço (`EXPO_PUBLIC_API_URL` no ambiente `preview` do EAS).
+
+| Endereço | O que mostra |
+|---|---|
+| <https://fiscalize.topsix.com.br/health> | Situação da API, do banco e do Redis |
+| <https://fiscalize.topsix.com.br/docs> | Swagger com todas as rotas |
+
+Como o servidor foi montado (VM com Docker Compose, Caddy e DNS): [`docs/deploy/README.md`](docs/deploy/README.md).
+
 ## Vídeo demonstrativo
 
 Screencast do sistema completo integrado (cadastro/login → registro de demanda com foto e GPS →
