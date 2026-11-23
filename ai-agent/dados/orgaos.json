@@ -1,0 +1,7 @@
+[
+  { "sigla": "EMLURB", "nome": "Empresa de Manutenção e Limpeza Urbana do Recife", "slaHoras": 72 },
+  { "sigla": "COMPESA", "nome": "Companhia Pernambucana de Saneamento", "slaHoras": 48 },
+  { "sigla": "CELPE", "nome": "Companhia Energética de Pernambuco", "slaHoras": 24 },
+  { "sigla": "CTTU", "nome": "Autarquia de Trânsito e Transporte Urbano do Recife", "slaHoras": 48 },
+  { "sigla": "SEMC", "nome": "Secretaria Executiva de Manutenção da Cidade do Recife", "slaHoras": 72 }
+]

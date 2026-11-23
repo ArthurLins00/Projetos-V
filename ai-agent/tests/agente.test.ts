@@ -40,7 +40,7 @@ describe('CT-01 — fiação exposta na Av. Boa Viagem', () => {
     assert.deepEqual(busca.chamados.map((c: any) => c.protocolo), ['DEM-20260921-A7K2', 'DEM-20260930-Q3MZ']);
     assert.deepEqual(busca.chamados.map((c: any) => c.distancia_aproximada_metros), [80, 150]);
     for (const c of busca.chamados) assert.deepEqual(Object.keys(c).sort(), CAMPOS_PUBLICOS);
-    assert.doesNotMatch(JSON.stringify(busca), /Maria|João|cpf|telefone|solicitante/i);
+    assert.doesNotMatch(JSON.stringify(busca), /solicitante|cid-0|descricao|bairro/i);
 
     assert.match(reply.text, /Prioridade: Crítica/);
     assert.match(reply.text, /DEM-20260921-A7K2 — ~80 m — Em Andamento/);

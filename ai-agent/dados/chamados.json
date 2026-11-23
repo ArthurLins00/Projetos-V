@@ -1,0 +1,134 @@
+[
+  {
+    "protocolo": "DEM-20260921-A7K2",
+    "categoriaId": 3,
+    "status": "Em Andamento",
+    "latitude": -8.118981,
+    "longitude": -34.8986,
+    "bairro": "Boa Viagem",
+    "descricao": "Poste soltando faísca",
+    "solicitanteId": "cid-001",
+    "abertoEm": "2026-09-21"
+  },
+  {
+    "protocolo": "DEM-20260930-Q3MZ",
+    "categoriaId": 3,
+    "status": "Aberto",
+    "latitude": -8.1197,
+    "longitude": -34.899961,
+    "bairro": "Boa Viagem",
+    "descricao": "Fios pendurados no poste",
+    "solicitanteId": "cid-002",
+    "abertoEm": "2026-09-30"
+  },
+  {
+    "protocolo": "DEM-20260815-B1TT",
+    "categoriaId": 3,
+    "status": "Resolvido",
+    "latitude": -8.119431,
+    "longitude": -34.898328,
+    "bairro": "Boa Viagem",
+    "descricao": "Lâmpada queimada (já resolvido)",
+    "solicitanteId": "cid-003",
+    "abertoEm": "2026-08-15"
+  },
+  {
+    "protocolo": "DEM-20261002-ZZ90",
+    "categoriaId": 3,
+    "status": "Aberto",
+    "latitude": -8.11431,
+    "longitude": -34.8986,
+    "bairro": "Boa Viagem",
+    "descricao": "Poste apagado (fora do raio de 200 m)",
+    "solicitanteId": "cid-004",
+    "abertoEm": "2026-10-02"
+  },
+  {
+    "protocolo": "DEM-20261001-C4RR",
+    "categoriaId": 1,
+    "status": "Aberto",
+    "latitude": -8.119251,
+    "longitude": -34.898146,
+    "bairro": "Boa Viagem",
+    "descricao": "Buraco na calçada",
+    "solicitanteId": "cid-005",
+    "abertoEm": "2026-10-01"
+  },
+  {
+    "protocolo": "DEM-20261003-E8SG",
+    "categoriaId": 2,
+    "status": "Em Análise",
+    "latitude": -8.060778,
+    "longitude": -34.8811,
+    "bairro": "Boa Vista",
+    "descricao": "Esgoto correndo na rua",
+    "solicitanteId": "cid-006",
+    "abertoEm": "2026-10-03"
+  },
+  {
+    "protocolo": "DEM-20260710-F0CH",
+    "categoriaId": 2,
+    "status": "Fechado",
+    "latitude": -8.059341,
+    "longitude": -34.8811,
+    "bairro": "Boa Vista",
+    "descricao": "Vazamento (encerrado)",
+    "solicitanteId": "cid-007",
+    "abertoEm": "2026-07-10"
+  },
+  {
+    "protocolo": "DEM-20261005-L1X0",
+    "categoriaId": 4,
+    "status": "Aberto",
+    "latitude": -8.053602,
+    "longitude": -34.9105,
+    "bairro": "Madalena",
+    "descricao": "Entulho acumulado na esquina",
+    "solicitanteId": "cid-008",
+    "abertoEm": "2026-10-05"
+  },
+  {
+    "protocolo": "DEM-20261008-S5NL",
+    "categoriaId": 5,
+    "status": "Em Andamento",
+    "latitude": -8.0336,
+    "longitude": -34.9183,
+    "bairro": "Casa Forte",
+    "descricao": "Placa de pare derrubada",
+    "solicitanteId": "cid-009",
+    "abertoEm": "2026-10-08"
+  },
+  {
+    "protocolo": "DEM-20261010-P0DA",
+    "categoriaId": 7,
+    "status": "Aberto",
+    "latitude": -8.0469,
+    "longitude": -34.899,
+    "bairro": "Graças",
+    "descricao": "Galho grande sobre a calçada (categoria descontinuada)",
+    "solicitanteId": "cid-010",
+    "abertoEm": "2026-10-10"
+  },
+  {
+    "protocolo": "DEM-20261012-V4ZA",
+    "categoriaId": 2,
+    "status": "Aberto",
+    "latitude": -8.122395,
+    "longitude": -34.896785,
+    "bairro": "Boa Viagem",
+    "descricao": "Vazamento de água na calçada",
+    "solicitanteId": "cid-002",
+    "abertoEm": "2026-10-12"
+  },
+  {
+    "protocolo": "DEM-20261015-H2OB",
+    "categoriaId": 1,
+    "status": "Em Análise",
+    "latitude": -8.0761,
+    "longitude": -34.9081,
+    "bairro": "Afogados",
+    "descricao": "Buraco grande na pista",
+    "solicitanteId": "cid-011",
+    "abertoEm": "2026-10-15"
+  }
+]

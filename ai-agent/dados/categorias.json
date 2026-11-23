@@ -1,0 +1,9 @@
+[
+  { "id": 1, "nome": "Infraestrutura", "ativa": true },
+  { "id": 2, "nome": "Água e Esgoto", "ativa": true },
+  { "id": 3, "nome": "Iluminação Pública", "ativa": true },
+  { "id": 4, "nome": "Saneamento Básico", "ativa": true },
+  { "id": 5, "nome": "Sinalização", "ativa": true },
+  { "id": 6, "nome": "Outros Problemas", "ativa": true },
+  { "id": 7, "nome": "Poda de Árvores (descontinuada)", "ativa": false }
+]

@@ -34,7 +34,7 @@ async function main() {
 
   const agent = new FiscalizeAgent(new GeminiClient(requireApiKey(), GEMINI_MODEL, GEMINI_RPM), {
     perfil: acompanhamento ? PERFIL_ACOMPANHAMENTO : PERFIL_TRIAGEM,
-    contexto: { chamados: new MockChamadosSource(usuario) },
+    contexto: { chamados: new MockChamadosSource(usuario), canal: 'cli' },
     onToolCall: (call) => console.log(formatarChamadaFerramenta(call)),
   });
 

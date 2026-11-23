@@ -3,6 +3,8 @@ import type { ChamadosSource } from '../data/chamadosSource';
 
 export interface ToolContext {
   chamados?: ChamadosSource;
+  /** Por onde a mensagem chegou (ex.: 'cli', 'POST /chat'); vai para o log de uso dos dados. */
+  canal?: string;
 }
 
 export type ToolHandler = (args: Record<string, unknown>, ctx: ToolContext) => unknown | Promise<unknown>;

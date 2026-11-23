@@ -1,0 +1,23 @@
+[
+  { "id": "R01", "categoriaId": 3, "subcategoria": "Fiação exposta com risco elétrico", "orgao": "CELPE", "prioridade": "Crítica", "slaHoras": 4, "emergencia": true,
+    "palavrasChave": ["fiacao exposta", "fio exposto", "fios expostos", "fio desencapado", "fios desencapados", "fio caido", "fios caidos", "fio solto", "fios soltos", "cabo partido", "risco de choque"] },
+  { "id": "R02", "categoriaId": 2, "subcategoria": "Esgoto a céu aberto", "orgao": "COMPESA", "prioridade": "Crítica", "slaHoras": 12, "emergencia": true,
+    "palavrasChave": ["esgoto em via", "esgoto na via", "esgoto na rua", "esgoto a ceu aberto", "esgoto transbordando", "esgoto estourado", "adutora rompida"] },
+  { "id": "R03", "categoriaId": 1, "subcategoria": "Árvore caída bloqueando via", "orgao": "EMLURB", "prioridade": "Crítica", "slaHoras": 6, "emergencia": true,
+    "palavrasChave": ["arvore caida", "arvore caiu", "arvore tombou"] },
+  { "id": "R04", "categoriaId": 1, "subcategoria": "Afundamento / cratera na via", "orgao": "EMLURB", "prioridade": "Crítica", "slaHoras": 12, "emergencia": true,
+    "palavrasChave": ["cratera", "afundamento", "desabamento", "deslizamento"] },
+  { "id": "R05", "categoriaId": 5, "subcategoria": "Semáforo apagado em cruzamento", "orgao": "CTTU", "prioridade": "Crítica", "slaHoras": 6, "emergencia": true,
+    "palavrasChave": ["semaforo apagado", "semaforo desligado", "sinal apagado"] },
+  { "id": "R06", "categoriaId": 3, "subcategoria": "Poste inclinado ou tombado", "orgao": "CELPE", "prioridade": "Alta", "slaHoras": 24, "palavrasChave": ["poste inclinado", "poste tombado", "poste torto"] },
+  { "id": "R07", "categoriaId": 3, "subcategoria": "Poste piscando", "orgao": "CELPE", "prioridade": "Baixa", "slaHoras": 72, "palavrasChave": ["piscando", "pisca"] },
+  { "id": "R08", "categoriaId": 3, "subcategoria": "Poste apagado", "orgao": "CELPE", "prioridade": "Média", "slaHoras": 48, "palavrasChave": ["poste apagado", "postes apagados", "lampada queimada", "rua escura", "sem iluminacao", "iluminacao", "poste"] },
+  { "id": "R09", "categoriaId": 2, "subcategoria": "Falta de água no bairro", "orgao": "COMPESA", "prioridade": "Alta", "slaHoras": 24, "palavrasChave": ["falta de agua", "sem agua", "torneira seca"] },
+  { "id": "R10", "categoriaId": 2, "subcategoria": "Vazamento de água na rua", "orgao": "COMPESA", "prioridade": "Alta", "slaHoras": 24, "palavrasChave": ["vazamento", "vazando", "cano estourado", "agua jorrando"] },
+  { "id": "R11", "categoriaId": 2, "subcategoria": "Bueiro entupido", "orgao": "COMPESA", "prioridade": "Média", "slaHoras": 48, "palavrasChave": ["bueiro", "esgoto", "mau cheiro"] },
+  { "id": "R12", "categoriaId": 1, "subcategoria": "Calçada danificada", "orgao": "EMLURB", "prioridade": "Média", "slaHoras": 72, "palavrasChave": ["calcada"] },
+  { "id": "R13", "categoriaId": 1, "subcategoria": "Buraco na pista", "orgao": "EMLURB", "prioridade": "Alta", "slaHoras": 48, "palavrasChave": ["buraco", "asfalto", "pavimentacao", "pista esburacada"] },
+  { "id": "R14", "categoriaId": 4, "subcategoria": "Acúmulo de lixo / entulho", "orgao": "EMLURB", "prioridade": "Média", "slaHoras": 72, "palavrasChave": ["lixo", "entulho", "coleta", "descarte irregular"] },
+  { "id": "R15", "categoriaId": 5, "subcategoria": "Sinalização danificada", "orgao": "CTTU", "prioridade": "Média", "slaHoras": 48, "palavrasChave": ["placa", "faixa de pedestre", "faixa apagada", "semaforo", "sinalizacao"] },
+  { "id": "R00", "categoriaId": 6, "subcategoria": "Não classificado", "orgao": "SEMC", "prioridade": "Baixa", "slaHoras": 72, "padrao": true, "palavrasChave": [] }
+]

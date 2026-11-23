@@ -9,7 +9,8 @@ RUN npm ci
 
 COPY . .
 
-# Sem root: o agente só lê o próprio código
+# Sem root: o agente só lê o próprio código e grava apenas o log de uso dos dados (logs/)
+RUN mkdir -p logs && chown node:node logs
 USER node
 
 # Dentro do container o serviço escuta em todas as interfaces; o compose não publica a porta no host,

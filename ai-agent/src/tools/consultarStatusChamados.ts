@@ -1,4 +1,7 @@
+import { listarChamadosDoUsuario } from '../data/acesso';
 import { STATUS_EXIBICAO, type ChamadoResumo, type ChamadosSource } from '../data/chamadosSource';
+
+const FERRAMENTA = 'consultar_status_chamados';
 
 const MAX_PROTOCOLOS = 10;
 const MAX_LISTAGEM = 20;
@@ -41,7 +44,9 @@ export async function consultarStatusChamados(
   args: ConsultarArgs,
   fonte: ChamadosSource,
   agora: Date = new Date(),
+  canal?: string,
 ): Promise<ConsultaResultado> {
+  const origem = { ferramenta: FERRAMENTA, canal };
   const status = args.status ? String(args.status) : undefined;
   if (status && !(STATUS_EXIBICAO as readonly string[]).includes(status)) {
     throw new Error(`Status inválido: ${status}. Use um de: ${STATUS_EXIBICAO.join(', ')}.`);
@@ -58,13 +63,13 @@ export async function consultarStatusChamados(
   if (protocolos.length > 0) {
     chamados = [];
     for (const protocolo of protocolos) {
-      const encontrados = await fonte.listar({ busca: protocolo });
+      const encontrados = await listarChamadosDoUsuario(fonte, { busca: protocolo }, origem);
       const exato = encontrados.find((c) => c.protocolo.toUpperCase() === protocolo);
       if (exato) chamados.push(exato);
       else naoEncontrados.push(protocolo);
     }
   } else {
-    chamados = (await fonte.listar(status ? { status } : {})).slice(0, MAX_LISTAGEM);
+    chamados = (await listarChamadosDoUsuario(fonte, status ? { status } : {}, origem)).slice(0, MAX_LISTAGEM);
   }
 
   const resumo: Record<string, number> = {};

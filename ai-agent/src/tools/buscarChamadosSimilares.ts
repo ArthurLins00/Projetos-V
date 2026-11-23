@@ -1,8 +1,9 @@
-import { CATEGORIAS, CHAMADOS, type StatusChamado } from '../data/mockData';
+import { buscarCategoriaAtiva, listarChamadosAbertosPorCategoria } from '../data/acesso';
+import type { StatusChamado } from '../data/mockData';
 import { distanciaMetros, validarCoordenadas } from './utils';
 
 export const RAIO_MAXIMO_METROS = 200;
-const STATUS_FINALIZADOS: StatusChamado[] = ['Resolvido', 'Fechado'];
+const FERRAMENTA = 'buscar_chamados_similares';
 
 export interface BuscarArgs {
   categoria_id: number;
@@ -24,16 +25,12 @@ export interface BuscaResultado {
   chamados: ChamadoSimilar[];
 }
 
-export function buscarChamadosSimilares(args: BuscarArgs): BuscaResultado {
-  const categoriaId = Number(args.categoria_id);
-  const categoria = CATEGORIAS.find((c) => c.id === categoriaId && c.ativa);
-  if (!Number.isInteger(categoriaId) || !categoria) {
-    throw new Error(`Categoria inválida ou inativa: ${args.categoria_id}.`);
-  }
+export function buscarChamadosSimilares(args: BuscarArgs, canal?: string): BuscaResultado {
+  const origem = { ferramenta: FERRAMENTA, canal };
   const { latitude, longitude } = validarCoordenadas(args.latitude, args.longitude);
+  const categoria = buscarCategoriaAtiva(Number(args.categoria_id), origem);
 
-  const chamados = CHAMADOS
-    .filter((c) => c.categoriaId === categoriaId && !STATUS_FINALIZADOS.includes(c.status))
+  const chamados = listarChamadosAbertosPorCategoria(categoria.id, origem)
     .map((c) => ({ chamado: c, distancia: distanciaMetros(latitude, longitude, c.latitude, c.longitude) }))
     .filter(({ distancia }) => distancia <= RAIO_MAXIMO_METROS)
     .sort((a, b) => a.distancia - b.distancia)

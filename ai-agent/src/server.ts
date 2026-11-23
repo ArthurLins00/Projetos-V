@@ -69,7 +69,7 @@ export function createAgentServer(options: AgentServerOptions): Server {
           : randomUUID();
 
       const { agent } = getSession(sessionId);
-      const reply = await agent.send(message, { chamados: createSource(token) });
+      const reply = await agent.send(message, { chamados: createSource(token), canal: 'POST /chat' });
 
       return json(res, 200, {
         sessionId,
