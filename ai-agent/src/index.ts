@@ -3,7 +3,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { parseArgs } from 'node:util';
 import { FiscalizeAgent } from './agent';
 import { CASOS_DE_TESTE } from './casos';
-import { GEMINI_MODEL, GEMINI_RPM, requireApiKey } from './config';
+import { GEMINI_MODELS, GEMINI_RPM, requireApiKey } from './config';
 import { GeminiClient } from './llm/geminiClient';
 import { MockChamadosSource, USUARIOS_DEMO } from './data/chamadosSource';
 import { PERFIL_ACOMPANHAMENTO } from './perfis/acompanhamento';
@@ -32,14 +32,14 @@ async function main() {
   const acompanhamento = Boolean(flags.acompanhamento);
   const usuario = flags.admin ? USUARIOS_DEMO.admin : USUARIOS_DEMO.cidadao;
 
-  const agent = new FiscalizeAgent(new GeminiClient(requireApiKey(), GEMINI_MODEL, GEMINI_RPM), {
+  const agent = new FiscalizeAgent(new GeminiClient(requireApiKey(), GEMINI_MODELS, GEMINI_RPM), {
     perfil: acompanhamento ? PERFIL_ACOMPANHAMENTO : PERFIL_TRIAGEM,
     contexto: { chamados: new MockChamadosSource(usuario), canal: 'cli' },
     onToolCall: (call) => console.log(formatarChamadaFerramenta(call)),
   });
 
   console.log(negrito('\n🏙️  Assistente Fiscalize — ' + (acompanhamento ? 'Acompanhamento de Chamados' : 'Triagem de Demandas Urbanas')));
-  console.log(cinza(`Modelo: ${GEMINI_MODEL} | Perfil: ${agent.perfil.nome}` + (acompanhamento ? ` | Usuário demo: ${usuario.id} (${usuario.perfil})` : '')));
+  console.log(cinza(`Modelos: ${GEMINI_MODELS.join(' -> ')} | Perfil: ${agent.perfil.nome}` + (acompanhamento ? ` | Usuário demo: ${usuario.id} (${usuario.perfil})` : '')));
   console.log(cinza(`Ferramentas: ${agent.perfil.declarations.map((f) => f.name).join(', ')}`));
   console.log(cinza(AJUDA));
 

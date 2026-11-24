@@ -1,10 +1,10 @@
 import { FiscalizeAgent } from '../src/agent';
 import { CASOS_DE_TESTE } from '../src/casos';
-import { GEMINI_MODEL, GEMINI_RPM, requireApiKey } from '../src/config';
+import { GEMINI_MODELS, GEMINI_RPM, requireApiKey } from '../src/config';
 import { GeminiClient } from '../src/llm/geminiClient';
 import { ciano, formatarChamadaFerramenta, negrito, verde } from '../src/cli/format';
 
-const client = new GeminiClient(requireApiKey(), GEMINI_MODEL, GEMINI_RPM);
+const client = new GeminiClient(requireApiKey(), GEMINI_MODELS, GEMINI_RPM);
 
 for (const caso of CASOS_DE_TESTE) {
   const agent = new FiscalizeAgent(client, { contexto: { canal: 'npm run demo' }, onToolCall: (c) => console.log(formatarChamadaFerramenta(c)) });

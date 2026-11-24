@@ -25,10 +25,10 @@
     "agente-ia": {
       "nome": "Agente de IA (node --test)",
       "pasta": "ai-agent/tests",
-      "testes": 36
+      "testes": 42
     }
   },
-  "total": 381,
+  "total": 387,
   "testes": [
     {
       "suite": "unit",
@@ -4222,6 +4222,66 @@
     },
     {
       "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "usa o modelo principal quando ele responde",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "principal sobrecarregado (503) cai em silêncio para a reserva",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "modelo descontinuado (404) ou cota diária (429) troca na hora, sem nova tentativa",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "o modelo que falhou fica fora da rotação nas perguntas seguintes",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "erro da requisição (400) não troca de modelo e chega ao chamador",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
+      "arquivo": "ai-agent/tests/geminiClient.test.ts",
+      "grupo": "GeminiClient — modelos de reserva",
+      "titulo": "se todos falharem, o último erro chega ao chamador",
+      "casos": [
+        "TC-56"
+      ],
+      "hus": []
+    },
+    {
+      "suite": "agente-ia",
       "arquivo": "ai-agent/tests/live/gemini.test.ts",
       "grupo": "Gemini ao vivo",
       "titulo": "${CT01.id}: chama as 2 ferramentas e responde com CELPE / Crítica / protocolos",
@@ -4777,7 +4837,7 @@
     "TC-56": {
       "hu": null,
       "titulo": "Agente de IA",
-      "testes": 36,
+      "testes": 42,
       "suites": [
         "agente-ia"
       ]
