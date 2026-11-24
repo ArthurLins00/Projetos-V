@@ -84,6 +84,7 @@ services:
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
+      GEMINI_FALLBACK_MODELS: ${GEMINI_FALLBACK_MODELS:-}
       GEMINI_RPM: ${GEMINI_RPM:-15}
       FISCALIZE_API_URL: http://backend:3000
       AI_AGENT_SECRET: ${AI_AGENT_SECRET:-}

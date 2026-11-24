@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { FiscalizeAgent, type AgentReply } from '../../src/agent';
 import { CASOS_DE_TESTE } from '../../src/casos';
-import { GEMINI_MODEL, GEMINI_RPM, getApiKey } from '../../src/config';
+import { GEMINI_MODELS, GEMINI_RPM, getApiKey } from '../../src/config';
 import { GeminiClient } from '../../src/llm/geminiClient';
 import { MockChamadosSource, USUARIOS_DEMO } from '../../src/data/chamadosSource';
 import { PERFIL_ACOMPANHAMENTO } from '../../src/perfis/acompanhamento';
@@ -12,7 +12,7 @@ const skip = apiKey ? false : 'GEMINI_API_KEY não configurada — teste ao vivo
 const [CT01, CT02, CT03] = CASOS_DE_TESTE;
 
 async function perguntar(prompt: string): Promise<AgentReply> {
-  const agent = new FiscalizeAgent(new GeminiClient(apiKey!, GEMINI_MODEL, GEMINI_RPM));
+  const agent = new FiscalizeAgent(new GeminiClient(apiKey!, GEMINI_MODELS, GEMINI_RPM));
   return agent.send(prompt);
 }
 
@@ -56,7 +56,7 @@ describe('Gemini ao vivo', { skip, timeout: 600_000 }, () => {
 
 describe('Gemini ao vivo — perfil acompanhamento', { skip, timeout: 600_000 }, () => {
   const novoAgente = (usuario: typeof USUARIOS_DEMO.cidadao) =>
-    new FiscalizeAgent(new GeminiClient(apiKey!, GEMINI_MODEL, GEMINI_RPM), {
+    new FiscalizeAgent(new GeminiClient(apiKey!, GEMINI_MODELS, GEMINI_RPM), {
       perfil: PERFIL_ACOMPANHAMENTO,
       contexto: { chamados: new MockChamadosSource(usuario) },
     });

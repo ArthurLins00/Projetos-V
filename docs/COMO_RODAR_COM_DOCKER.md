@@ -163,6 +163,7 @@ usam o `backend/.env` nem o `ai-agent/.env`: esses servem só para rodar sem Doc
 | `SEED_ADMIN_PASSWORD` | `Admin@123456` | Senha do admin criado pelo seed |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | vazio | E-mails reais; sem SMTP, os códigos aparecem em `docker compose logs backend` |
 | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_RPM` | vazio, `gemini-3.1-flash-lite`, `15` | Agente de IA |
+| `GEMINI_FALLBACK_MODELS` | vazio (usa `gemini-3.5-flash,gemini-3.6-flash,gemini-3.5-flash-lite`) | Modelos de reserva do agente, em ordem |
 | `AI_AGENT_SECRET` | vazio | Segredo compartilhado entre backend e agente |
 
 Depois de mudar o `.env`, recrie os containers: `docker compose up -d`.

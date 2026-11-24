@@ -75,8 +75,14 @@ cp .env.example .env
 ```dotenv
 GEMINI_API_KEY=sua_chave_aqui
 GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.6-flash,gemini-3.5-flash-lite
 GEMINI_RPM=15
 ```
+
+> **Modelos de reserva:** se o modelo principal estiver sobrecarregado ou fora do ar (`5xx`), descontinuado
+> (`404`) ou sem cota (`429`), o agente passa para o próximo de `GEMINI_FALLBACK_MODELS` sem
+> mostrar nada ao usuário; a troca aparece só no log do servidor (`[gemini] ... indisponível`).
+> O modelo que falhou fica 2 minutos fora da rotação (1 hora se a cota diária acabou).
 
 > **Cota do plano gratuito:** o agente limita sozinho as requisições por minuto (`GEMINI_RPM`) e,
 > se a API ainda responder `429`, espera o tempo que ela indicar e tenta de novo. Cada pergunta usa
