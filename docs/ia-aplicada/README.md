@@ -112,7 +112,9 @@ App (balão 💬) ──POST /ai/chat + JWT──▶ Backend ──POST /chat + 
 
 - **Como:** limitador de requisições por minuto (`GEMINI_RPM`, padrão 15, janela deslizante de 60 s);
   até 5 tentativas em `429` e `5xx`, respeitando o tempo sugerido pela API; mensagem clara quando a
-  cota **diária** acaba.
+  cota **diária** acaba. Há também **modelos de reserva** (`GEMINI_FALLBACK_MODELS`): se o modelo
+  principal responder `5xx` (ex.: `503` de sobrecarga), `404` ou `429`, o agente tenta o próximo da lista sem o usuário perceber,
+  e deixa o modelo que falhou alguns minutos fora da rotação.
 - **Por quê:** a camada gratuita tem limite por minuto e por dia; sem isso, rajadas de testes ou de
   usuários derrubariam o chat.
 

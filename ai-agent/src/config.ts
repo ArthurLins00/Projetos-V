@@ -6,6 +6,13 @@ const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 loadEnv({ path: resolve(raiz, '.env'), quiet: true });
 
 export const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-3.1-flash-lite';
+/** Modelos de reserva, usados em ordem quando o principal está indisponível (sobrecarga, cota, descontinuado). */
+export const GEMINI_FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS?.trim() || 'gemini-3.5-flash,gemini-3.6-flash,gemini-3.5-flash-lite')
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean);
+/** Lista completa na ordem de tentativa, sem repetições. */
+export const GEMINI_MODELS = [...new Set([GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS])];
 export const GEMINI_RPM = Math.max(1, Number(process.env.GEMINI_RPM) || 15);
 
 export function getApiKey(): string | undefined {

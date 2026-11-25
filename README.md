@@ -200,7 +200,7 @@ Cada parte tem um arquivo `.env.example` com os valores padrão; copie para `.en
 | | `AI_AGENT_URL`, `AI_AGENT_SECRET` | Opcional. Endereço do agente de IA (padrão `http://127.0.0.1:3333`) e segredo compartilhado com ele |
 | | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Opcional. Conta de admin criada pelo seed |
 | `ai-agent/.env` | `GEMINI_API_KEY` | Chave da API do Gemini (só para o chat; o resto do sistema funciona sem ela) |
-| | `GEMINI_MODEL`, `GEMINI_RPM` | Modelo usado e limite de requisições por minuto |
+| | `GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS`, `GEMINI_RPM` | Modelo principal, modelos de reserva (usados se o principal ficar indisponível) e limite de requisições por minuto |
 | | `FISCALIZE_API_URL`, `AI_AGENT_PORT`, `AI_AGENT_HOST`, `AI_AGENT_SECRET` | Modo servidor: backend consultado, porta e host do agente, segredo compartilhado |
 | `mobile/.env` | `EXPO_PUBLIC_API_URL` | Opcional. Endereço do backend; sem ela, o app usa o IP do computador que roda o Metro |
 | `.env` (raiz) | `POSTGRES_*`, `*_PORT`, `JWT_SECRET`, `SEED_*`, `GEMINI_*`… | Usado pelo `docker compose` ([guia](docs/COMO_RODAR_COM_DOCKER.md)) |

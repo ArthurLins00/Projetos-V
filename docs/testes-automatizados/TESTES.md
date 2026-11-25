@@ -28,7 +28,7 @@ e completos no topo.
           └──────────────────────────────────────┘
 ```
 
-O agente de IA (`ai-agent/`) tem a própria suíte: 26 testes com o Gemini substituído por um cliente roteirizado
+O agente de IA (`ai-agent/`) tem a própria suíte: 32 testes com o Gemini substituído por um cliente roteirizado
 e 10 testes ao vivo contra o Gemini (seção 3.5).
 
 | Nível | Ferramenta | O que isola | Banco | Duração |
@@ -844,7 +844,7 @@ jornada são sequenciais e compartilham o estado (o mesmo usuário e a mesma oco
 
 Todos os fluxos que fazem login passam por `subflows/login.yaml`, que aceita os termos de uso quando a tela aparece.
 
-### 3.5 Agente de IA — `ai-agent/tests` (26 + 10 ao vivo)
+### 3.5 Agente de IA — `ai-agent/tests` (32 + 10 ao vivo)
 
 Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído por um cliente roteirizado
 (`src/llm/scriptedClient.ts`), então o loop do agente e as ferramentas reais rodam sem rede e sem cota (TC-56). O log de uso dos dados vai para um arquivo temporário (`tests/setup.ts`).
@@ -854,6 +854,7 @@ Rodam com `node --test` (`npm test` em `ai-agent/`). O Gemini é substituído po
 | `agente.test.ts` | 3 | Os 3 casos de triagem (CT-01 a CT-03): categoria, órgão, prioridade e chamados similares |
 | `ferramentas.test.ts` | 10 | Regras das ferramentas `classificar_e_rotear_ocorrencia`, `buscar_chamados_similares` e `executarFerramenta`; funções de acesso aos dados (lista vazia, identificador inexistente) e o log de uso dos dados (linhas acrescentadas, sem relato nem coordenadas) |
 | `acompanhamento.test.ts` | 13 | Perfil de acompanhamento: regra de acesso por perfil, prazos, consulta ao backend com o JWT do usuário e o servidor `POST /chat` |
+| `geminiClient.test.ts` | 6 | Modelos de reserva do `GeminiClient`: troca silenciosa em `5xx`, `404` e cota diária, pausa do modelo que falhou, erro de requisição (`400`) sem troca e erro final quando todos falham |
 | `live/gemini.test.ts` | 10 | Os mesmos cenários contra o Gemini real (`npm run test:live`); só na regressão diária, porque dependem de rede e da cota da API |
 
 ---
