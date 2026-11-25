@@ -52,7 +52,7 @@ Como o servidor foi montado (VM com Docker Compose, Caddy e DNS): [`docs/deploy/
 
 Screencast do sistema completo integrado (cadastro/login → registro de demanda com foto e GPS →
 acompanhamento e filtros → atualização de status pelo gestor → notificação ao cidadão):
-**_link do vídeo a definir_**.
+**[Assistir ao screencast](https://drive.google.com/file/d/1UxmnVP3dmwVaOpgorn99INTy3fr8cSuq/view?usp=drive_link)**.
 
 ## Requisitos do projeto
 
@@ -73,6 +73,11 @@ acompanhamento e filtros → atualização de status pelo gestor → notificaç�
 | Issues automáticas para falhas do CI | [`ci-failure-issues.yml`](.github/workflows/ci-failure-issues.yml) |
 | Métricas de qualidade e relatórios técnico e de negócio (HTML) | [`Metricas_de_Qualidade.md`](docs/testes-automatizados/Metricas_de_Qualidade.md), [`quality-report.yml`](.github/workflows/quality-report.yml) |
 | Rotas privadas e por perfil (Cidadão × Gestor/Admin) | [`app/_layout.tsx`](mobile/app/_layout.tsx), [`app/(app)/_layout.tsx`](mobile/app/(app)/_layout.tsx) |
+| Refinamento de UX/UI com **GlueStack UI** e **NativeWind** | [`mobile/src/components/ui`](mobile/src/components/ui), [`tailwind.config.js`](mobile/tailwind.config.js) |
+| Fluxo *end-to-end* validado (cadastro/login → demanda com foto e GPS → filtros → status pelo gestor → notificação) | [`e2e/`](e2e) (Playwright): [`cidadao-ocorrencia.spec.ts`](e2e/cidadao-ocorrencia.spec.ts), [`gestor-atendimento.spec.ts`](e2e/gestor-atendimento.spec.ts) |
+| Build final empacotado (APK) | [`eas.json`](mobile/eas.json), [Releases do GitHub](https://github.com/ArthurLins00/Projetos-V/releases/latest) |
+| Documentação dos endpoints (Swagger/OpenAPI) | [`swagger.ts`](backend/src/config/swagger.ts), <https://fiscalize.topsix.com.br/docs> |
+| Vídeo demonstrativo (*screencast*) | [Vídeo demonstrativo](#vídeo-demonstrativo) |
 
 ## Arquitetura do app (MVVM)
 
