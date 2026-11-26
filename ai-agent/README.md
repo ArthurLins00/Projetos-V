@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Grupo** | Grupo 8 |
+| **Grupo** | Grupo 6 |
 | **Membros** | 
 ARTHUR BORBA LINS
 ARTHUR RODRIGUES DE ANDRADE LIMA
